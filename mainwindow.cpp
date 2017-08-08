@@ -64,10 +64,10 @@ void MainWindow::createTable()
     setCentralWidget(table);
 }
 
-void MainWindow::selectTableRow(int row, int col)
-{
-    table->setCurrentCell(row, col, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-}
+//void MainWindow::selectTableRow(int row, int col)
+//{
+//    table->setCurrentCell(row, col, QItemSelectionModel::Select | QItemSelectionModel::Rows);
+//}
 
 void MainWindow::viewHtml()
 {
@@ -94,7 +94,7 @@ void MainWindow::import()
         return;
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Import File"), filePath, "Text files (*.txt)");
+                                                    tr("Import file"), filePath, "Text files (*.txt)");
     if( fileName.isEmpty() )
         return;
 
@@ -154,6 +154,39 @@ void MainWindow::importTxt(const QString & fileName)
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
     setWindowModified(true);
 }
+
+void MainWindow::appendFile()
+{
+    if (!okToContinue())
+        return;
+
+    if(coupletList.size() == 0)
+        return;
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Append file"), filePath, "dKey files (*.dk.txt)");
+    if( fileName.isEmpty() )
+        return;
+
+    dkCoupletList appendCouplets;
+    appendCouplets.fromDkTxt(fileName);
+    QString error = coupletList.getError();
+    if(!error.isEmpty())
+    {
+        error += tr("Use import to read the file. \n");
+        QMessageBox::warning(this, tr("Append file"), error);
+        return;
+    }
+
+    for(int i = 0; i < appendCouplets.size(); ++i)
+    {
+        coupletList.copyAt(coupletList.size()-1, appendCouplets.at(i));
+        insertTabRow(coupletList.size()-1);
+    }
+    updateTable();
+    setWindowModified(true);
+}
+
 
 void MainWindow::fillTable()
 {
@@ -312,9 +345,8 @@ void MainWindow::openFile()
     if (!okToContinue())
         return;
 
-    clear();
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open File"), filePath, "dKey files (*.dk.txt)");
+                                                    tr("Open file"), filePath, "dKey files (*.dk.txt)");
     if( fileName.isEmpty() )
         return;
 
@@ -454,10 +486,160 @@ void MainWindow::insertRow()
 {
     QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
     if(selectedList.size() != 1)
-//        if(selectedList.size() > 1 || selectedList.size() == 0)
     {
         QMessageBox::warning
-                (this, tr("Insert couplet"), tr("Please select one row."));
+                (this, tr("Insert couplet below"), tr("Please select one row."));
+        return;
+    }
+
+    QTableWidgetSelectionRange selectedRange = selectedList.at(0);
+    int selectedCount = selectedRange.rowCount();
+    if(selectedCount != 1)
+    {
+        QMessageBox::warning
+                (this, tr("Insert couplet below"), tr("Please select one row."));
+        return;
+    }
+
+    int theRow = selectedRange.bottomRow();
+    coupletList.insertDummyAt(theRow + 1);
+    insertTabRow(theRow + 1);
+    updateTable();
+    setWindowModified(true);
+}
+
+void MainWindow::removeRow()
+{
+    QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
+    if(selectedList.size() == 0)
+    {
+        QMessageBox::warning
+                (this, tr("Remove couplet"), tr("Please select at least one row."));
+        return;
+    }
+
+    QList<int> toRemove;
+    for(int i = 0; i < selectedList.size(); ++i)
+    {
+        QTableWidgetSelectionRange selectedRange = selectedList.at(i);
+        int selectedCount = selectedRange.rowCount();
+        int topRow = selectedRange.topRow();
+
+        for(int j = 0; j < selectedCount; ++j)
+            toRemove.push_back(topRow);
+    }
+    // remove from last to first
+    std::sort(toRemove.begin(), toRemove.end());
+    while(toRemove.size())
+    {
+        int theRow = toRemove.takeLast();
+        table->removeRow(theRow);
+        coupletList.removeAt(theRow);
+    }
+
+    updateTable();
+    setWindowModified(true);
+}
+
+void MainWindow::copyRows()
+{
+    QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
+    if(selectedList.size() == 0)
+    {
+        QMessageBox::warning
+                (this, tr("Copy"), tr("Please select at least one row."));
+        return;
+    }
+
+    coupletClipboard.clear();
+    isCopy = true;
+    for(int i = 0; i < selectedList.size(); ++i)
+    {
+        QTableWidgetSelectionRange selectedRange = selectedList.at(i);
+        int selectedCount = selectedRange.rowCount();
+        int topRow = selectedRange.topRow();
+
+        for(int j = 0; j < selectedCount; ++j)
+            coupletClipboard.push_back(coupletList.at(topRow+j));
+    }
+}
+
+void MainWindow::cutRows()
+{
+    QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
+    if(selectedList.size() == 0)
+    {
+        QMessageBox::warning
+                (this, tr("Cut"), tr("Please select at least one row."));
+        return;
+    }
+
+    coupletClipboard.clear();
+    isCopy = false;
+    QList<int> toRemove;
+    for(int i = 0; i < selectedList.size(); ++i)
+    {
+        QTableWidgetSelectionRange selectedRange = selectedList.at(i);
+        int selectedCount = selectedRange.rowCount();
+        int topRow = selectedRange.topRow();
+
+        for(int j = 0; j < selectedCount; ++j)
+        {
+            coupletClipboard.push_back(coupletList.at(topRow));
+            toRemove.push_back(topRow);
+        }
+    }
+    // remove from last to first
+    std::sort(toRemove.begin(), toRemove.end());
+    while(toRemove.size())
+    {
+        int theRow = toRemove.takeLast();
+        table->removeRow(theRow);
+        coupletList.removeAt(theRow);
+    }
+
+    updateTable();
+    setWindowModified(true);
+}
+
+void MainWindow::pasteRows()
+{
+    if(coupletClipboard.size() == 0)
+        return;
+
+    QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
+    if(selectedList.size() != 1)
+    {
+        QMessageBox::warning
+                (this, tr("Paste below"), tr("Please select one row."));
+        return;
+    }
+
+    QTableWidgetSelectionRange selectedRange = selectedList.at(0);
+    int bottomRow = selectedRange.bottomRow();
+
+    for(int i = 0; i < coupletClipboard.size(); ++i)
+    {
+        if(isCopy)
+            coupletList.copyAt(bottomRow+1+i, coupletClipboard.at(i));
+        else
+            coupletList.insertAt(bottomRow+1+i, coupletClipboard.at(i));
+        insertTabRow(bottomRow+1+i);
+    }
+    if(!isCopy)
+        coupletClipboard.clear(); // couplets can be pasted only in one place
+
+    updateTable();
+    setWindowModified(true);
+}
+
+void MainWindow::editRow()
+{
+    QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
+    if(selectedList.size() != 1)
+    {
+        QMessageBox::warning
+                (this, tr("Edit couplet"), tr("Please select one row."));
         return;
     }
     QTableWidgetSelectionRange selectedRange = selectedList.at(0);
@@ -465,123 +647,51 @@ void MainWindow::insertRow()
     if(selectedCount != 1)
     {
         QMessageBox::warning
-                (this, tr("Insert couplet"), tr("Please select one row."));
-        return;
-    }
-    int selectedRow = selectedRange.bottomRow();
-    dkCouplet prevCouplet = coupletList.at(selectedRow);
-    int prevNumber = prevCouplet.getNumber();
-    dkCouplet newCouplet;
-//    newCouplet.setFrom(prevNumber);
-    newCouplet.setNumber(prevNumber+1); // it is increased secend time by step up
-    newCouplet.setLead1(tr("Lead 1."));
-    newCouplet.setEndpoint1(tr("Endpoint 1."));
-    newCouplet.setLead2(tr("Lead 2."));
-    newCouplet.setEndpoint2(tr("Endpoint 2."));
-
-    dkCouplet emptyCouplet;
-    coupletList.insertAt(selectedRow+1, emptyCouplet);
-    coupletList.setCouplet(newCouplet,selectedRow+1); // too avoid stepup
-
-    insertTabRow(selectedRow+1);
-    updateTable();
-
-    setWindowModified(true);
-}
-
-void MainWindow::removeRow()
-{
-    QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
-    if(selectedList.size() != 1)
-    {
-        QMessageBox::warning
-                (this, tr("Remove couplet"), tr("Please select one row."));
-        return;
-    }
-    QTableWidgetSelectionRange selectedRange = selectedList.at(0);
-    int selectedCount = selectedRange.rowCount();
-    int topRow = selectedRange.topRow();
-
-    for(int i = selectedCount; i > 0; --i)
-    {
-        table->removeRow(topRow);
-        coupletList.removeAt(topRow);
-    }
-    updateTable();
-
-    setWindowModified(true);
-}
-
-void MainWindow::editRow()
-{
-    QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
-    if(selectedList.size() > 1 || selectedList.size() == 0)
-    {
-        QMessageBox::warning
-                (this, tr("Edit couplet"), tr("Please select one row."));
-        return;
-    }
-    QTableWidgetSelectionRange selectedRange = selectedList.at(0);
-    int selectedCount = selectedRange.rowCount();
-    if(selectedCount > 1 || selectedCount == 0 )
-    {
-        QMessageBox::warning
                 (this, tr("Edit couplet"), tr("Please select one row."));
         return;
     }
 
     int theRow = selectedRange.topRow();
-    dkCouplet theCouplet = coupletList.at(theRow);
-    coupletDialog dialog(& theCouplet, theRow+2, coupletList.size()+1, this);
-    if (dialog.exec()) {
-        // update copletList
-        coupletList.setCouplet(theCouplet, theRow);
-        // update table
-        updateTableRow(theRow);
-
-        setWindowModified(true);
-    }
+    editClickedRow(theRow);
 }
 
+// col is only for compativility with cellDoubleClicked(row, col)
 void MainWindow::editClickedRow(int row, int col)
 {
     dkCouplet theCouplet = coupletList.at(row);
     coupletDialog dialog(& theCouplet, row+2, coupletList.size()+1, this);
     if (dialog.exec()) {
-        // update copletList
         coupletList.setCouplet(theCouplet, row);
-        // update table
         updateTableRow(row);
-
         setWindowModified(true);
     }
+    --col; // to prevent error messages
 }
 
 void MainWindow::swapLeads()
 {
     QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
-    if(selectedList.size() > 1 || selectedList.size() == 0)
+    if(selectedList.size() != 1)
     {
         QMessageBox::warning
-                (this, tr("Edit couplet"), tr("Please select one row."));
+                (this, tr("Swap leads"), tr("Please select one row."));
         return;
     }
     QTableWidgetSelectionRange selectedRange = selectedList.at(0);
     int selectedCount = selectedRange.rowCount();
-    if(selectedCount > 1 || selectedCount == 0 )
+    if(selectedCount != 1)
     {
         QMessageBox::warning
-                (this, tr("Edit couplet"), tr("Please select one row."));
+                (this, tr("Swap leads"), tr("Please select one row."));
         return;
     }
 
-    int theRow = selectedRange.bottomRow();
+    int theRow = selectedRange.topRow();
     dkCouplet theCouplet = coupletList.at(theRow);
     theCouplet.swapLeads();
+
     coupletList.setCouplet(theCouplet, theRow);
-
     updateTableRow(theRow);
-
     setWindowModified(true);
 }
 
@@ -589,7 +699,6 @@ void MainWindow::reNumber()
 {
     coupletList.reNumber();
     updateTable();
-
     setWindowModified(true);
 }
 
@@ -614,6 +723,9 @@ void MainWindow::createActions()
     importAct->setShortcut(tr("Ctrl+I"));
     connect(importAct, SIGNAL(triggered()), this, SLOT(import()));
 
+    appendAct = new QAction( tr("&Append..."), this);
+    connect(appendAct, SIGNAL(triggered()), this, SLOT(appendFile()));
+
     saveAct = new QAction( tr("&Save..."), this);
     saveAct->setShortcut(tr("Ctrl+S"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
@@ -630,13 +742,24 @@ void MainWindow::createActions()
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcut(tr("Ctrl+Q"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
-//    connect(exitAct, SIGNAL(triggered()), qApp, SLOT(closeAllWindows()));
 
-    insertRowAct = new QAction(tr("&Insert couplet"), this);
+    insertRowAct = new QAction(tr("&Insert couplet below"), this);
     connect(insertRowAct, SIGNAL(triggered()), this, SLOT(insertRow()));
 
     removeRowAct = new QAction(tr("&Remove couplet"), this);
     connect(removeRowAct, SIGNAL(triggered()), this, SLOT(removeRow()));
+
+    cutAct = new QAction(tr("Cu&t"), this);
+    cutAct->setShortcut(tr("Ctrl+X"));
+    connect(cutAct, SIGNAL(triggered()), this, SLOT(cutRows()));
+
+    copyAct = new QAction(tr("&Copy"), this);
+    copyAct->setShortcut(tr("Ctrl+C"));
+    connect(copyAct, SIGNAL(triggered()), this, SLOT(copyRows()));
+
+    pasteAct = new QAction(tr("&Paste below"), this);
+    pasteAct->setShortcut(tr("Ctrl+V"));
+    connect(pasteAct, SIGNAL(triggered()), this, SLOT(pasteRows()));
 
     editRowAct = new QAction(tr("&Edit couplet"), this);
     connect(editRowAct, SIGNAL(triggered()), this, SLOT(editRow()));
@@ -674,6 +797,7 @@ void MainWindow::createMenus()
     fileMenu = new QMenu(tr("&File"), this);
     fileMenu->addAction(openAct);
     fileMenu->addAction(importAct);
+    fileMenu->addAction(appendAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
     fileMenu->addAction(exportHtmlAct);
@@ -689,9 +813,12 @@ void MainWindow::createMenus()
     menuBar()->addMenu(fileMenu);
 
     editMenu = new QMenu(tr("&Edit"), this);
+    editMenu->addAction(cutAct);
+    editMenu->addAction(copyAct);
+    editMenu->addAction(pasteAct);
+    editMenu->addAction(editRowAct);
     editMenu->addAction(insertRowAct);
     editMenu->addAction(removeRowAct);
-    editMenu->addAction(editRowAct);
     editMenu->addAction(swapLeadsAct);
     editMenu->addAction(reNumberAct);
     menuBar()->addMenu(editMenu);

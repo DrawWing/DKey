@@ -26,6 +26,7 @@ class dkCouplet
 {
 public:
     dkCouplet();
+    dkCouplet(const int inNumber);
     dkCouplet(const QStringList &inTxt);
     void clear();
     bool isEmpty() const;
@@ -63,8 +64,8 @@ public:
     QString getHtmlTable(QString path = QString()) const;
     QString findErrors() const;
     void findFigs(QString & path);
-    void stepDownAdr(int thd);
-    void stepUpAdr(int thd);
+//    void stepDownAdr(int thd);
+//    void stepUpAdr(int thd);
     void swapLeads();
 
 private:

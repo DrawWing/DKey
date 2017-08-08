@@ -481,31 +481,58 @@ QList<int>  dkCoupletList::findFrom(int index) const
     return outList;
 }
 
-void dkCoupletList::insertAt(int i, dkCouplet & inCouplet)
+void dkCoupletList::push_back(dkCouplet inCouplet)
+{
+    thisList.push_back(inCouplet);
+}
+
+// couplet number is updated
+// good for copy and append: copy-paste
+void dkCoupletList::copyAt(int i, dkCouplet inCouplet)
+{
+    findMaxNumber();
+    // !!! maxNumber should be uptodate
+
+    ++maxNumber;
+    inCouplet.setNumber(maxNumber);
+    thisList.insert(i, inCouplet);
+}
+
+// couplet number is not modified
+// good for move: cut-paste
+void dkCoupletList::insertAt(int i, dkCouplet inCouplet)
 {
     thisList.insert(i, inCouplet);
-    stepUpAdr(i);
+}
+
+void dkCoupletList::insertDummyAt(int i)
+{
+    findMaxNumber();
+    // !!! maxNumber should be uptodate
+
+    ++maxNumber;
+    dkCouplet dummyCouplet(maxNumber);
+    thisList.insert(i, dummyCouplet);
 }
 
 void dkCoupletList::removeAt(int i)
 {
     thisList.removeAt(i);
-    stepDownAdr(i);
 }
 
-// decreases addresses
-void dkCoupletList::stepDownAdr(int thd)
-{
-    for(int i = 0; i < thisList.size(); ++i)
-        thisList[i].stepDownAdr(thd);
-}
+//// decreases addresses
+//void dkCoupletList::stepDownAdr(int thd)
+//{
+//    for(int i = 0; i < thisList.size(); ++i)
+//        thisList[i].stepDownAdr(thd);
+//}
 
-// increase addresses
-void dkCoupletList::stepUpAdr(int thd)
-{
-    for(int i = 0; i < thisList.size(); ++i)
-        thisList[i].stepUpAdr(thd);
-}
+//// increase addresses
+//void dkCoupletList::stepUpAdr(int thd)
+//{
+//    for(int i = 0; i < thisList.size(); ++i)
+//        thisList[i].stepUpAdr(thd);
+//}
 
 //QString dkCoupletList::frontDigits(const QString & inTxt) const
 //{

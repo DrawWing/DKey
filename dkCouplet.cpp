@@ -25,6 +25,23 @@ dkCouplet::dkCouplet()
     clear();
 }
 
+// dummy couple with number controlled by copuletList
+dkCouplet::dkCouplet(const int inNumber)
+{
+    clear();
+    number = inNumber;
+    lead1 = "Lead 1.";
+    endpoint1 = "Endpoint 1.";
+    lead2 = "Lead 2.";
+    endpoint2 = "Endpoint 2.";
+
+    //translation
+//    lead1 = tr("Lead 1.");
+//    endpoint1 = tr("Endpoint 1.");
+//    lead2 = tr("Lead 2.");
+//    endpoint2 = tr("Endpoint 2.");
+}
+
 dkCouplet::dkCouplet(const QStringList &inTxt)
 {
     from = -1;
@@ -684,25 +701,25 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path) const
     return outList;
 }
 
-void dkCouplet::stepDownAdr(int thd)
-{
-    if(number > thd)
-        --number;
-    if(pointer1 > thd)
-        --pointer1;
-    if(pointer2 > thd)
-        --pointer2;
-}
+//void dkCouplet::stepDownAdr(int thd)
+//{
+//    if(number > thd)
+//        --number;
+//    if(pointer1 > thd)
+//        --pointer1;
+//    if(pointer2 > thd)
+//        --pointer2;
+//}
 
-void dkCouplet::stepUpAdr(int thd)
-{
-    if(number > thd)
-        ++number;
-    if(pointer1 > thd)
-        ++pointer1;
-    if(pointer2 > thd)
-        ++pointer2;
-}
+//void dkCouplet::stepUpAdr(int thd)
+//{
+//    if(number > thd)
+//        ++number;
+//    if(pointer1 > thd)
+//        ++pointer1;
+//    if(pointer2 > thd)
+//        ++pointer2;
+//}
 
 void dkCouplet::swapLeads()
 {

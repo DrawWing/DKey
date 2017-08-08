@@ -49,10 +49,13 @@ public:
     void findFigs(QString &path);
     void findFrom();
     QList<int> findFrom(int index) const;
-    void insertAt(int i, dkCouplet & inCouplet);
+    void push_back(dkCouplet inCouplet);
+    void copyAt(int i, dkCouplet inCouplet);
+    void insertAt(int i, dkCouplet inCouplet);
+    void insertDummyAt(int i);
     void removeAt(int i);
-    void stepDownAdr(int thd);
-    void stepUpAdr(int thd);
+//    void stepDownAdr(int thd);
+//    void stepUpAdr(int thd);
     void pointerChain(int currIndex, int currNumber, QList<int> & chainList);
     void findPointerChains();
     void arrangeCouplets(int currNumber, QList<dkCouplet> &newList);

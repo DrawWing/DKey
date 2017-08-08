@@ -48,6 +48,7 @@ protected:
 private slots:
     void openFile();
     void import();
+    void appendFile();
     bool save();
     bool saveAs();
     void about();
@@ -55,13 +56,16 @@ private slots:
     void openRecentFile();
     void insertRow();
     void removeRow();
+    void copyRows();
+    void cutRows();
+    void pasteRows();
     void editRow();
-    void editClickedRow(int row, int col);
+    void editClickedRow(int row, int col=1);
     void swapLeads();
     void showSteps();
     void reNumber();
     void viewHtml();
-    void selectTableRow(int row, int col);
+//    void selectTableRow(int row, int col);
 
 private:
     void createTable();
@@ -75,12 +79,16 @@ private:
 
     QAction *openAct;
     QAction *importAct;
+    QAction *appendAct;
     QAction *saveAct;
     QAction *saveAsAct;
     QAction *exportHtmlAct;
     QAction *exitAct;
     QAction *insertRowAct;
     QAction *removeRowAct;
+    QAction *copyAct;
+    QAction *cutAct;
+    QAction *pasteAct;
     QAction *editRowAct;
     QAction *swapLeadsAct;
     QAction *reNumberAct;
@@ -118,6 +126,8 @@ private:
     void clear();
 
     dkCoupletList coupletList;
+    dkCoupletList coupletClipboard;
+    bool isCopy;
     QString error;
 };
 
