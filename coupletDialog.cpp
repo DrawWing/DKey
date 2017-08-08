@@ -1,3 +1,20 @@
+/*
+ * This file is part of DKey software.
+ * Copyright (c) 2017 Adam Tofilski
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "coupletDialog.h"
 
 #include <QtWidgets>
@@ -13,6 +30,8 @@ coupletDialog::coupletDialog(dkCouplet * inCouplet, int from, int to, QWidget *p
 {
     createWidget();
 
+    numberSpin->setMinimum(1);
+    numberSpin->setMaximum(9999);
     pointer1->setMinimum(from);
     pointer1->setMaximum(to);
     pointer2->setMinimum(from);
@@ -59,6 +78,15 @@ void coupletDialog::createWidget()
     buttonLayout->addWidget(okButton);
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addStretch(1);
+
+    // number
+    numberLabel = new QLabel("Couplet number");
+    numberSpin = new QSpinBox;
+    QHBoxLayout *numberLayout = new QHBoxLayout;
+    numberLayout->addWidget(numberLabel);
+    numberLayout->addWidget(numberSpin);
+    numberLayout->addStretch(1);
+
 
     // lead1
     radioRef1 = new QRadioButton(tr("&Reference"));
@@ -114,6 +142,7 @@ void coupletDialog::createWidget()
 
     // main layout
     QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout->addLayout(numberLayout);
     mainLayout->addWidget(lead1Box);
     mainLayout->addWidget(lead2Box);
     mainLayout->addLayout(buttonLayout);
@@ -137,6 +166,7 @@ void coupletDialog::createWidget()
 
 void coupletDialog::fillData()
 {
+    numberSpin->setValue(thisCouplet->getNumber());
     lead1Text->setText(thisCouplet->getLead1());
     lead2Text->setText(thisCouplet->getLead2());
 
@@ -172,6 +202,7 @@ void coupletDialog::fillData()
 void coupletDialog::accept()
 {
 // Update the couplet
+    thisCouplet->setNumber(numberSpin->value());
     thisCouplet->setLead1(lead1Text->toPlainText());
     thisCouplet->setLead2(lead2Text->toPlainText());
 

@@ -1,3 +1,20 @@
+/*
+ * This file is part of DKey software.
+ * Copyright (c) 2017 Adam Tofilski
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <QFile>
 #include <QTextStream>
 
@@ -26,6 +43,31 @@ dkCouplet dkCoupletList::getCoupletWithNumber(int number) const
     return emptyCouplet;
 }
 
+int dkCoupletList::getIndexWithNumber(int number) const
+{
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        dkCouplet theCouplet = thisList[i];
+        int theNumber = theCouplet.getNumber();
+        if(theNumber == number)
+            return i;
+    }
+    return -1;
+}
+
+//int dkCoupletList::getMaxNumber() const
+//{
+//    int max = 0;
+//    for(int i = 0; i < thisList.size(); ++i)
+//    {
+//        dkCouplet theCouplet = thisList[i];
+//        int theNumber = theCouplet.getNumber();
+//        if(theNumber > max)
+//            max = theNumber;
+//    }
+//    return max;
+//}
+
 void dkCoupletList::setCouplet(const dkCouplet &inCouplet, int i)
 {
     if(i > thisList.size())
@@ -43,6 +85,7 @@ void dkCoupletList::clear()
     thisList.clear();
     intro.clear();
     introSize = 0;
+    maxNumber = -1;
     error.clear();
 }
 
@@ -258,21 +301,31 @@ void dkCoupletList::appendCouplet(const QStringList & inTxt, int lineNo)
 
 }
 
-//bool dkCoupletList::startsWithNumber(const QString & inTxt) const
-//{
-//    for(int i = 0; i < inTxt.size(); ++i){
-//        QChar c = inTxt.at(i);
-//        if(c.isLetter())
-//            return false;
-//        else if(c.isDigit())
-//            return true;
-//    }
-//    return false;
-//}
-
 QList< dkCouplet > dkCoupletList::getList() const
 {
     return thisList;
+}
+
+void dkCoupletList::findMaxNumber()
+{
+    if(thisList.size() == 0)
+    {
+        maxNumber = -1;
+        return;
+    }
+
+    maxNumber = thisList[0].getNumber();
+
+    for(int i = 1; i < thisList.size(); ++i)
+    {
+        if(thisList[i].getNumber() > maxNumber)
+            maxNumber = thisList[i].getNumber();
+    }
+}
+
+int dkCoupletList::getMaxNumber() const
+{
+    return maxNumber;
 }
 
 QString dkCoupletList::getError() const
@@ -527,4 +580,68 @@ void dkCoupletList::arrangeCouplets(int currNumber, QList< dkCouplet > & newList
     thePointer2 = theCouplet.getPointer2(); // in case of swapping
     if(thePointer2 > -1)
         arrangeCouplets(thePointer2, newList);
+}
+
+bool dkCoupletList::isNumberUnique()
+{
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        dkCouplet currCouplet = thisList.at(i);
+        int currNumber = currCouplet.getNumber();
+        for(int j = i+1; j < thisList.size(); ++j)
+        {
+            dkCouplet nextCouplet = thisList.at(j);
+            int nextNumber = nextCouplet.getNumber();
+            if(currNumber == nextNumber)
+            {
+                error = QString("The same couplet number: %1 in rows %2 and %3.")
+                        .arg(currNumber).arg(i).arg(j);
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool dkCoupletList::reNumber()
+{
+    if(!isNumberUnique())
+        return false;
+
+    findMaxNumber();
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        dkCouplet currCouplet = thisList.at(i);
+        int currNumber = currCouplet.getNumber();
+        int newNumber = i+1; // indexes start with 0 numbers from1
+        if(currNumber == newNumber)
+            continue;
+        int nextIndex = getIndexWithNumber(newNumber);
+        // there can be only one the same number because isNumerUnique
+        if(nextIndex > -1)
+        {
+            ++maxNumber;
+            thisList[nextIndex].setNumber(maxNumber);
+            updatePointers(newNumber, maxNumber);
+        }
+        thisList[i].setNumber(newNumber);
+        updatePointers(currNumber, newNumber);
+    }
+    return true;
+}
+
+// isUniqueNumber is not checked it should be done earier
+void dkCoupletList::updatePointers(int from, int to)
+{
+    if(from == to)
+        return;
+    if(to < 1 || to > maxNumber)
+        return;
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        if(thisList[i].getPointer1() == from)
+            thisList[i].setPointer1(to);
+        if(thisList[i].getPointer2() == from)
+            thisList[i].setPointer2(to);
+    }
 }

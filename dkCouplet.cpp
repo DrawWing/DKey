@@ -1,3 +1,20 @@
+/*
+ * This file is part of DKey software.
+ * Copyright (c) 2017 Adam Tofilski
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, version 3.
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include <QDir>
 
 #include "dkCouplet.h"
@@ -131,14 +148,14 @@ void dkCouplet::readDkTxtLine(const QString &inTxt, bool first)
 {
 
     QStringList inList = inTxt.split("\t");
-    if(inList.size() < 3)
+    if(inList.size() != 3)
     {
-        error += "Number of tab characterst smaller than 3. \n";
+        error += "Number of tab characterst other than 2. \n";
         return;
     }
+
     QString start = inList[0];
     bool ok;
-
     if(first)
     {
         int startNumber = start.toInt(&ok);
@@ -158,6 +175,14 @@ void dkCouplet::readDkTxtLine(const QString &inTxt, bool first)
             return;
         }
     }
+
+    QString lead = inList[1];
+    lead = lead.trimmed();
+    if(first)
+        lead1 = lead;
+    else
+        lead2 = lead;
+
     QString end = inList[inList.size()-1];
     int endNumber = end.toInt(&ok);
     if(ok)
@@ -172,17 +197,6 @@ void dkCouplet::readDkTxtLine(const QString &inTxt, bool first)
         else
             endpoint2 = end;
     }
-    dkString lead = inTxt;
-    lead.chop(end.size());
-    lead.chopFront(start.size());
-//    if(lead.size() > start.size())
-//        lead.remove(0,start.size());
-    lead = lead.trimmed();
-
-    if(first)
-        lead1 = lead;
-    else
-        lead2 = lead;
 }
 
 void dkCouplet::import1number(const QStringList &inTxt)
@@ -312,7 +326,7 @@ void dkCouplet::importTxt2( QStringList &inTxt)
 
 void dkCouplet::importTxtLine2(QString & inTxt, bool first)
 {
-    dkString line = inTxt;
+    dkString line = inTxt.trimmed();
     dkString start = line.findFrontPart();
     dkString startDigits = start.frontDigits();
 
@@ -323,7 +337,7 @@ void dkCouplet::importTxtLine2(QString & inTxt, bool first)
         if(ok)
             number = startNumber;
         else
-            number = -1;
+            number = 0; // -1 is empty couplet
     }
 
     dkString end = line.findEndPart();
@@ -356,8 +370,6 @@ void dkCouplet::importTxtLine2(QString & inTxt, bool first)
     dkString txt = line;
     txt.chop(end.size());
     txt.chopFront(start.size());
-//    if(txt.size() > start.size())
-//        txt.remove(0,start.size());
     txt = removeAB(txt, first);
     if(first)
         lead1 = txt.trimmed();
@@ -574,55 +586,14 @@ void dkCouplet::setFigList2(QStringList & inList)
     figList2 = inList;
 }
 
-//QString dkCouplet::findEndPart(QString & inString)
-//{
-//    QStringList stringList = inString.split("\t",QString::SkipEmptyParts);
-//    if(stringList.size() > 1)
-//    {
-//        QString end = stringList.at(stringList.size()-1);
-//        return end;
-//    }
-//    else
-//    {
-//        // split into words separated by spaces and non-words
-//        stringList = inString.split(QRegExp("\\W+"),QString::SkipEmptyParts);
-//        QString end = stringList.at(stringList.size()-1);
-//        return end;
-//    }
-//}
-
-//QString dkCouplet::findStartPart(QString & inString)
-//{
-//    QString start;
-//    for(int i = 0; i < inString.size(); ++i){
-//        QChar c = inString.at(i);
-//        if(c.isLetter())
-//            break;
-//        else
-//            start.append(c);
-//    }
-//    return start;
-//}
-
-//QString dkCouplet::frontDigits(const QString & inTxt) const
-//{
-//    QString outTxt;
-//    for(int i = 0; i < inTxt.size(); ++i){
-//        QChar c = inTxt.at(i);
-//        if(c.isDigit())
-//            outTxt.push_back(c);
-//        else
-//            return outTxt;
-//    }
-//    return outTxt;
-//}
-
 QString dkCouplet::removeAB(QString & inTxt, bool first) const
 {
     dkString outTxt;
     outTxt = inTxt;
     outTxt.removeFrontNonLetter();
 
+    if(outTxt.size() < 2)
+       return inTxt;
     QChar c1 = outTxt.at(1);
     if(c1.isLetter())
         return inTxt;
@@ -654,13 +625,12 @@ QString dkCouplet::removeAB(QString & inTxt, bool first) const
     }
     else
         return inTxt;
-
 }
 
 QString dkCouplet::findErrors() const
 {
     QString error;
-    if(number == -1)
+    if(number < 1)
         error += "No couplet number. \n";
     if(lead1.isEmpty())
         error += "No lead 1. \n";
@@ -746,9 +716,9 @@ void dkCouplet::swapLeads()
     endpoint1 = endpoint2;
     figList1 = figList2;
 
-    lead1 = leadTmp;
-    pointer1 = pointerTmp;
-    endpoint1 = endpointTmp;
-    figList1 = figListTmp;
+    lead2 = leadTmp;
+    pointer2 = pointerTmp;
+    endpoint2 = endpointTmp;
+    figList2 = figListTmp;
 }
 
