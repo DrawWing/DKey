@@ -30,6 +30,9 @@
 #include <QFileDialog>
 #include <QHeaderView>
 
+#include <QDebug>
+#include <QElapsedTimer>
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
@@ -39,8 +42,10 @@ MainWindow::MainWindow(QWidget *parent)
     filePath = "";
     createActions();
     createMenus();
+    createToolBars();
     readSettings(); //has to be after createActions
     createTable();
+    setWindowTitle("[*]");
     htmlWindow = new TxtWindow(this);
     htmlWindow->hide();
 }
@@ -48,14 +53,23 @@ MainWindow::MainWindow(QWidget *parent)
 void MainWindow::createTable()
 {
     table = new QTableWidget(this);
-    table->setColumnCount(2);
+    table->setColumnCount(3);
     table->setWordWrap(true);
     table->setAlternatingRowColors(true);
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
     QHeaderView *header = table->horizontalHeader();
-    header->hide();
-    header->setSectionResizeMode(QHeaderView::Stretch);
+    QStringList headerStringList;
+    headerStringList<<"No."<<"Lead 1"<<"Lead 2";
+    table->setHorizontalHeaderLabels(headerStringList);
+
+    header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(1, QHeaderView::Stretch);
+    header->setSectionResizeMode(2, QHeaderView::Stretch);
+
     QHeaderView *verticalHeader = table->verticalHeader();
     verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    verticalHeader->hide();
 
     table->setSelectionBehavior(QAbstractItemView::SelectRows);
     connect(table, SIGNAL( cellDoubleClicked(int, int) ),
@@ -63,11 +77,6 @@ void MainWindow::createTable()
 
     setCentralWidget(table);
 }
-
-//void MainWindow::selectTableRow(int row, int col)
-//{
-//    table->setCurrentCell(row, col, QItemSelectionModel::Select | QItemSelectionModel::Rows);
-//}
 
 void MainWindow::viewHtml()
 {
@@ -180,10 +189,10 @@ void MainWindow::appendFile()
 
     for(int i = 0; i < appendCouplets.size(); ++i)
     {
-        coupletList.copyAt(coupletList.size()-1, appendCouplets.at(i));
-        insertTabRow(coupletList.size()-1);
+        int lastRow = coupletList.size();
+        coupletList.copyAt(lastRow, appendCouplets.at(i));
+        insertTabRow(lastRow);
     }
-    updateTable();
     setWindowModified(true);
 }
 
@@ -194,68 +203,24 @@ void MainWindow::fillTable()
     for(int i = 0; i < table->rowCount(); ++i)
         table->removeRow(i);
 
-    for(int i = 0; i < coupletList.size(); ++i)
-    {
-        insertTabRow(i);
-//        dkCouplet theCouplet = coupletList.at(i);
-
-//        table->insertRow(i);
-
-//        QString lead1 = theCouplet.getLead1txt();
-//        QTableWidgetItem *item1 = new QTableWidgetItem(lead1);
-//        item1->setFlags(item1->flags() ^ Qt::ItemIsEditable);
-//        table->setItem(i, 0, item1);
-
-//        QString lead2 = theCouplet.getLead2txt();
-//        QTableWidgetItem *item2 = new QTableWidgetItem(lead2);
-//        item2->setFlags(item2->flags() ^ Qt::ItemIsEditable);
-//        table->setItem(i, 1, item2);
-    }
+    table->setRowCount(coupletList.size());
+    updateTable();
 }
 
 void MainWindow::insertTabRow(int i)
 {
-    dkCouplet theCouplet = coupletList.at(i);
+//    QElapsedTimer timer;
+//    timer.start();
+    //    qDebug() << timer.elapsed() << "insert";
 
     table->insertRow(i);
-
-    int theNumber = theCouplet.getNumber();
-    QString theNumberStr = QString::number(theNumber);
-    QTableWidgetItem *item0 = new QTableWidgetItem(theNumberStr);
-    item0->setFlags(item0->flags() ^ Qt::ItemIsEditable);
-    table->setVerticalHeaderItem(i, item0);
-
-    QString lead1 = theCouplet.getLead1txt();
-    QTableWidgetItem *item1 = new QTableWidgetItem(lead1);
-    item1->setFlags(item1->flags() ^ Qt::ItemIsEditable);
-    table->setItem(i, 0, item1);
-
-    QString lead2 = theCouplet.getLead2txt();
-    QTableWidgetItem *item2 = new QTableWidgetItem(lead2);
-    item2->setFlags(item2->flags() ^ Qt::ItemIsEditable);
-    table->setItem(i, 1, item2);
+    updateTableRow(i);
 }
 
 void MainWindow::updateTable()
 {
     for(int i = 0; i < coupletList.size(); ++i)
-    {
         updateTableRow(i);
-//        dkCouplet theCouplet = coupletList.at(i);
-
-//        int theNumber = theCouplet.getNumber();
-//        QString theNumberStr = QString::number(theNumber);
-//        QTableWidgetItem *item0 = table->verticalHeaderItem(i);
-//        item0->setText(theNumberStr);
-
-//        QString lead1 = theCouplet.getLead1txt();
-//        QTableWidgetItem *item1 = table->item(i,0);
-//        item1->setText(lead1);
-
-//        QString lead2 = theCouplet.getLead2txt();
-//        QTableWidgetItem *item2 = table->item(i,1);
-//        item2->setText(lead2);
-    }
 }
 
 // used by updateTable and editRow
@@ -265,16 +230,13 @@ void MainWindow::updateTableRow(int i)
 
     int theNumber = theCouplet.getNumber();
     QString theNumberStr = QString::number(theNumber);
-    QTableWidgetItem *item0 = table->verticalHeaderItem(i);
-    item0->setText(theNumberStr);
+    table->setItem(i, 0, new QTableWidgetItem(theNumberStr));
 
     QString lead1 = theCouplet.getLead1txt();
-    QTableWidgetItem *item1 = table->item(i,0);
-    item1->setText(lead1);
+    table->setItem(i, 1, new QTableWidgetItem(lead1));
 
     QString lead2 = theCouplet.getLead2txt();
-    QTableWidgetItem *item2 = table->item(i,1);
-    item2->setText(lead2);
+    table->setItem(i, 2, new QTableWidgetItem(lead2));
 }
 
 QString MainWindow::isSane()
@@ -340,6 +302,19 @@ QString MainWindow::errorIsConsequtive() const
 //    return outString;
 //}
 
+void MainWindow::newKey()
+{
+    if (!okToContinue())
+        return;
+
+    clear();
+
+    coupletList.insertDummyAt(0);
+    insertTabRow(0);
+    setWindowModified(true);
+}
+
+
 void MainWindow::openFile()
 {
     if (!okToContinue())
@@ -356,9 +331,14 @@ void MainWindow::openFile()
 // used by openFile and open recent files
 bool MainWindow::loadFile(const QString & fileName)
 {
+//    QElapsedTimer timer;
+//    timer.start();
+
     clear();
 
     filePath = fileName;
+
+//    qDebug() << timer.elapsed() << "clear";
 
     coupletList.fromDkTxt(fileName);
     QString error = coupletList.getError();
@@ -373,6 +353,8 @@ bool MainWindow::loadFile(const QString & fileName)
     QString path = fileInfo.absolutePath();
     coupletList.findFigs(path);
 
+//    qDebug() << timer.elapsed() << "fromDkTxt";
+
     fillTable();
 
     //proces recent files
@@ -381,6 +363,8 @@ bool MainWindow::loadFile(const QString & fileName)
     updateRecentFileActions();
 
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
+
+//    qDebug() << timer.elapsed() << "fillTable";
 
     return true;
 }
@@ -504,7 +488,7 @@ void MainWindow::insertRow()
     int theRow = selectedRange.bottomRow();
     coupletList.insertDummyAt(theRow + 1);
     insertTabRow(theRow + 1);
-    updateTable();
+//    updateTable();
     setWindowModified(true);
 }
 
@@ -537,7 +521,7 @@ void MainWindow::removeRow()
         coupletList.removeAt(theRow);
     }
 
-    updateTable();
+//    updateTable();
     setWindowModified(true);
 }
 
@@ -598,7 +582,6 @@ void MainWindow::cutRows()
         coupletList.removeAt(theRow);
     }
 
-    updateTable();
     setWindowModified(true);
 }
 
@@ -629,7 +612,7 @@ void MainWindow::pasteRows()
     if(!isCopy)
         coupletClipboard.clear(); // couplets can be pasted only in one place
 
-    updateTable();
+//    updateTable();
     setWindowModified(true);
 }
 
@@ -715,7 +698,11 @@ void MainWindow::showSteps()
 
 void MainWindow::createActions()
 {
-    openAct = new QAction( tr("&Open..."), this);
+    newAct = new QAction(QIcon(":/images/new.png"), tr("&New key"), this);
+    newAct->setShortcut(tr("Ctrl+N"));
+    connect(newAct, SIGNAL(triggered()), this, SLOT(newKey()));
+
+    openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
     openAct->setShortcut(tr("Ctrl+O"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(openFile()));
 
@@ -726,7 +713,7 @@ void MainWindow::createActions()
     appendAct = new QAction( tr("&Append..."), this);
     connect(appendAct, SIGNAL(triggered()), this, SLOT(appendFile()));
 
-    saveAct = new QAction( tr("&Save..."), this);
+    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save..."), this);
     saveAct->setShortcut(tr("Ctrl+S"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
@@ -743,32 +730,32 @@ void MainWindow::createActions()
     exitAct->setShortcut(tr("Ctrl+Q"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
-    insertRowAct = new QAction(tr("&Insert couplet below"), this);
+    insertRowAct = new QAction(QIcon(":/images/insert.png"), tr("&Insert couplet below"), this);
     connect(insertRowAct, SIGNAL(triggered()), this, SLOT(insertRow()));
 
-    removeRowAct = new QAction(tr("&Remove couplet"), this);
+    removeRowAct = new QAction(QIcon(":/images/remove.png"), tr("&Remove couplet"), this);
     connect(removeRowAct, SIGNAL(triggered()), this, SLOT(removeRow()));
 
-    cutAct = new QAction(tr("Cu&t"), this);
+    cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
     cutAct->setShortcut(tr("Ctrl+X"));
     connect(cutAct, SIGNAL(triggered()), this, SLOT(cutRows()));
 
-    copyAct = new QAction(tr("&Copy"), this);
+    copyAct = new QAction(QIcon(":/images/copy.png"), tr("&Copy"), this);
     copyAct->setShortcut(tr("Ctrl+C"));
     connect(copyAct, SIGNAL(triggered()), this, SLOT(copyRows()));
 
-    pasteAct = new QAction(tr("&Paste below"), this);
+    pasteAct = new QAction(QIcon(":/images/paste.png"), tr("&Paste below"), this);
     pasteAct->setShortcut(tr("Ctrl+V"));
     connect(pasteAct, SIGNAL(triggered()), this, SLOT(pasteRows()));
 
-    editRowAct = new QAction(tr("&Edit couplet"), this);
+    editRowAct = new QAction(QIcon(":/images/edit.png"), tr("&Edit couplet"), this);
     connect(editRowAct, SIGNAL(triggered()), this, SLOT(editRow()));
 
-    swapLeadsAct = new QAction(tr("&Swap leads"), this);
+    swapLeadsAct = new QAction(QIcon(":/images/swap.png"), tr("&Swap leads"), this);
     connect(swapLeadsAct, SIGNAL(triggered()), this, SLOT(swapLeads()));
 
-    reNumberAct = new QAction(tr("&Renumber key"), this);
-    connect(reNumberAct, SIGNAL(triggered()), this, SLOT(reNumber()));
+    renumberAct = new QAction(QIcon(":/images/renumber.png"), tr("&Renumber key"), this);
+    connect(renumberAct, SIGNAL(triggered()), this, SLOT(reNumber()));
 
     viewHtmlAct = new QAction(tr("&Interactive key"), this);
     connect(viewHtmlAct, SIGNAL(triggered()), this, SLOT(viewHtml()));
@@ -776,8 +763,6 @@ void MainWindow::createActions()
 //    viewActGroup = new QActionGroup(this);
 //    viewActGroup->addAction(viewTableAct);
 //    viewActGroup->addAction(viewHtmlAct);
-//    viewActGroup->setExclusive(true);
-//    viewTableAct->setChecked(true);
 
     QString aboutStr = tr("&About %1");
     aboutAct = new QAction(aboutStr.arg(appName), this);
@@ -795,6 +780,7 @@ void MainWindow::createActions()
 void MainWindow::createMenus()
 {
     fileMenu = new QMenu(tr("&File"), this);
+    fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
     fileMenu->addAction(importAct);
     fileMenu->addAction(appendAct);
@@ -820,7 +806,7 @@ void MainWindow::createMenus()
     editMenu->addAction(insertRowAct);
     editMenu->addAction(removeRowAct);
     editMenu->addAction(swapLeadsAct);
-    editMenu->addAction(reNumberAct);
+    editMenu->addAction(renumberAct);
     menuBar()->addMenu(editMenu);
 
     viewMenu = new QMenu(tr("&View"), this);
@@ -830,6 +816,24 @@ void MainWindow::createMenus()
     helpMenu = new QMenu(tr("&Help"), this);
     helpMenu->addAction(aboutAct);
     menuBar()->addMenu(helpMenu);
+}
+
+void MainWindow::createToolBars()
+{
+    fileToolBar = addToolBar(tr("&File"));
+    fileToolBar->addAction(newAct);
+    fileToolBar->addAction(openAct);
+    fileToolBar->addAction(saveAct);
+
+    editToolBar = addToolBar(tr("&Edit"));
+    editToolBar->addAction(cutAct);
+    editToolBar->addAction(copyAct);
+    editToolBar->addAction(pasteAct);
+    editToolBar->addAction(editRowAct);
+    editToolBar->addAction(insertRowAct);
+    editToolBar->addAction(removeRowAct);
+    editToolBar->addAction(swapLeadsAct);
+    editToolBar->addAction(renumberAct);
 }
 
 void MainWindow::about()

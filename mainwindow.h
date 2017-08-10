@@ -25,6 +25,7 @@
 
 #include <QAction>
 #include <QMenu>
+#include <QToolBar>
 
 #include <QTableWidget>
 
@@ -46,6 +47,7 @@ public:
 protected:
     void closeEvent(QCloseEvent *event);
 private slots:
+    void newKey();
     void openFile();
     void import();
     void appendFile();
@@ -65,18 +67,19 @@ private slots:
     void showSteps();
     void reNumber();
     void viewHtml();
-//    void selectTableRow(int row, int col);
 
 private:
     void createTable();
     void createActions();
     void createMenus();
+    void createToolBars();
     void readSettings();
     void writeSettings();
     void updateRecentFileActions();
     bool okToContinue();
     bool saveFile(const QString &fileName);
 
+    QAction *newAct;
     QAction *openAct;
     QAction *importAct;
     QAction *appendAct;
@@ -91,7 +94,7 @@ private:
     QAction *pasteAct;
     QAction *editRowAct;
     QAction *swapLeadsAct;
-    QAction *reNumberAct;
+    QAction *renumberAct;
     QAction *showStepsAct;
     QAction *viewHtmlAct;
     QAction *aboutAct;
@@ -100,6 +103,9 @@ private:
     QMenu *editMenu;
     QMenu *viewMenu;
     QMenu *helpMenu;
+
+    QToolBar *fileToolBar;
+    QToolBar *editToolBar;
 
     QStringList recentFiles;
     enum { MaxRecentFiles = 5 };

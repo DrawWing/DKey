@@ -36,3 +36,6 @@ RC_FILE = DKey.rc
 VERSION = 1.0.0
 DEFINES += VERSION_STRING=\\\"1.0.0\\\"
 
+RESOURCES += \
+    DKey.qrc
+

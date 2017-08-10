@@ -23,6 +23,7 @@
 
 dkCoupletList::dkCoupletList()
 {
+    clear();
 }
 
 dkCouplet dkCoupletList::at(int i) const
@@ -55,24 +56,14 @@ int dkCoupletList::getIndexWithNumber(int number) const
     return -1;
 }
 
-//int dkCoupletList::getMaxNumber() const
-//{
-//    int max = 0;
-//    for(int i = 0; i < thisList.size(); ++i)
-//    {
-//        dkCouplet theCouplet = thisList[i];
-//        int theNumber = theCouplet.getNumber();
-//        if(theNumber > max)
-//            max = theNumber;
-//    }
-//    return max;
-//}
-
 void dkCoupletList::setCouplet(const dkCouplet &inCouplet, int i)
 {
     if(i > thisList.size())
         return;
     thisList[i] = inCouplet;
+
+    if(inCouplet.getNumber() > maxNumber)
+        maxNumber = inCouplet.getNumber();
 }
 
 int dkCoupletList::size() const
@@ -85,7 +76,7 @@ void dkCoupletList::clear()
     thisList.clear();
     intro.clear();
     introSize = 0;
-    maxNumber = -1;
+    maxNumber = 0;
     error.clear();
 }
 
@@ -128,6 +119,7 @@ void dkCoupletList::fromTxt(QStringList &inTxtList)
     }
     appendCouplet(coupletTxt, lineNo);
 
+    findMaxNumber();
 }
 
 void dkCoupletList::importTxt(QStringList & inTxtList)
@@ -141,6 +133,8 @@ void dkCoupletList::importTxt(QStringList & inTxtList)
         parse2numberKey(inTxtList);
     else
         parse1numberKey(inTxtList);
+
+    findMaxNumber();
 }
 
 void dkCoupletList::parse1numberKey(QStringList & inTxtList)
@@ -280,6 +274,8 @@ void dkCoupletList::fromDkTxt(const QString & fileName)
             return;
         }
     }
+
+    findMaxNumber();
 }
 
 void dkCoupletList::appendCouplet(const QStringList & inTxt, int lineNo)
@@ -310,7 +306,7 @@ void dkCoupletList::findMaxNumber()
 {
     if(thisList.size() == 0)
     {
-        maxNumber = -1;
+        maxNumber = 0;
         return;
     }
 
@@ -456,7 +452,6 @@ QList<int> dkCoupletList::findStartNumbers(QStringList & inTxtList) const
 
 void dkCoupletList::findFrom()
 {
-//    coupletList[0].setFrom(-1); // allready set in constructor
     for(int i = 1; i < thisList.size(); ++i)
     {
         QList<int> theList = findFrom(i);
@@ -484,15 +479,15 @@ QList<int>  dkCoupletList::findFrom(int index) const
 void dkCoupletList::push_back(dkCouplet inCouplet)
 {
     thisList.push_back(inCouplet);
+
+    if(inCouplet.getNumber() > maxNumber)
+        maxNumber = inCouplet.getNumber();
 }
 
 // couplet number is updated
 // good for copy and append: copy-paste
 void dkCoupletList::copyAt(int i, dkCouplet inCouplet)
 {
-    findMaxNumber();
-    // !!! maxNumber should be uptodate
-
     ++maxNumber;
     inCouplet.setNumber(maxNumber);
     thisList.insert(i, inCouplet);
@@ -503,13 +498,13 @@ void dkCoupletList::copyAt(int i, dkCouplet inCouplet)
 void dkCoupletList::insertAt(int i, dkCouplet inCouplet)
 {
     thisList.insert(i, inCouplet);
+
+    if(inCouplet.getNumber() > maxNumber)
+        maxNumber = inCouplet.getNumber();
 }
 
 void dkCoupletList::insertDummyAt(int i)
 {
-    findMaxNumber();
-    // !!! maxNumber should be uptodate
-
     ++maxNumber;
     dkCouplet dummyCouplet(maxNumber);
     thisList.insert(i, dummyCouplet);
@@ -654,6 +649,7 @@ bool dkCoupletList::reNumber()
         thisList[i].setNumber(newNumber);
         updatePointers(currNumber, newNumber);
     }
+    findMaxNumber();
     return true;
 }
 
