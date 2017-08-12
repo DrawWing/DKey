@@ -11,5 +11,7 @@
         <file>images/renumber.png</file>
         <file>images/swap.png</file>
         <file>images/new.png</file>
+        <file>images/error.png</file>
+        <file>images/interactive.png</file>
     </qresource>
 </RCC>

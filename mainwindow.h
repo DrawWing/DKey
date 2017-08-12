@@ -66,6 +66,7 @@ private slots:
     void swapLeads();
     void showSteps();
     void reNumber();
+    void findErrors();
     void viewHtml();
 
 private:
@@ -75,6 +76,7 @@ private:
     void createToolBars();
     void readSettings();
     void writeSettings();
+    void updateRecentFiles( const QString &fileName);
     void updateRecentFileActions();
     bool okToContinue();
     bool saveFile(const QString &fileName);
@@ -96,11 +98,13 @@ private:
     QAction *swapLeadsAct;
     QAction *renumberAct;
     QAction *showStepsAct;
+    QAction *findErrorsAct;
     QAction *viewHtmlAct;
     QAction *aboutAct;
 
     QMenu *fileMenu;
     QMenu *editMenu;
+    QMenu *debugMenu;
     QMenu *viewMenu;
     QMenu *helpMenu;
 
@@ -116,15 +120,10 @@ private:
     QString appVersion;
 
     QTableWidget *table;
-//    QTextBrowser *textEdit;
     TxtWindow * htmlWindow;
 
     QString filePath;
 
-    QString isSane();
-    QString errorIsConsequtive() const;
-//    QString idChain(int coupletNo);
-    void importTxt(const QString &fileName);
     void fillTable();
     void insertTabRow(int i);
     void updateTable();

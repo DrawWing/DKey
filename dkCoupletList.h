@@ -48,7 +48,8 @@ public:
     void findIntro(QStringList & inTxtList);
     void findFigs(QString &path);
     void findFrom();
-    QList<int> findFrom(int index) const;
+    QList<int> findFrom(int number) const;
+    QList<QString> findEndpoints() const;
     void push_back(dkCouplet inCouplet);
     void copyAt(int i, dkCouplet inCouplet);
     void insertAt(int i, dkCouplet inCouplet);
@@ -56,15 +57,21 @@ public:
     void removeAt(int i);
 //    void stepDownAdr(int thd);
 //    void stepUpAdr(int thd);
-    void pointerChain(int currIndex, int currNumber, QList<int> & chainList);
+    void pointerChain(int currNumber, QList<int> & chainList);
     void findPointerChains();
     void arrangeCouplets(int currNumber, QList<dkCouplet> &newList);
+    bool isNumberingOK();
+    bool isContentOK();
+    bool isFromOK();
+    bool isEndpointOK();
+    bool isPointerOK();
+    bool isPointerChainOK();
     bool isNumberUnique();
     bool reNumber();
     void updatePointers(int from, int to);
 
 private:
-    void appendCouplet(const QStringList & inTxt, int lineNo);
+//    void appendCouplet(const QStringList & inTxt);
     QList<int> findStartNumbers(const QString & fileName) const;
     QList<int> findStartNumbers(QStringList & inTxtList) const;
 

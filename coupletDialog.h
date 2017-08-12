@@ -40,8 +40,8 @@ public:
     coupletDialog(QWidget *parent = 0);
     coupletDialog(dkCouplet * inCouplet, int from, int to, QWidget *parent = 0);
 
-    QLabel *numberLabel;
-    QSpinBox *numberSpin;
+//    QLabel *numberLabel;
+//    QSpinBox *numberSpin;
 
     QTextEdit *lead1Text;
     QTextEdit *lead2Text;
@@ -67,8 +67,6 @@ private:
     void createWidget();
     void fillData();
 
-//    QLabel *lead1Label;
-//    QLabel *addressLabel;
     QPushButton *okButton;
     QPushButton *cancelButton;
 

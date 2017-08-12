@@ -44,7 +44,6 @@ dkCouplet::dkCouplet(const int inNumber)
 
 dkCouplet::dkCouplet(const QStringList &inTxt)
 {
-    from = -1;
 
     if(inTxt.size() == 0)
         return;
@@ -64,7 +63,7 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
         number = -1;
 
     dkString end = line.findEndPart();
-    dkString endDigits = end.frontDigits();
+    dkString endDigits = end.endDigits();
     if(endDigits.size() == 0){
         pointer1 = -1;
         endpoint1 = end.trimmed();
@@ -88,10 +87,12 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
         pointer2 = -1;
         endpoint2 = "";
         return;
-    } else if(inTxt.size() == 2)
+    }
+    else if(inTxt.size() == 2)
     {
         line = inTxt[1].trimmed();
-    } else
+    }
+    else
     {
         line.clear();
         for(int i = 1; i < inTxt.size(); ++i)
@@ -104,7 +105,7 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
 
     start = line.findFrontPart();
     end = line.findEndPart();
-    endDigits = end.frontDigits();
+    endDigits = end.endDigits();
     if(endDigits.size() == 0){
         pointer2 = -1;
         endpoint2 = end.trimmed();
@@ -124,7 +125,7 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
 void dkCouplet::clear()
 {
     number = -1;
-    from = -1;
+    from.clear();
     pointerChain.clear();
     lead1 = "";
     pointer1 = -1;
@@ -134,7 +135,7 @@ void dkCouplet::clear()
     pointer2 = -1;
     endpoint2 = "";
     figList2.clear();
-    error = "";
+    error.clear();
 }
 
 bool dkCouplet::isEmpty() const
@@ -394,6 +395,11 @@ void dkCouplet::importTxtLine2(QString & inTxt, bool first)
         lead2 = txt.trimmed();
 }
 
+QList<int> dkCouplet::getFrom() const
+{
+    return from;
+}
+
 int dkCouplet::getNumber() const
 {
     return number;
@@ -477,11 +483,12 @@ QString dkCouplet::getError() const
     return error;
 }
 
-void dkCouplet::setFrom(int inVal)
+void dkCouplet::setFrom(QList<int> & inList)
 {
-    from = inVal;
+    from = inList;
 }
 
+// use of this function shoulb be careful because maxNumber can change
 void dkCouplet::setNumber(int inVal)
 {
     number = inVal;
@@ -644,21 +651,21 @@ QString dkCouplet::removeAB(QString & inTxt, bool first) const
         return inTxt;
 }
 
-QString dkCouplet::findErrors() const
-{
-    QString error;
-    if(number < 1)
-        error += "No couplet number. \n";
-    if(lead1.isEmpty())
-        error += "No lead 1. \n";
-    if(lead2.isEmpty())
-        error += "No lead 2. \n";
-    if(pointer1 == -1 && endpoint1.isEmpty())
-        error += "No end reference in lead 1. \n";
-    if(pointer2 == -1 && endpoint2.isEmpty())
-        error += "No end reference in lead 2. \n";
-    return error;
-}
+//QString dkCouplet::findErrors() const
+//{
+//    QString error;
+//    if(number < 1)
+//        error += "No couplet number. \n";
+//    if(lead1.isEmpty())
+//        error += "No lead 1. \n";
+//    if(lead2.isEmpty())
+//        error += "No lead 2. \n";
+//    if(pointer1 == -1 && endpoint1.isEmpty())
+//        error += "No end reference in lead 1. \n";
+//    if(pointer2 == -1 && endpoint2.isEmpty())
+//        error += "No end reference in lead 2. \n";
+//    return error;
+//}
 
 void dkCouplet::findFigs(QString & path)
 {
@@ -737,5 +744,30 @@ void dkCouplet::swapLeads()
     pointer2 = pointerTmp;
     endpoint2 = endpointTmp;
     figList2 = figListTmp;
+}
+
+bool dkCouplet::isContentOK(void)
+{
+    error.clear();
+    if(lead1.isEmpty() || lead2.isEmpty())
+        error += QString("Couplet %1: Empty lead.\n")
+                .arg(number);
+    if(pointer1 == -1 && endpoint1.isEmpty())
+        error += QString("Couplet %1: Empty first reference.\n")
+                .arg(number);
+    if(pointer2 == -1 && endpoint2.isEmpty())
+        error += QString("Couplet %1: Empty second reference.\n")
+                .arg(number);
+    if(pointer1 == pointer2 && pointer1 != -1 && pointer2 != -1)
+        error += QString("Couplet %1: The same pointer in both leads.\n")
+                .arg(number);
+    if(endpoint1 == endpoint2 && !endpoint1.isEmpty() && !endpoint2.isEmpty())
+        error += QString("Couplet %1: The same endpoint in both leads.\n")
+                .arg(number);
+
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
 }
 

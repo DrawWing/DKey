@@ -29,6 +29,7 @@ public:
     dkString findEndPart() const;
     dkString findFrontPart() const;
     dkString frontDigits() const;
+    dkString endDigits() const;
 //    int frontNumber() const;
     void removeFrontNonLetter();
     void chopFront(int n);

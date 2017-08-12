@@ -30,11 +30,11 @@ coupletDialog::coupletDialog(dkCouplet * inCouplet, int from, int to, QWidget *p
 {
     createWidget();
 
-    numberSpin->setMinimum(1);
-    numberSpin->setMaximum(9999);
-    pointer1->setMinimum(from);
+//    numberSpin->setMinimum(1);
+//    numberSpin->setMaximum(9999);
+    pointer1->setMinimum(1);
     pointer1->setMaximum(to);
-    pointer2->setMinimum(from);
+    pointer2->setMinimum(1);
     pointer2->setMaximum(to);
 
     thisCouplet  = inCouplet;
@@ -79,13 +79,13 @@ void coupletDialog::createWidget()
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addStretch(1);
 
-    // number
-    numberLabel = new QLabel("Couplet number");
-    numberSpin = new QSpinBox;
-    QHBoxLayout *numberLayout = new QHBoxLayout;
-    numberLayout->addWidget(numberLabel);
-    numberLayout->addWidget(numberSpin);
-    numberLayout->addStretch(1);
+//    // number
+//    numberLabel = new QLabel("Couplet number");
+//    numberSpin = new QSpinBox;
+//    QHBoxLayout *numberLayout = new QHBoxLayout;
+//    numberLayout->addWidget(numberLabel);
+//    numberLayout->addWidget(numberSpin);
+//    numberLayout->addStretch(1);
 
 
     // lead1
@@ -142,7 +142,7 @@ void coupletDialog::createWidget()
 
     // main layout
     QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addLayout(numberLayout);
+//    mainLayout->addLayout(numberLayout);
     mainLayout->addWidget(lead1Box);
     mainLayout->addWidget(lead2Box);
     mainLayout->addLayout(buttonLayout);
@@ -166,7 +166,7 @@ void coupletDialog::createWidget()
 
 void coupletDialog::fillData()
 {
-    numberSpin->setValue(thisCouplet->getNumber());
+//    numberSpin->setValue(thisCouplet->getNumber());
     lead1Text->setText(thisCouplet->getLead1());
     lead2Text->setText(thisCouplet->getLead2());
 
@@ -202,7 +202,7 @@ void coupletDialog::fillData()
 void coupletDialog::accept()
 {
 // Update the couplet
-    thisCouplet->setNumber(numberSpin->value());
+//    thisCouplet->setNumber(numberSpin->value());
     thisCouplet->setLead1(lead1Text->toPlainText());
     thisCouplet->setLead2(lead2Text->toPlainText());
 

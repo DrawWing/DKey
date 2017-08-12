@@ -88,6 +88,19 @@ dkString dkString::frontDigits() const
     return outTxt;
 }
 
+dkString dkString::endDigits() const
+{
+    dkString outTxt;
+    for(int i = size()-1; i > -1; --i){
+        QChar c = at(i);
+        if(c.isDigit())
+            outTxt.push_front(c);
+        else
+            return outTxt;
+    }
+    return outTxt;
+}
+
 //int dkString::frontNumber() const
 //{
 //    dkString digits = frontDigits();

@@ -31,7 +31,8 @@ class TxtWindow: public QMainWindow
 public:
     TxtWindow(QWidget *parent = 0);
     TxtWindow(const QString & txt, QWidget *parent = 0);
-    void update(const QString & txt);
+    void setPlainTxt(const QString & txt);
+    void setHtml(const QString & txt);
 
 protected:
     void closeEvent(QCloseEvent *event);

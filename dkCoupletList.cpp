@@ -110,14 +110,19 @@ void dkCoupletList::fromTxt(QStringList &inTxtList)
         {
             QString digits = line.frontDigits();
 
-            appendCouplet(coupletTxt, lineNo);
+//            appendCouplet(coupletTxt);
+            dkCouplet newCouplet(coupletTxt);
+            thisList.push_back(newCouplet);
+
             coupletTxt.clear();
             coupletTxt.push_back(line);
         }
         else
             coupletTxt.append(line);
     }
-    appendCouplet(coupletTxt, lineNo);
+//    appendCouplet(coupletTxt);
+    dkCouplet newCouplet(coupletTxt);
+    thisList.push_back(newCouplet);
 
     findMaxNumber();
 }
@@ -129,6 +134,8 @@ void dkCoupletList::importTxt(QStringList & inTxtList)
     findIntro(inTxtList);
 
     QList<int> numbers = findStartNumbers(inTxtList);
+    if(numbers.size() < 2)
+        return;
     if(numbers[0] == numbers[1])
         parse2numberKey(inTxtList);
     else
@@ -158,7 +165,10 @@ void dkCoupletList::parse1numberKey(QStringList & inTxtList)
         {
             QString digits = line.frontDigits();
 
-            appendCouplet(coupletTxt, firstLine);
+//            appendCouplet(coupletTxt);
+            dkCouplet newCouplet(coupletTxt);
+            thisList.push_back(newCouplet);
+
             coupletTxt.clear();
             coupletTxt.push_back(line);
             firstLine = lineNo;
@@ -166,7 +176,9 @@ void dkCoupletList::parse1numberKey(QStringList & inTxtList)
         else
             coupletTxt.append(line);
     }
-    appendCouplet(coupletTxt, firstLine);
+//    appendCouplet(coupletTxt);
+    dkCouplet newCouplet(coupletTxt);
+    thisList.push_back(newCouplet);
 }
 
 void dkCoupletList::parse2numberKey(QStringList &inTxtList)
@@ -278,24 +290,25 @@ void dkCoupletList::fromDkTxt(const QString & fileName)
     findMaxNumber();
 }
 
-void dkCoupletList::appendCouplet(const QStringList & inTxt, int lineNo)
-{
-    dkCouplet newCouplet(inTxt);
-    thisList.push_back(newCouplet);
+//void dkCoupletList::appendCouplet(const QStringList & inTxt)
+////void dkCoupletList::appendCouplet(const QStringList & inTxt, int lineNo)
+//{
+//    dkCouplet newCouplet(inTxt);
+//    thisList.push_back(newCouplet);
 
-    QString coupletError = newCouplet.findErrors();
-    if(coupletError.isEmpty())
-        return;
-    int coupletNumber = newCouplet.getNumber();
-    QString errorPrefix;
-    if(coupletNumber == -1)
-        errorPrefix = QString("Line %1").arg(lineNo);
-    else
-        errorPrefix = QString("Line %1, couplet %2\n").arg(lineNo).arg(coupletNumber);
-    error.append(errorPrefix);
-    error.append(coupletError);
+////    QString coupletError = newCouplet.findErrors();
+////    if(coupletError.isEmpty())
+////        return;
+////    int coupletNumber = newCouplet.getNumber();
+////    QString errorPrefix;
+////    if(coupletNumber == -1)
+////        errorPrefix = QString("Line %1").arg(lineNo);
+////    else
+////        errorPrefix = QString("Line %1, couplet %2\n").arg(lineNo).arg(coupletNumber);
+////    error.append(errorPrefix);
+////    error.append(coupletError);
 
-}
+//}
 
 QList< dkCouplet > dkCoupletList::getList() const
 {
@@ -454,24 +467,40 @@ void dkCoupletList::findFrom()
 {
     for(int i = 1; i < thisList.size(); ++i)
     {
-        QList<int> theList = findFrom(i);
-        if(theList.size() > 0)
-            thisList[i].setFrom(theList[0]);
+        int theNumber = thisList[i].getNumber();
+        QList<int> theList = findFrom(theNumber);
+        thisList[i].setFrom(theList);
     }
 }
 
 // return a list of pointers to couplets refering to couplet index
-QList<int>  dkCoupletList::findFrom(int index) const
+// can be combined with findFrom
+QList<int>  dkCoupletList::findFrom(int number) const
 {
     QList<int> outList;
     for(int j = 0; j < thisList.size(); ++j)
     {
         int thePointer = thisList[j].getPointer1();
-        if(thePointer == index)
+        if(thePointer == number)
             outList.push_back(j);
         thePointer = thisList[j].getPointer2();
-        if(thePointer == index)
+        if(thePointer == number)
             outList.push_back(j);
+    }
+    return outList;
+}
+
+QList<QString> dkCoupletList::findEndpoints() const
+{
+    QList<QString> outList;
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        QString endpoint = thisList[i].getEndpoint1();
+        if( !endpoint.isEmpty() )
+            outList.push_back(endpoint);
+        endpoint = thisList[i].getEndpoint2();
+        if( !endpoint.isEmpty() )
+            outList.push_back(endpoint);
     }
     return outList;
 }
@@ -515,37 +544,10 @@ void dkCoupletList::removeAt(int i)
     thisList.removeAt(i);
 }
 
-//// decreases addresses
-//void dkCoupletList::stepDownAdr(int thd)
-//{
-//    for(int i = 0; i < thisList.size(); ++i)
-//        thisList[i].stepDownAdr(thd);
-//}
-
-//// increase addresses
-//void dkCoupletList::stepUpAdr(int thd)
-//{
-//    for(int i = 0; i < thisList.size(); ++i)
-//        thisList[i].stepUpAdr(thd);
-//}
-
-//QString dkCoupletList::frontDigits(const QString & inTxt) const
-//{
-//    QString outTxt;
-//    for(int i = 0; i < inTxt.size(); ++i){
-//        QChar c = inTxt.at(i);
-//        if(c.isDigit())
-//            outTxt.push_back(c);
-//        else
-//            return outTxt;
-//    }
-//    return outTxt;
-//}
-
-void dkCoupletList::pointerChain(int currIndex, int currNumber, QList<int> &chainList)
+void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList)
 {
-    // couplet numbers need to be in increasing order
-    for(int i = 0; i < currIndex; ++i)
+    // couplet numbers need to be unique
+    for(int i = 0; i < thisList.size(); ++i)
     {
         dkCouplet prevCouplet = thisList[i];
         int prevNumber = prevCouplet.getNumber();
@@ -553,8 +555,13 @@ void dkCoupletList::pointerChain(int currIndex, int currNumber, QList<int> &chai
         int prevPointer2 = prevCouplet.getPointer2();
         if(currNumber == prevPointer1 || currNumber == prevPointer2)
         {
+            if(chainList.contains(prevNumber))
+            {
+                chainList.push_back(prevNumber);
+                break; // cyclic numbering
+            }
             chainList.push_back(prevNumber);
-            pointerChain(i, prevNumber, chainList);
+            pointerChain(prevNumber, chainList);
             break;
         }
     }
@@ -564,10 +571,9 @@ void dkCoupletList::findPointerChains()
 {
     for(int i = 0; i < thisList.size(); ++i)
     {
-        dkCouplet theCouplet = thisList.at(i);
-        int theNumber = theCouplet.getNumber();
+        int theNumber = thisList[i].getNumber();
         QList<int> chainList;
-        pointerChain(i, theNumber, chainList);
+        pointerChain(theNumber, chainList);
         thisList[i].setPointerChain(chainList);
     }
 }
@@ -604,8 +610,171 @@ void dkCoupletList::arrangeCouplets(int currNumber, QList< dkCouplet > & newList
         arrangeCouplets(thePointer2, newList);
 }
 
+bool dkCoupletList::isNumberingOK()
+{
+    error.clear();
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        if(thisList[i].getNumber() != i+1)
+            error = QString("Numbering is not consequtive. You need to renumber the key.\n");
+        return false;
+    }
+    return true;
+}
+
+bool dkCoupletList::isContentOK()
+{
+    error.clear();
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        bool ok = thisList[i].isContentOK();
+        if(!ok)
+            error += thisList[i].getError();
+    }
+
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
+}
+
+bool dkCoupletList::isFromOK()
+{
+    findFrom();
+    error.clear();
+
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        QList<int> fromList = thisList[i].getFrom();
+        if(fromList.size() > 1)
+            error += QString("Warning: more than one couplet refers to couplet %1.\n")
+                    .arg(thisList[i].getNumber());
+        for(int j = 0; j < fromList.size(); ++j)
+        {
+            dkCouplet theCouplet = getCoupletWithNumber(fromList[j]);
+            QList<int> chainList = theCouplet.getPointerChain();
+            if(chainList.contains(thisList[i].getNumber()))
+                error += QString("Numbering is cyclic between couplets: %1 and %2;")
+                        .arg(thisList[i].getNumber()).arg(theCouplet.getNumber());
+        }
+    }
+
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
+}
+
+bool dkCoupletList::isEndpointOK()
+{
+    QList<QString> endpointList = findEndpoints();
+    error.clear();
+
+    for(int i = 0; i < endpointList.size(); ++i)
+    {
+        int count = endpointList.count(endpointList[i]);
+
+        if( count > 1)
+            error += QString("Warning: endpoint \"%1\" occures %2 times.\n")
+                    .arg(endpointList[i]).arg(count);
+
+        // removed the checked string to prevent multiple messages
+        endpointList.removeAll(endpointList[i]);
+    }
+
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
+}
+
+bool dkCoupletList::isPointerOK()
+{
+    error.clear();
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        int thePointer1 = thisList[i].getPointer1();
+        if(thePointer1 != -1)
+        {
+            int theIndex = getIndexWithNumber(thePointer1);
+            if(theIndex == -1)
+                error += QString("Couplet %1: first lead refers to non existant couplet number.\n")
+                        .arg(thisList[i].getNumber());
+            else if(theIndex == i)
+                error += QString("Couplet %1: first lead refers to the same couplet.\n")
+                        .arg(thisList[i].getNumber());
+            else if(theIndex < i)
+                error += QString("Couplet %1: first lead refers to an earlier couplet.\n")
+                        .arg(thisList[i].getNumber());
+
+        }
+        int thePointer2 = thisList[i].getPointer2();
+        if(thePointer2 != -1)
+        {
+            int theIndex = getIndexWithNumber(thePointer2);
+            if(theIndex == -1)
+                error += QString("Couplet %1: secon lead refers to non existant couplet number.\n")
+                        .arg(thisList[i].getNumber());
+            else if(theIndex == i)
+                error += QString("Couplet %1: second lead refers to the same couplet.\n")
+                        .arg(thisList[i].getNumber());
+            else if(theIndex < i)
+                error += QString("Couplet %1: second lead refers to an earlier couplet.\n")
+                        .arg(thisList[i].getNumber());
+            if(thePointer1 == thePointer2)
+                error += QString("Couplet %1: both leads have the same reference.\n")
+                        .arg(thisList[i].getNumber());
+        }
+    }
+
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
+}
+
+bool dkCoupletList::isPointerChainOK()
+{
+    findPointerChains();
+    error.clear();
+    for(int i = 1; i < thisList.size(); ++i)
+    {
+        QList<int> pointerChain = thisList[i].getPointerChain();
+        if(pointerChain.size() == 0)
+            error += QString("Couplet %1 has no reference in other couplets.\n")
+                    .arg(thisList[i].getNumber());
+        else if(pointerChain.last() != 1)
+            error += QString("Couplet %1 cannot be reached from couplet 1.\n")
+                    .arg(thisList[i].getNumber());
+
+//        // is isPointerChainCyclic
+//        for(int j = 0; j < pointerChain.size(); ++j)
+//        {
+//            int thePointer = pointerChain[j];
+//            int count = pointerChain.count(thePointer);
+//            if(count > 1)
+//            {
+//                int first = pointerChain.indexOf(thePointer);
+//                int second = pointerChain.indexOf(thePointer, first+1);
+//                if(first == -1 || second == -1)
+//                    continue;
+//                error += QString("Numbering is cyclic: ");
+//                for(int k = first; k < second+1; ++k)
+//                    error += QString("%1->").arg(pointerChain[k]);
+//                error += QString(".\n");
+//            }
+//        }
+    }
+
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
+}
+
 bool dkCoupletList::isNumberUnique()
 {
+    error.clear();
     for(int i = 0; i < thisList.size(); ++i)
     {
         dkCouplet currCouplet = thisList.at(i);
@@ -616,13 +785,15 @@ bool dkCoupletList::isNumberUnique()
             int nextNumber = nextCouplet.getNumber();
             if(currNumber == nextNumber)
             {
-                error = QString("The same couplet number: %1 in rows %2 and %3.")
+                error += QString("The same couplet number: %1 in rows %2 and %3.\n")
                         .arg(currNumber).arg(i).arg(j);
-                return false;
             }
         }
     }
-    return true;
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
 }
 
 bool dkCoupletList::reNumber()

@@ -38,7 +38,14 @@ TxtWindow::TxtWindow(const QString & txt, QWidget *parent)
     readSettings();
 }
 
-void TxtWindow::update(const QString & txt)
+void TxtWindow::setPlainTxt(const QString &txt)
+{
+    textEdit->setPlainText(txt);
+    show();
+}
+
+
+void TxtWindow::setHtml(const QString & txt)
 {
     textEdit->setHtml(txt);
     show();

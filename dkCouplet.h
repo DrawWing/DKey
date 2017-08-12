@@ -35,6 +35,7 @@ public:
     void import1number(const QStringList &inTxt);
     void importTxt2(QStringList &inTxt);
     void importTxtLine2(QString &inTxt, bool first);
+    QList<int> getFrom() const;
     int getNumber() const;
     QList<int> getPointerChain() const;
     QString getLead1() const;
@@ -48,7 +49,7 @@ public:
     QString getEndpoint2() const;
     QString getError() const;
     int size() const;
-    void setFrom(int inVal);
+    void setFrom(QList<int> &inList);
     void setNumber(int inVal);
     void setPointerChain(QList<int> & inList);
     void setLead1(QString inTxt);
@@ -62,21 +63,17 @@ public:
     QString getDkTxt() const;
     QString getHtml() const;
     QString getHtmlTable(QString path = QString()) const;
-    QString findErrors() const;
+//    QString findErrors() const;
     void findFigs(QString & path);
-//    void stepDownAdr(int thd);
-//    void stepUpAdr(int thd);
     void swapLeads();
+    bool isContentOK(void);
 
 private:
     QStringList findFigs(QString &inTxt, QString & path) const;
-//    QString findEndPart(QString & inString);
-//    QString findStartPart(QString & inString);
-//    QString frontDigits(const QString & inTxt) const;
     QString removeAB(QString & inTxt, bool first) const;
 
     int number;
-    int from; //number of couplet refereint to this
+    QList<int> from; //number of couplet refereing to this
     QList<int>  pointerChain;
     dkString lead1;
     int pointer1;

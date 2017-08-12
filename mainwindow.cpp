@@ -56,6 +56,7 @@ void MainWindow::createTable()
     table->setColumnCount(3);
     table->setWordWrap(true);
     table->setAlternatingRowColors(true);
+    table->setStyleSheet("QHeaderView::section { background-color:lightGray }");
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     QHeaderView *header = table->horizontalHeader();
@@ -80,21 +81,21 @@ void MainWindow::createTable()
 
 void MainWindow::viewHtml()
 {
+    if(coupletList.size() == 0)
+        return;
 
-    if(htmlWindow->isVisible())
-    {
-        htmlWindow->raise();
-    }
-        else
-    {
+//    if(htmlWindow->isVisible())
+//    {
+//        htmlWindow->raise();
+//    }
+//        else
+//    {
         QFileInfo fileInfo(filePath);
         QString path = fileInfo.absolutePath();
         QString htmlTxt = coupletList.getHtmlTable(path);
-        htmlWindow->update(htmlTxt);
-//        htmlWindow = new TxtWindow(htmlTxt, this);
-        //    htmlWindow->setWindowTitle(appName+" - "+tr("Key")+"[*]");
-        htmlWindow->show();
-    }
+        htmlWindow->setHtml(htmlTxt);
+        htmlWindow->setWindowTitle(tr("Interactive key"));
+//    }
 }
 
 void MainWindow::import()
@@ -107,12 +108,6 @@ void MainWindow::import()
     if( fileName.isEmpty() )
         return;
 
-    importTxt(fileName); // used also by open recent files
-
-}
-
-void MainWindow::importTxt(const QString & fileName)
-{
     clear();
     error.clear();
     filePath = fileName;
@@ -135,6 +130,8 @@ void MainWindow::importTxt(const QString & fileName)
     }
     inFile.close();
 
+    if(outTxtList.size() == 0)
+        return;
     coupletList.importTxt(outTxtList);
 //    coupletList.fromTxt(outTxtList);
     error = coupletList.getError();
@@ -239,68 +236,46 @@ void MainWindow::updateTableRow(int i)
     table->setItem(i, 2, new QTableWidgetItem(lead2));
 }
 
-QString MainWindow::isSane()
+void MainWindow::findErrors()
 {
-    // check double tabs per line
+    if(coupletList.size() == 0)
+        return;
 
-    QString problems;
-//    for(unsigned i = 0; i < id.size(); ++i)
-//    {
-//        QString theLine;
-//        if(txtY[i].isEmpty() || txtN[i].isEmpty())
-//        {
-//            theLine = QStringLiteral("couplet %1: Empty lead.").arg(id[i]);
-//            problems.append(theLine);
-//        }
-//        if(idYto[i] == -1 && txtYto[i].isEmpty())
-//        {
-//            theLine = QStringLiteral("couplet %1: Empty first reference.").arg(id[i]);
-//            problems.append(theLine);
-//        }
-//        if(idNto[i] == -1 && txtNto[i].isEmpty())
-//        {
-//            theLine = QStringLiteral("couplet %1: Empty second reference.").arg(id[i]);
-//            problems.append(theLine);
-//        }
-//    }
-    return problems;
-}
-
-QString MainWindow::errorIsConsequtive() const
-{
     QString error;
-//    int prevNumber = coupletList[0].getNumber();
-//    if(prevNumber != 1)
-//        error += "First couplet has number other than 1. \n";
-//    for(int i = 1; i < coupletList.size(); ++i)
-//    {
-//        int currNumber = coupletList[i].getNumber();
-//        if(currNumber != prevNumber+1)
-//            error += QString("After couplet %1 couplet %2. \n").arg(prevNumber).arg(currNumber);
-//    }
-    return error;
+    bool ok = coupletList.isNumberUnique();
+    if(!ok)
+        error+= coupletList.getError();
+
+    // do no check if not unique
+    ok = coupletList.isContentOK();
+    if(!ok)
+        error+= coupletList.getError();
+
+    ok = coupletList.isEndpointOK();
+    if(!ok)
+        error+= coupletList.getError();
+
+    ok = coupletList.isPointerOK();
+    if(!ok)
+        error+= coupletList.getError();
+
+    ok = coupletList.isNumberingOK();
+    if(!ok)
+        error+= coupletList.getError();
+
+    ok = coupletList.isPointerChainOK();
+    if(!ok)
+        error+= coupletList.getError();
+
+    ok = coupletList.isFromOK(); // needs to be after isPointerChainOK
+    if(!ok)
+        error+= coupletList.getError();
+
+    if(error.isEmpty())
+        error = tr("No errors was found.");
+    htmlWindow->setPlainTxt(error);
+    htmlWindow->setWindowTitle(tr("Find errors"));
 }
-
-//QString MainWindow::idChain(int coupletNo)
-//{
-//    QString outString;
-
-////    if(coupletNo > coupletList.size())
-////        return outString;
-////    int theCouplet = coupletNo;
-////    for(int i = theCouplet; i > -1; --i)
-////    {
-////        if(coupletList[i].getPointer1() == theCouplet ||
-////                coupletList[i].getPointer2() == theCouplet)
-////        {
-////            QString theString = QStringLiteral("%1, ").arg(coupletList[i].getNumber());
-////            outString.append(theString);
-////            theCouplet = i;
-////        }
-////    }
-
-//    return outString;
-//}
 
 void MainWindow::newKey()
 {
@@ -312,6 +287,10 @@ void MainWindow::newKey()
     coupletList.insertDummyAt(0);
     insertTabRow(0);
     setWindowModified(true);
+
+    // remove tile name to prevent save as previous file
+    QFileInfo fileInfo(filePath);
+    filePath = fileInfo.absolutePath();
 }
 
 
@@ -358,9 +337,10 @@ bool MainWindow::loadFile(const QString & fileName)
     fillTable();
 
     //proces recent files
-    recentFiles.removeAll(fileName);
-    recentFiles.prepend(fileName);
-    updateRecentFileActions();
+//    recentFiles.removeAll(fileName);
+//    recentFiles.prepend(fileName);
+//    updateRecentFileActions();
+    updateRecentFiles(fileName);
 
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
 
@@ -393,7 +373,10 @@ bool MainWindow::saveAs()
     if (fileName.isEmpty())
         return false;
 
-    return saveFile(fileName);
+    bool wasSaved = saveFile(fileName);
+    if(wasSaved)
+        updateRecentFiles(fileName);
+    return wasSaved;
 }
 
 bool MainWindow::saveFile(const QString &fileName)
@@ -642,7 +625,7 @@ void MainWindow::editRow()
 void MainWindow::editClickedRow(int row, int col)
 {
     dkCouplet theCouplet = coupletList.at(row);
-    coupletDialog dialog(& theCouplet, row+2, coupletList.size()+1, this);
+    coupletDialog dialog(& theCouplet, row+2, coupletList.getMaxNumber(), this);
     if (dialog.exec()) {
         coupletList.setCouplet(theCouplet, row);
         updateTableRow(row);
@@ -757,12 +740,11 @@ void MainWindow::createActions()
     renumberAct = new QAction(QIcon(":/images/renumber.png"), tr("&Renumber key"), this);
     connect(renumberAct, SIGNAL(triggered()), this, SLOT(reNumber()));
 
-    viewHtmlAct = new QAction(tr("&Interactive key"), this);
-    connect(viewHtmlAct, SIGNAL(triggered()), this, SLOT(viewHtml()));
+    findErrorsAct = new QAction(QIcon(":/images/error.png"), tr("&Find errors"), this);
+    connect(findErrorsAct, SIGNAL(triggered()), this, SLOT(findErrors()));
 
-//    viewActGroup = new QActionGroup(this);
-//    viewActGroup->addAction(viewTableAct);
-//    viewActGroup->addAction(viewHtmlAct);
+    viewHtmlAct = new QAction(QIcon(":/images/interactive.png"), tr("&Interactive key"), this);
+    connect(viewHtmlAct, SIGNAL(triggered()), this, SLOT(viewHtml()));
 
     QString aboutStr = tr("&About %1");
     aboutAct = new QAction(aboutStr.arg(appName), this);
@@ -809,6 +791,10 @@ void MainWindow::createMenus()
     editMenu->addAction(renumberAct);
     menuBar()->addMenu(editMenu);
 
+    debugMenu = new QMenu(tr("&Debug"), this);
+    debugMenu->addAction(findErrorsAct);
+    menuBar()->addMenu(debugMenu);
+
     viewMenu = new QMenu(tr("&View"), this);
     viewMenu->addAction(viewHtmlAct);
     menuBar()->addMenu(viewMenu);
@@ -824,6 +810,8 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
+    fileToolBar->addAction(findErrorsAct);
+    fileToolBar->addAction(viewHtmlAct);
 
     editToolBar = addToolBar(tr("&Edit"));
     editToolBar->addAction(cutAct);
@@ -873,6 +861,12 @@ void MainWindow::writeSettings()
     settings.setValue("size", size());
 }
 
+void MainWindow::updateRecentFiles(const QString &fileName)
+{
+    recentFiles.removeAll(fileName);
+    recentFiles.prepend(fileName);
+}
+
 void MainWindow::updateRecentFileActions()
 {
     QMutableStringListIterator i(recentFiles);
@@ -917,7 +911,7 @@ void MainWindow::closeEvent(QCloseEvent *event) //unreferenced event needst to b
 bool MainWindow::okToContinue()
 {
     if (isWindowModified()) {
-        int r = QMessageBox::warning(this, appName,
+        int r = QMessageBox::warning(this, "Save changes?",
                                      tr("The key has been modified.\n""Do you want to save changes?"),
                                      QMessageBox::Yes | QMessageBox::Default,
                                      QMessageBox::No,
