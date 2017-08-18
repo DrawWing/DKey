@@ -62,6 +62,7 @@ dkString dkString::findEndPart() const
     }
 }
 
+// findFrontNonLeters
 dkString dkString::findFrontPart() const
 {
     dkString start;
@@ -121,6 +122,32 @@ void dkString::removeFrontNonLetter()
             break;
         else
             ++count;
+    }
+    remove(0,count);
+}
+
+void dkString::removeFrontNonLetterAndDigit()
+{
+    int count = 0;
+    for(int i = 0; i < size(); ++i){
+        QChar c = at(i);
+        if(c.isLetter() || c.isDigit())
+            break;
+        else
+            ++count;
+    }
+    remove(0,count);
+}
+
+void dkString::removeFrontDigit()
+{
+    int count = 0;
+    for(int i = 0; i < size(); ++i){
+        QChar c = at(i);
+        if(c.isDigit())
+            ++count;
+        else
+            break;
     }
     remove(0,count);
 }

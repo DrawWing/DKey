@@ -18,14 +18,16 @@ SOURCES += main.cpp\
     dkCouplet.cpp \
     dkCoupletList.cpp \
     txtwindow.cpp \
-    dkString.cpp
+    dkString.cpp \
+    dkView.cpp
 
 HEADERS  += mainwindow.h \
     coupletDialog.h \
     dkCouplet.h \
     dkCoupletList.h \
     txtwindow.h \
-    dkString.h
+    dkString.h \
+    dkView.h
 
 OTHER_FILES += \
     DKey.rc \

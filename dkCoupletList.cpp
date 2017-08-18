@@ -66,6 +66,14 @@ void dkCoupletList::setCouplet(const dkCouplet &inCouplet, int i)
         maxNumber = inCouplet.getNumber();
 }
 
+void dkCoupletList::setFilePath(const QString & inTxt)
+{
+    filePath = inTxt;
+    if(filePath[filePath.size()-1] != '/')
+        filePath += "/";
+
+}
+
 int dkCoupletList::size() const
 {
     return thisList.size();
@@ -74,9 +82,11 @@ int dkCoupletList::size() const
 void dkCoupletList::clear()
 {
     thisList.clear();
+    endpointList.clear();
     intro.clear();
     introSize = 0;
     maxNumber = 0;
+    filePath.clear();
     error.clear();
 }
 
@@ -156,7 +166,6 @@ void dkCoupletList::parse1numberKey(QStringList & inTxtList)
     else
         return; // key needst to start with number
 
-    int firstLine = introSize + 1;
     for(int lineNo = introSize + 1; lineNo < inTxtList.size(); ++lineNo)
     {
         dkString line = inTxtList[lineNo];
@@ -165,18 +174,16 @@ void dkCoupletList::parse1numberKey(QStringList & inTxtList)
         {
             QString digits = line.frontDigits();
 
-//            appendCouplet(coupletTxt);
             dkCouplet newCouplet(coupletTxt);
             thisList.push_back(newCouplet);
 
             coupletTxt.clear();
             coupletTxt.push_back(line);
-            firstLine = lineNo;
+//            firstLine = lineNo;
         }
         else
             coupletTxt.append(line);
     }
-//    appendCouplet(coupletTxt);
     dkCouplet newCouplet(coupletTxt);
     thisList.push_back(newCouplet);
 }
@@ -196,7 +203,6 @@ void dkCoupletList::parse2numberKey(QStringList &inTxtList)
     else
         return; // key needst to start with number
 
-    int firstLine = introSize;
     for(int lineNo = introSize + 1; lineNo < inTxtList.size(); ++lineNo)
     {
         line = inTxtList[lineNo];
@@ -209,20 +215,19 @@ void dkCoupletList::parse2numberKey(QStringList &inTxtList)
                 coupletTxt.append(line);
             else
             {
-                //    appendCouplet(coupletTxt, firstLine);
-                    dkCouplet newCouplet;
-                    newCouplet.importTxt2(coupletTxt);
-                    thisList.push_back(newCouplet);
+                dkCouplet newCouplet;
+                newCouplet.importTxt2(coupletTxt);
+                thisList.push_back(newCouplet);
+
                 coupletTxt.clear();
                 coupletTxt.push_back(line);
                 prevNumber = currNumber;
-                firstLine = lineNo;
+//                firstLine = lineNo;
             }
         }
         else
             coupletTxt.push_back(line);
     }
-//    appendCouplet(coupletTxt, firstLine);
     dkCouplet newCouplet;
     newCouplet.importTxt2(coupletTxt);
     thisList.push_back(newCouplet);
@@ -337,23 +342,13 @@ int dkCoupletList::getMaxNumber() const
     return maxNumber;
 }
 
+QString dkCoupletList::getFilePath() const
+{
+    return filePath;
+}
+
 QString dkCoupletList::getError() const
 {
-//    QString error;
-//    for(int i = 0; i < thisList.size(); ++i)
-//    {
-//        QString coupletError = thisList[i].findErrors();
-//        if(coupletError.isEmpty())
-//            continue;
-//        int coupletNumber = newCouplet.getNumber();
-//        QString errorPrefix;
-//        if(coupletNumber == -1)
-//            errorPrefix = QString("Line %1").arg(lineNo);
-//        else
-//            errorPrefix = QString("Line %1, couplet %2\n").arg(lineNo).arg(coupletNumber);
-//        error.append(errorPrefix);
-//        error.append(coupletError);
-//    }
     return error;
 }
 
@@ -381,17 +376,22 @@ QString dkCoupletList::getHtml() const
     return htmlTxt;
 }
 
-QString dkCoupletList::getHtmlTable(QString path) const
+QString dkCoupletList::getHtmlTable() const
 {
     QString htmlTxt;
     for(int i = 0; i < thisList.size(); ++i)
     {
         dkCouplet theCouplet = thisList[i];
-        QString theHtml = theCouplet.getHtmlTable(path);
+        QString theHtml = theCouplet.getHtmlTable(filePath);
         htmlTxt.append(theHtml);
     }
 
     return htmlTxt;
+}
+
+QStringList dkCoupletList::getEndpointList() const
+{
+    return endpointList;
 }
 
 void dkCoupletList::findIntro(QStringList & inTxtList)
@@ -410,11 +410,19 @@ void dkCoupletList::findIntro(QStringList & inTxtList)
     return;
 }
 
-void dkCoupletList::findFigs(QString & path)
+//void dkCoupletList::findFigs(QString & path)
+//{
+//    for(int i = 0; i < thisList.size(); ++i)
+//    {
+//        thisList[i].findFigs(path);
+//    }
+//}
+
+void dkCoupletList::findFigs()
 {
     for(int i = 0; i < thisList.size(); ++i)
     {
-        thisList[i].findFigs(path);
+        thisList[i].findFigs(filePath);
     }
 }
 
@@ -490,18 +498,98 @@ QList<int>  dkCoupletList::findFrom(int number) const
     return outList;
 }
 
-QList<QString> dkCoupletList::findEndpoints() const
+// outList is for finding errors and warnings
+// endpointList is with added couplet number for interactive key
+QStringList dkCoupletList::findEndpoints()
 {
-    QList<QString> outList;
+    endpointList.clear();
+    QStringList outList;
     for(int i = 0; i < thisList.size(); ++i)
     {
-        QString endpoint = thisList[i].getEndpoint1();
-        if( !endpoint.isEmpty() )
-            outList.push_back(endpoint);
-        endpoint = thisList[i].getEndpoint2();
-        if( !endpoint.isEmpty() )
-            outList.push_back(endpoint);
+        QString theEndpoint = thisList[i].getEndpoint1();
+        int theNumber = thisList[i].getNumber();
+        if( !theEndpoint.isEmpty() )
+        {
+            outList.push_back(theEndpoint);
+            QString indexed = QString("%1 - %2").arg(theEndpoint).arg(theNumber);
+            endpointList.push_back(indexed);
+        }
+        theEndpoint = thisList[i].getEndpoint2();
+        if( !theEndpoint.isEmpty() )
+        {
+            outList.push_back(theEndpoint);
+            QString indexed = QString("%1 - %2").arg(theEndpoint).arg(theNumber);
+            endpointList.push_back(indexed);
+        }
     }
+    endpointList.sort();
+    return outList;
+}
+
+void dkCoupletList::findRemaining(int inNumber, QList<bool> & outList) const
+{
+    int i;
+//    if(isNumberingOK())
+        i = inNumber-1;
+//    else
+//        theIndex = getIndexWithNumber(inNumber);
+
+        QString theEndpoint1 = thisList[i].getEndpoint1();
+        if( !theEndpoint1.isEmpty() )
+        {
+            QString indexed = QString("%1 - %2").arg(theEndpoint1).arg(thisList[i].getNumber());
+            int index = endpointList.indexOf(indexed);
+            if(index > -1)
+                outList[index] = true;
+        }
+        else
+            findRemaining(thisList[i].getPointer1(), outList);
+
+        QString theEndpoint2 = thisList[i].getEndpoint2();
+        if( !theEndpoint2.isEmpty() )
+        {
+            QString indexed = QString("%1 - %2").arg(theEndpoint2).arg(thisList[i].getNumber());
+            int index = endpointList.indexOf(indexed);
+            if(index > -1)
+                outList[index] = true;
+        }
+        else
+            findRemaining(thisList[i].getPointer2(), outList);
+
+}
+
+QList<bool> dkCoupletList::getRemaining(int inNumber) const
+{
+    QList<bool> outList;
+    if(endpointList.size() == 0)
+        return outList;
+
+    int i = inNumber - 1;
+    std::list< bool > stdList (endpointList.size(),false);
+    outList = QList<bool>::fromStdList(stdList);
+
+    QString theEndpoint1 = thisList[i].getEndpoint1();
+    if( !theEndpoint1.isEmpty() )
+    {
+        QString indexed = QString("%1 - %2").arg(theEndpoint1).arg(thisList[i].getNumber());
+        int index = endpointList.indexOf(indexed);
+        if(index > -1)
+            outList[index] = true;
+    }
+    else
+        findRemaining(thisList[i].getPointer1(), outList);
+
+    QString theEndpoint2 = thisList[i].getEndpoint2();
+    if( !theEndpoint2.isEmpty() )
+    {
+        QString indexed = QString("%1 - %2").arg(theEndpoint2).arg(thisList[i].getNumber());
+        int index = endpointList.indexOf(indexed);
+        if(index > -1)
+            outList[index] = true;
+    }
+    else
+        findRemaining(thisList[i].getPointer2(), outList);
+
     return outList;
 }
 
@@ -544,7 +632,31 @@ void dkCoupletList::removeAt(int i)
     thisList.removeAt(i);
 }
 
-void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList)
+//void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList)
+//{
+//    // couplet numbers need to be unique
+//    for(int i = 0; i < thisList.size(); ++i)
+//    {
+//        dkCouplet prevCouplet = thisList[i];
+//        int prevNumber = prevCouplet.getNumber();
+//        int prevPointer1 = prevCouplet.getPointer1();
+//        int prevPointer2 = prevCouplet.getPointer2();
+//        if(currNumber == prevPointer1 || currNumber == prevPointer2)
+//        {
+//            if(chainList.contains(prevNumber))
+//            {
+//                chainList.push_back(prevNumber);
+//                break; // cyclic numbering
+//            }
+//            chainList.push_back(prevNumber);
+//            pointerChain(prevNumber, chainList);
+//            break;
+//        }
+//    }
+//}
+
+void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList,
+                                 QList<QString> &path)
 {
     // couplet numbers need to be unique
     for(int i = 0; i < thisList.size(); ++i)
@@ -560,8 +672,12 @@ void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList)
                 chainList.push_back(prevNumber);
                 break; // cyclic numbering
             }
+            if(currNumber == prevPointer1)
+                path.push_back(prevCouplet.getLead1());
+            else
+                path.push_back(prevCouplet.getLead2());
             chainList.push_back(prevNumber);
-            pointerChain(prevNumber, chainList);
+            pointerChain(prevNumber, chainList, path);
             break;
         }
     }
@@ -573,8 +689,10 @@ void dkCoupletList::findPointerChains()
     {
         int theNumber = thisList[i].getNumber();
         QList<int> chainList;
-        pointerChain(theNumber, chainList);
+        QList<QString> path;
+        pointerChain(theNumber, chainList, path);
         thisList[i].setPointerChain(chainList);
+        thisList[i].setLeadChain(path);
     }
 }
 
@@ -667,19 +785,19 @@ bool dkCoupletList::isFromOK()
 
 bool dkCoupletList::isEndpointOK()
 {
-    QList<QString> endpointList = findEndpoints();
+    QStringList endList = findEndpoints();
     error.clear();
 
-    for(int i = 0; i < endpointList.size(); ++i)
+    for(int i = 0; i < endList.size(); ++i)
     {
-        int count = endpointList.count(endpointList[i]);
+        int count = endList.count(endList[i]);
 
         if( count > 1)
             error += QString("Warning: endpoint \"%1\" occures %2 times.\n")
-                    .arg(endpointList[i]).arg(count);
+                    .arg(endList[i]).arg(count);
 
         // removed the checked string to prevent multiple messages
-        endpointList.removeAll(endpointList[i]);
+        endList.removeAll(endList[i]);
     }
 
     if(error.isEmpty())
@@ -838,4 +956,29 @@ void dkCoupletList::updatePointers(int from, int to)
         if(thisList[i].getPointer2() == from)
             thisList[i].setPointer2(to);
     }
+}
+
+bool dkCoupletList::isKeyIndented(QStringList & inTxtList)
+{
+    dkString line = inTxtList[introSize]; // first line
+
+    line.removeFrontNonLetterAndDigit();
+    if(!line.startsWithDigit())
+        return false;
+    line.removeFrontDigit();
+    line.removeFrontNonLetterAndDigit();
+    if(!line.startsWithDigit())
+        return false;
+
+    line = inTxtList[introSize+1]; // second line
+
+    line.removeFrontNonLetterAndDigit();
+    if(!line.startsWithDigit())
+        return false;
+    line.removeFrontDigit();
+    line.removeFrontNonLetterAndDigit();
+    if(!line.startsWithDigit())
+        return false;
+
+    return true;
 }

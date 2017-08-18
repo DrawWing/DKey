@@ -67,6 +67,7 @@ private slots:
     void showSteps();
     void reNumber();
     void findErrors();
+    void viewBrowser();
     void viewHtml();
 
 private:
@@ -99,6 +100,7 @@ private:
     QAction *renumberAct;
     QAction *showStepsAct;
     QAction *findErrorsAct;
+    QAction *viewBrowserAct;
     QAction *viewHtmlAct;
     QAction *aboutAct;
 

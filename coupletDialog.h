@@ -23,7 +23,7 @@
 #include <QDialog>
 
 QT_BEGIN_NAMESPACE
-class QLabel;
+//class QLabel;
 class QPushButton;
 class QTextEdit;
 class QLineEdit;
@@ -38,8 +38,9 @@ class coupletDialog : public QDialog
 
 public:
     coupletDialog(QWidget *parent = 0);
-    coupletDialog(dkCouplet * inCouplet, int from, int to, QWidget *parent = 0);
+    coupletDialog(dkCouplet * inCouplet, int to, QWidget *parent = 0);
 
+    // user is not able to change couplet number
 //    QLabel *numberLabel;
 //    QSpinBox *numberSpin;
 

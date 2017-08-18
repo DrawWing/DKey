@@ -25,7 +25,8 @@ coupletDialog::coupletDialog(QWidget *parent)
     createWidget();
 }
 
-coupletDialog::coupletDialog(dkCouplet * inCouplet, int from, int to, QWidget *parent)
+//coupletDialog::coupletDialog(dkCouplet * inCouplet, int from, int to, QWidget *parent)
+coupletDialog::coupletDialog(dkCouplet * inCouplet, int to, QWidget *parent)
     : QDialog(parent)
 {
     createWidget();

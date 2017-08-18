@@ -38,11 +38,14 @@ public:
     QList<int> getFrom() const;
     int getNumber() const;
     QList<int> getPointerChain() const;
+    QList<QString> getLeadChain() const;
     QString getLead1() const;
     QString getLead2() const;
     QString getTxt() const;
     QString getLead1txt() const;
     QString getLead2txt() const;
+    QString getLead1html(QString path = QString()) const;
+    QString getLead2html(QString path = QString()) const;
     int getPointer1() const;
     int getPointer2() const;
     QString getEndpoint1() const;
@@ -52,6 +55,7 @@ public:
     void setFrom(QList<int> &inList);
     void setNumber(int inVal);
     void setPointerChain(QList<int> & inList);
+    void setLeadChain(QList<QString> & inList);
     void setLead1(QString inTxt);
     void setLead2(QString inTxt);
     void setPointer1(int inVal);
@@ -75,6 +79,7 @@ private:
     int number;
     QList<int> from; //number of couplet refereing to this
     QList<int>  pointerChain;
+    QList<QString>  leadChain;
     dkString lead1;
     int pointer1;
     dkString endpoint1;

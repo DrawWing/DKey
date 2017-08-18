@@ -31,6 +31,7 @@ public:
     dkCouplet getCoupletWithNumber(int number) const;
     int getIndexWithNumber(int number) const;
     void setCouplet(const dkCouplet & inCouplet, int i);
+    void setFilePath(const QString & inTxt);
     int size() const;
     void clear();
     void fromTxt(QStringList & inTxtList);
@@ -41,23 +42,26 @@ public:
     QList< dkCouplet > getList() const;
     void findMaxNumber();
     int getMaxNumber() const;
+    QString getFilePath() const;
     QString getError() const;
     QString getDkTxt() const;
     QString getHtml() const;
-    QString getHtmlTable(QString path = QString()) const;
+    QString getHtmlTable() const;
+    QStringList getEndpointList() const;
     void findIntro(QStringList & inTxtList);
-    void findFigs(QString &path);
+    void findFigs();
+//    void findFigs(QString &path);
     void findFrom();
     QList<int> findFrom(int number) const;
-    QList<QString> findEndpoints() const;
+    QStringList findEndpoints();
+    void findRemaining(int inNumber, QList<bool> & outList) const;
+    QList<bool> getRemaining(int inNumber) const;
     void push_back(dkCouplet inCouplet);
     void copyAt(int i, dkCouplet inCouplet);
     void insertAt(int i, dkCouplet inCouplet);
     void insertDummyAt(int i);
     void removeAt(int i);
-//    void stepDownAdr(int thd);
-//    void stepUpAdr(int thd);
-    void pointerChain(int currNumber, QList<int> & chainList);
+    void pointerChain(int currNumber, QList<int> & chainList, QList<QString> &path);
     void findPointerChains();
     void arrangeCouplets(int currNumber, QList<dkCouplet> &newList);
     bool isNumberingOK();
@@ -74,11 +78,14 @@ private:
 //    void appendCouplet(const QStringList & inTxt);
     QList<int> findStartNumbers(const QString & fileName) const;
     QList<int> findStartNumbers(QStringList & inTxtList) const;
+    bool isKeyIndented(QStringList &inTxtList);
 
     QList< dkCouplet > thisList;
+    QStringList endpointList;
     QString intro;
     int introSize;
     int maxNumber;
+    QString filePath;
     QString error;
 };
 

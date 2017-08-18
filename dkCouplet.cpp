@@ -127,6 +127,7 @@ void dkCouplet::clear()
     number = -1;
     from.clear();
     pointerChain.clear();
+    leadChain.clear();
     lead1 = "";
     pointer1 = -1;
     endpoint1 = "";
@@ -410,6 +411,11 @@ QList<int> dkCouplet::getPointerChain() const
     return pointerChain;
 }
 
+QList<QString> dkCouplet::getLeadChain() const
+{
+    return leadChain;
+}
+
 QString dkCouplet::getLead1() const
 {
     return lead1;
@@ -455,6 +461,34 @@ QString dkCouplet::getLead2txt() const
         outTxt = QString ("%1\t%2").arg(lead2).arg(pointer2);
     else
         outTxt = QString ("%1\t%2").arg(lead2).arg(endpoint2);
+    return outTxt;
+}
+
+QString dkCouplet::getLead1html(QString path) const
+{
+    QString outTxt;
+    if(endpoint1.isEmpty())
+        outTxt = QString ("<a href=\"lead1\">%1</a>").arg(lead1);
+    else
+        outTxt = QString ("%1<br><b>%2</b>").arg(lead1).arg(endpoint1);
+
+    for(int j = 0; j < figList1.size(); ++j)
+        outTxt += QStringLiteral("<br><img border=\"1\" src=\"%1\">").arg(path + figList1[j]);
+
+    return outTxt;
+}
+
+QString dkCouplet::getLead2html(QString path) const
+{
+    QString outTxt;
+    if(endpoint2.isEmpty())
+        outTxt = QString ("<a href=\"lead2\">%1</a>").arg(lead2);
+    else
+        outTxt = QString ("%1<br><b>%2</b>").arg(lead2).arg(endpoint2);
+
+    for(int j = 0; j < figList2.size(); ++j)
+        outTxt += QStringLiteral("<br><img border=\"1\" src=\"%1\">").arg(path + figList2[j]);
+
     return outTxt;
 }
 
@@ -532,8 +566,8 @@ QString dkCouplet::getHtmlTable(QString path) const
 {
     QString htmlTxt;
 
-    if(!path.isEmpty())
-        path += "/";
+//    if(!path.isEmpty())
+//        path += "/";
 
     htmlTxt = QStringLiteral("<br><b id=\"k%1\">%1</b>.<br>").arg(number);
     htmlTxt += "<table border=\"1\" cellpadding=\"10\" cellspacing=\"0\" style=\"border-collapse: collapse\" bordercolor=\"#111111\" width=\"100%\">\n";
@@ -564,6 +598,11 @@ QString dkCouplet::getHtmlTable(QString path) const
 void dkCouplet::setPointerChain(QList<int> & inList)
 {
     pointerChain = inList;
+}
+
+void dkCouplet::setLeadChain(QList<QString> & inList)
+{
+    leadChain = inList;
 }
 
 void dkCouplet::setLead1(QString inTxt)

@@ -17,6 +17,7 @@
 
 #include "mainwindow.h"
 #include "coupletDialog.h"
+#include "dkView.h"
 
 #include <QtGui>
 
@@ -25,6 +26,7 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QLineEdit>
+#include <QApplication>
 
 #include <QMenuBar>
 #include <QFileDialog>
@@ -79,23 +81,44 @@ void MainWindow::createTable()
     setCentralWidget(table);
 }
 
+void MainWindow::viewBrowser()
+{
+    if(coupletList.size() == 0)
+        return;
+
+//    QFileInfo fileInfo(filePath);
+//    QString path = fileInfo.absolutePath();
+//    coupletList.setFilePath(path);
+
+    coupletList.findPointerChains();
+    coupletList.findEndpoints();
+    dkView view(&coupletList, this);
+    view.exec();
+}
+
 void MainWindow::viewHtml()
 {
     if(coupletList.size() == 0)
         return;
 
-//    if(htmlWindow->isVisible())
-//    {
-//        htmlWindow->raise();
-//    }
-//        else
-//    {
-        QFileInfo fileInfo(filePath);
-        QString path = fileInfo.absolutePath();
-        QString htmlTxt = coupletList.getHtmlTable(path);
-        htmlWindow->setHtml(htmlTxt);
-        htmlWindow->setWindowTitle(tr("Interactive key"));
-//    }
+
+//    coupletList.findPointerChains();
+//    coupletList.findEndpoints();
+//    dkView view(&coupletList, this);
+//    view.exec();
+
+    //    if(htmlWindow->isVisible())
+    //    {
+    //        htmlWindow->raise();
+    //    }
+    //        else
+    //    {
+
+    QString htmlTxt = coupletList.getHtmlTable();
+    htmlWindow->setHtml(htmlTxt);
+    htmlWindow->setWindowTitle(tr("Interactive key"));
+    QApplication::restoreOverrideCursor();
+    //    }
 }
 
 void MainWindow::import()
@@ -133,27 +156,27 @@ void MainWindow::import()
     if(outTxtList.size() == 0)
         return;
     coupletList.importTxt(outTxtList);
-//    coupletList.fromTxt(outTxtList);
-    error = coupletList.getError();
 
-    QFile outFile("C:/tmp/errors.txt");
-    if (!outFile.open(QFile::WriteOnly | QFile::Text))
-    {
-        QMessageBox::warning
-                (this, appName,
-                 tr("Cannot write file %1:\n%2.")
-                 .arg(fileName)
-                 .arg(outFile.errorString())
-                 );
-        return;
-    }
-    QTextStream outStream(&outFile);
-    outStream << error;
+//    error = coupletList.getError();
+//    QFile outFile("C:/tmp/errors.txt");
+//    if (!outFile.open(QFile::WriteOnly | QFile::Text))
+//    {
+//        QMessageBox::warning
+//                (this, appName,
+//                 tr("Cannot write file %1:\n%2.")
+//                 .arg(fileName)
+//                 .arg(outFile.errorString())
+//                 );
+//        return;
+//    }
+//    QTextStream outStream(&outFile);
+//    outStream << error;
 
     /////
     QFileInfo fileInfo(filePath);
     QString path = fileInfo.absolutePath();
-    coupletList.findFigs(path);
+    coupletList.setFilePath(path);
+    coupletList.findFigs();
 
     fillTable();
 
@@ -206,10 +229,6 @@ void MainWindow::fillTable()
 
 void MainWindow::insertTabRow(int i)
 {
-//    QElapsedTimer timer;
-//    timer.start();
-    //    qDebug() << timer.elapsed() << "insert";
-
     table->insertRow(i);
     updateTableRow(i);
 }
@@ -288,7 +307,8 @@ void MainWindow::newKey()
     insertTabRow(0);
     setWindowModified(true);
 
-    // remove tile name to prevent save as previous file
+    // remove file name to prevent save as previous file
+    // only file path is left
     QFileInfo fileInfo(filePath);
     filePath = fileInfo.absolutePath();
 }
@@ -313,8 +333,8 @@ bool MainWindow::loadFile(const QString & fileName)
 //    QElapsedTimer timer;
 //    timer.start();
 
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     clear();
-
     filePath = fileName;
 
 //    qDebug() << timer.elapsed() << "clear";
@@ -330,22 +350,17 @@ bool MainWindow::loadFile(const QString & fileName)
 
     QFileInfo fileInfo(filePath);
     QString path = fileInfo.absolutePath();
-    coupletList.findFigs(path);
-
-//    qDebug() << timer.elapsed() << "fromDkTxt";
+    coupletList.setFilePath(path);
+    coupletList.findFigs();
+//    coupletList.findFigs(path);
 
     fillTable();
+    //    qDebug() << timer.elapsed() << "fromDkTxt";
 
     //proces recent files
-//    recentFiles.removeAll(fileName);
-//    recentFiles.prepend(fileName);
-//    updateRecentFileActions();
     updateRecentFiles(fileName);
-
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
-
-//    qDebug() << timer.elapsed() << "fillTable";
-
+    QApplication::restoreOverrideCursor();
     return true;
 }
 
@@ -625,7 +640,8 @@ void MainWindow::editRow()
 void MainWindow::editClickedRow(int row, int col)
 {
     dkCouplet theCouplet = coupletList.at(row);
-    coupletDialog dialog(& theCouplet, row+2, coupletList.getMaxNumber(), this);
+//    coupletDialog dialog(& theCouplet, row+2, coupletList.getMaxNumber(), this);
+    coupletDialog dialog(& theCouplet, coupletList.getMaxNumber(), this);
     if (dialog.exec()) {
         coupletList.setCouplet(theCouplet, row);
         updateTableRow(row);
@@ -743,7 +759,10 @@ void MainWindow::createActions()
     findErrorsAct = new QAction(QIcon(":/images/error.png"), tr("&Find errors"), this);
     connect(findErrorsAct, SIGNAL(triggered()), this, SLOT(findErrors()));
 
-    viewHtmlAct = new QAction(QIcon(":/images/interactive.png"), tr("&Interactive key"), this);
+    viewBrowserAct = new QAction(QIcon(":/images/interactive.png"), tr("&Key browser"), this);
+    connect(viewBrowserAct, SIGNAL(triggered()), this, SLOT(viewBrowser()));
+
+    viewHtmlAct = new QAction(tr("&Hypertext key in table"), this);
     connect(viewHtmlAct, SIGNAL(triggered()), this, SLOT(viewHtml()));
 
     QString aboutStr = tr("&About %1");
@@ -796,6 +815,7 @@ void MainWindow::createMenus()
     menuBar()->addMenu(debugMenu);
 
     viewMenu = new QMenu(tr("&View"), this);
+    viewMenu->addAction(viewBrowserAct);
     viewMenu->addAction(viewHtmlAct);
     menuBar()->addMenu(viewMenu);
 
@@ -811,7 +831,7 @@ void MainWindow::createToolBars()
     fileToolBar->addAction(openAct);
     fileToolBar->addAction(saveAct);
     fileToolBar->addAction(findErrorsAct);
-    fileToolBar->addAction(viewHtmlAct);
+    fileToolBar->addAction(viewBrowserAct);
 
     editToolBar = addToolBar(tr("&Edit"));
     editToolBar->addAction(cutAct);
