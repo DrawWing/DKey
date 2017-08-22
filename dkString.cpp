@@ -159,6 +159,15 @@ void dkString::chopFront(int n)
         remove(0, n);
 }
 
+QString dkString::getRtf() const
+{
+    QString outTxt = *this;
+    outTxt.replace("\\", "\\\\");
+    outTxt.replace("{", "\\{");
+    outTxt.replace("}", "\\}");
+    return outTxt;
+}
+
 dkString & dkString::operator=( const dkString & str){
   this->QString::operator=(str);
   return *this;

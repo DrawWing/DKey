@@ -25,11 +25,11 @@
 #include <QLabel>
 
 dkView::dkView(dkCoupletList * inList, QWidget *parent) :
-    QDialog(parent)
+    QMainWindow(parent)
 {
-    lead1Browser = new QTextBrowser;
+    lead1Browser = new QTextBrowser(this);
     lead1Browser->setOpenLinks(false);
-    lead2Browser = new QTextBrowser;
+    lead2Browser = new QTextBrowser(this);
     lead2Browser->setOpenLinks(false);
     QHBoxLayout *browserLayout = new QHBoxLayout;
     browserLayout->addWidget(lead1Browser);
@@ -101,10 +101,15 @@ dkView::dkView(dkCoupletList * inList, QWidget *parent) :
     mainSpliter->setOrientation(Qt::Vertical);
     mainSpliter->addWidget(browserContainer);
     mainSpliter->addWidget(tabContainer);
+
     QHBoxLayout *mainLayout = new QHBoxLayout;
     mainLayout->addWidget(mainSpliter);
 
-    setLayout(mainLayout);
+    QWidget *mainContainer = new QWidget(this);
+    mainContainer->setLayout(mainLayout);
+    setCentralWidget(mainContainer);
+
+//    setLayout(mainLayout);
     setWindowTitle("Key browser");
 
     connect(lead1Browser, SIGNAL( anchorClicked( QUrl ) ),
@@ -126,33 +131,11 @@ void dkView::goToNumber(int inNumber)
     number = inNumber;
     currCouplet = coupletList->at(number-1);
 
-//    if(currCouplet.getPointer1() > 0)
-//    {
-//        QString lead1 = "<a href=\"lead1\">";
-//        lead1 += currCouplet.getLead1();
-//        lead1 += "</a>";
-//        lead1Browser->setHtml(lead1);
-//    }
-//    else
-//    {
-//        lead1Browser->setHtml(currCouplet.getLead1html());
-//    }
     QString tmp = currCouplet.getLead1html(filePath);
     lead1Browser->setHtml(currCouplet.getLead1html(filePath));
-
-//    if(currCouplet.getPointer2() > 0)
-//    {
-//    QString lead2 = "<a href=\"lead2\">";
-//    lead2 += currCouplet.getLead2();
-//    lead2 += "</a>";
-//    lead2Browser->setHtml(lead2);
-//    }
-//    else
-//    {
-//        lead2Browser->setHtml(currCouplet.getLead2html());
-//    }
     lead2Browser->setHtml(currCouplet.getLead2html(filePath));
 
+    // path
     QList<int>  pointerChain = currCouplet.getPointerChain();
     QList<QString>  path = currCouplet.getLeadChain();
     pathTab->setRowCount(path.size());

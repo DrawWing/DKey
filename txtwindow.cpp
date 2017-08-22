@@ -23,7 +23,7 @@ TxtWindow::TxtWindow(QWidget *parent)
 : QMainWindow(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    textEdit = new QTextBrowser;
+    textEdit = new QTextBrowser(this);
     setCentralWidget(textEdit);
     readSettings();
 }
@@ -32,10 +32,14 @@ TxtWindow::TxtWindow(const QString & txt, QWidget *parent)
     : QMainWindow(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);
-    textEdit = new QTextBrowser;
+    textEdit = new QTextBrowser(this);
     textEdit->setHtml(txt);
     setCentralWidget(textEdit);
     readSettings();
+}
+
+TxtWindow::~TxtWindow()
+{
 }
 
 void TxtWindow::setPlainTxt(const QString &txt)

@@ -396,6 +396,58 @@ void dkCouplet::importTxtLine2(QString & inTxt, bool first)
         lead2 = txt.trimmed();
 }
 
+void dkCouplet::importIndented(const QString &inTxt, int firstNumber)
+{
+    dkString line = inTxt;
+
+    // find parts before line is modified
+    dkString start = line.findFrontPart();
+
+    number = firstNumber;
+
+    if(line.contains("\t"))
+    {
+        dkString end = line.findEndPart();
+        endpoint1 = end.trimmed();
+        pointer1 = -1;
+        line.chop(end.size());
+        line.chopFront(start.size());
+        lead1 = line.trimmed();
+    }
+    else
+    {
+        pointer1 = firstNumber + 1;
+        endpoint1 = "";
+        line.chopFront(start.size());
+        lead1 = line.trimmed();
+    }
+}
+
+// import sencond lead of indented key
+void dkCouplet::appendIndented(const QString &inTxt, int lineNumber)
+{
+    dkString line = inTxt;
+
+    dkString start = line.findFrontPart();
+
+    if(line.contains("\t"))
+    {
+        dkString end = line.findEndPart();
+        endpoint2 = end.trimmed();
+        pointer2 = -1;
+        line.chop(end.size());
+        line.chopFront(start.size());
+        lead2 = line.trimmed();
+    }
+    else
+    {
+        pointer2 = lineNumber + 1;
+        endpoint2 = "";
+        line.chopFront(start.size());
+        lead2 = line.trimmed();
+    }
+}
+
 QList<int> dkCouplet::getFrom() const
 {
     return from;
@@ -472,8 +524,10 @@ QString dkCouplet::getLead1html(QString path) const
     else
         outTxt = QString ("%1<br><b>%2</b>").arg(lead1).arg(endpoint1);
 
+    if(figList1.size() > 0)
+        outTxt += QString("<br>");
     for(int j = 0; j < figList1.size(); ++j)
-        outTxt += QStringLiteral("<br><img border=\"1\" src=\"%1\">").arg(path + figList1[j]);
+        outTxt += QString("<img border=\"1\" src=\"%1\">").arg(path + figList1[j]);
 
     return outTxt;
 }
@@ -486,8 +540,10 @@ QString dkCouplet::getLead2html(QString path) const
     else
         outTxt = QString ("%1<br><b>%2</b>").arg(lead2).arg(endpoint2);
 
+    if(figList2.size() > 0)
+        outTxt += QString("<br>");
     for(int j = 0; j < figList2.size(); ++j)
-        outTxt += QStringLiteral("<br><img border=\"1\" src=\"%1\">").arg(path + figList2[j]);
+        outTxt += QString("<img border=\"1\" src=\"%1\">").arg(path + figList2[j]);
 
     return outTxt;
 }
@@ -545,6 +601,23 @@ QString dkCouplet::getDkTxt() const
     return outTxt;
 }
 
+QString dkCouplet::getRtf() const
+{
+    QString outTxt;
+
+    if(endpoint1.isEmpty())
+        outTxt += QString("%1\\tab %2\\tab %3\\par\n").arg(number).arg(lead1.getRtf()).arg(pointer1);
+    else
+        outTxt += QString("%1\\tab %2\\tab %3\\par\n").arg(number).arg(lead1.getRtf()).arg(endpoint1.getRtf());
+
+    if(endpoint2.isEmpty())
+        outTxt += QString("-\\tab %1\\tab %2\\par\n").arg(lead2.getRtf()).arg(pointer2);
+    else
+        outTxt += QString("-\\tab %1\\tab %2\\par\n").arg(lead2.getRtf()).arg(endpoint2.getRtf());
+
+    return outTxt;
+}
+
 QString dkCouplet::getHtml() const
 {
     QString htmlTxt;
@@ -562,12 +635,42 @@ QString dkCouplet::getHtml() const
     return htmlTxt;
 }
 
-QString dkCouplet::getHtmlTable(QString path) const
+QString dkCouplet::getHtmlTab() const
 {
     QString htmlTxt;
 
-//    if(!path.isEmpty())
-//        path += "/";
+    htmlTxt += "<tr>";
+    htmlTxt += "<td align=\"left\" valign=\"top\" width=\"3%\">";
+    htmlTxt += QString("<div id=\"k%1\">%1</div>").arg(number);
+    htmlTxt += "</td>";
+
+    htmlTxt += "<td align=\"left\" valign=\"top\" width=\"97%\">";
+    if(endpoint1.isEmpty())
+        htmlTxt += QString("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead1).arg(pointer1);
+    else
+        htmlTxt += QString("%1 <div style=\"float:right\">%2</div>").arg(lead1).arg(endpoint1);
+    htmlTxt += "</td>";
+    htmlTxt += "</tr>\n";
+
+    htmlTxt += "<tr>";
+    htmlTxt += "<td align=\"left\" valign=\"top\" width=\"3%\">";
+    htmlTxt += QString("-");
+    htmlTxt += "</td>";
+
+    htmlTxt += "<td align=\"left\" valign=\"top\" width=\"97%\">";
+    if(endpoint2.isEmpty())
+        htmlTxt += QString("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead2).arg(pointer2);
+    else
+        htmlTxt += QString("%1 <div style=\"float:right\">%2</div>").arg(lead2).arg(endpoint2);
+    htmlTxt += "</td>";
+    htmlTxt += "</tr>\n";
+
+    return htmlTxt;
+}
+
+QString dkCouplet::getHtmlImg(QString path) const
+{
+    QString htmlTxt;
 
     htmlTxt = QStringLiteral("<br><b id=\"k%1\">%1</b>.<br>").arg(number);
     htmlTxt += "<table border=\"1\" cellpadding=\"10\" cellspacing=\"0\" style=\"border-collapse: collapse\" bordercolor=\"#111111\" width=\"100%\">\n";

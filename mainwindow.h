@@ -131,6 +131,8 @@ private:
     void updateTable();
     void updateTableRow(int i);
     void clear();
+    bool isKeyOK();
+    void addWarnings();
 
     dkCoupletList coupletList;
     dkCoupletList coupletClipboard;

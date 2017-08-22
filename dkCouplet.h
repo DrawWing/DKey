@@ -35,6 +35,8 @@ public:
     void import1number(const QStringList &inTxt);
     void importTxt2(QStringList &inTxt);
     void importTxtLine2(QString &inTxt, bool first);
+    void importIndented(const QString &inTxt, int firstNumber);
+    void appendIndented(const QString &inTxt, int lineNumber);
     QList<int> getFrom() const;
     int getNumber() const;
     QList<int> getPointerChain() const;
@@ -65,8 +67,10 @@ public:
     void setFigList1(QStringList & inList);
     void setFigList2(QStringList & inList);
     QString getDkTxt() const;
+    QString getRtf() const;
     QString getHtml() const;
-    QString getHtmlTable(QString path = QString()) const;
+    QString getHtmlTab() const;
+    QString getHtmlImg(QString path = QString()) const;
 //    QString findErrors() const;
     void findFigs(QString & path);
     void swapLeads();

@@ -35,6 +35,7 @@ public:
     void removeFrontNonLetterAndDigit();
     void removeFrontDigit();
     void chopFront(int n);
+    QString getRtf() const;
 
     dkString & operator=( const dkString & );
     dkString & operator=( const QString & );

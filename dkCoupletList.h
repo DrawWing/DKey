@@ -38,6 +38,7 @@ public:
     void importTxt(QStringList & inTxtList);
     void parse1numberKey(QStringList & inTxtList);
     void parse2numberKey(QStringList & inTxtList);
+    void parseIndentedKey(QStringList & inTxtList);
     void fromDkTxt(const QString & fileName);
     QList< dkCouplet > getList() const;
     void findMaxNumber();
@@ -45,8 +46,10 @@ public:
     QString getFilePath() const;
     QString getError() const;
     QString getDkTxt() const;
+    QString getRtf() const;
     QString getHtml() const;
-    QString getHtmlTable() const;
+    QString getHtmlTab() const;
+    QString getHtmlImg(bool withPath = true) const;
     QStringList getEndpointList() const;
     void findIntro(QStringList & inTxtList);
     void findFigs();
@@ -66,9 +69,11 @@ public:
     void arrangeCouplets(int currNumber, QList<dkCouplet> &newList);
     bool isNumberingOK();
     bool isContentOK();
-    bool isFromOK();
+    bool isFromSingle();
+    bool isKeyCyclic();
     bool isEndpointOK();
     bool isPointerOK();
+    bool isPointerNoWarning();
     bool isPointerChainOK();
     bool isNumberUnique();
     bool reNumber();

@@ -63,7 +63,7 @@ void MainWindow::createTable()
 
     QHeaderView *header = table->horizontalHeader();
     QStringList headerStringList;
-    headerStringList<<"No."<<"Lead 1"<<"Lead 2";
+    headerStringList<<"No."<<"First lead"<<"Second lead";
     table->setHorizontalHeaderLabels(headerStringList);
 
     header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -86,14 +86,18 @@ void MainWindow::viewBrowser()
     if(coupletList.size() == 0)
         return;
 
-//    QFileInfo fileInfo(filePath);
-//    QString path = fileInfo.absolutePath();
-//    coupletList.setFilePath(path);
+    if(!isKeyOK())
+    {
+        findErrors();
+        return;
+    }
 
     coupletList.findPointerChains();
     coupletList.findEndpoints();
-    dkView view(&coupletList, this);
-    view.exec();
+//    dkView view(&coupletList, this);
+//    view.exec();
+    dkView * view = new dkView(&coupletList, this);
+    view->show();
 }
 
 void MainWindow::viewHtml()
@@ -114,7 +118,8 @@ void MainWindow::viewHtml()
     //        else
     //    {
 
-    QString htmlTxt = coupletList.getHtmlTable();
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QString htmlTxt = coupletList.getHtmlImg();
     htmlWindow->setHtml(htmlTxt);
     htmlWindow->setWindowTitle(tr("Interactive key"));
     QApplication::restoreOverrideCursor();
@@ -157,6 +162,7 @@ void MainWindow::import()
         return;
     coupletList.importTxt(outTxtList);
 
+
 //    error = coupletList.getError();
 //    QFile outFile("C:/tmp/errors.txt");
 //    if (!outFile.open(QFile::WriteOnly | QFile::Text))
@@ -171,6 +177,9 @@ void MainWindow::import()
 //    }
 //    QTextStream outStream(&outFile);
 //    outStream << error;
+
+    if(coupletList.size() == 0)
+        return;
 
     /////
     QFileInfo fileInfo(filePath);
@@ -255,26 +264,14 @@ void MainWindow::updateTableRow(int i)
     table->setItem(i, 2, new QTableWidgetItem(lead2));
 }
 
-void MainWindow::findErrors()
+bool MainWindow::isKeyOK()
 {
+
     if(coupletList.size() == 0)
-        return;
+        return true;
 
-    QString error;
+    error.clear();
     bool ok = coupletList.isNumberUnique();
-    if(!ok)
-        error+= coupletList.getError();
-
-    // do no check if not unique
-    ok = coupletList.isContentOK();
-    if(!ok)
-        error+= coupletList.getError();
-
-    ok = coupletList.isEndpointOK();
-    if(!ok)
-        error+= coupletList.getError();
-
-    ok = coupletList.isPointerOK();
     if(!ok)
         error+= coupletList.getError();
 
@@ -282,14 +279,57 @@ void MainWindow::findErrors()
     if(!ok)
         error+= coupletList.getError();
 
+    // do no check if not unique and consequtive
+    ok = coupletList.isContentOK();
+    if(!ok)
+        error+= coupletList.getError();
+
+//    ok = coupletList.isEndpointOK();
+//    if(!ok)
+//        error+= coupletList.getError();
+
+    ok = coupletList.isPointerOK();
+    if(!ok)
+        error+= coupletList.getError();
+
     ok = coupletList.isPointerChainOK();
     if(!ok)
         error+= coupletList.getError();
 
-    ok = coupletList.isFromOK(); // needs to be after isPointerChainOK
+
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
+}
+
+void MainWindow::addWarnings()
+{
+    if(coupletList.size() == 0)
+        return;
+
+    bool ok = coupletList.isFromSingle();
     if(!ok)
         error+= coupletList.getError();
 
+    ok = coupletList.isEndpointOK();
+    if(!ok)
+        error+= coupletList.getError();
+
+    ok = coupletList.isPointerNoWarning();
+    if(!ok)
+        error+= coupletList.getError();
+
+    ok = coupletList.isKeyCyclic(); // needs to be after isPointerChainOK
+    if(!ok)
+        error+= coupletList.getError();
+
+}
+
+void MainWindow::findErrors()
+{
+    isKeyOK();
+    addWarnings();
     if(error.isEmpty())
         error = tr("No errors was found.");
     htmlWindow->setPlainTxt(error);
@@ -431,11 +471,11 @@ void MainWindow::exportKey()
         return;
 
     QFileInfo fileInfo(filePath);
-    QString outName = fileInfo.path()+"/"+fileInfo.baseName()+".html";
-    QString selectedFilter = tr("HTML table (*.html)");
+    QString outName = fileInfo.path()+"/"+fileInfo.baseName()+".rtf";
+    QString selectedFilter = tr("Formated text RTF (*.rtf)");
     QString fileName = QFileDialog::getSaveFileName
             (this, tr("Export the key as"), outName,
-             tr("HTML table (*.html);;Simple HTML (*.html)"),
+             tr("Formated text RTF (*.rtf);;Simple HTML (*.html);;HTML table (*.html);;HTML with images (*.html)"),
              &selectedFilter
              );
     if (fileName.isEmpty())
@@ -453,11 +493,14 @@ void MainWindow::exportKey()
     }
 
     QString htmlTxt;
-    if(selectedFilter == "HTML table (*.html)")
-        htmlTxt = coupletList.getHtmlTable();
-//    htmlTxt = formatHtmlTable();
+    if(selectedFilter == "Formated text RTF (*.rtf)")
+        htmlTxt = coupletList.getRtf();
     else if(selectedFilter == "Simple HTML (*.html)")
         htmlTxt = coupletList.getHtml();
+    else if(selectedFilter == "HTML table (*.html)")
+        htmlTxt = coupletList.getHtmlTab();
+    else if(selectedFilter == "HTML with images (*.html)")
+        htmlTxt = coupletList.getHtmlImg(false);
 
     QTextStream outStream(&outFile);
     outStream << htmlTxt;
@@ -679,9 +722,11 @@ void MainWindow::swapLeads()
 
 void MainWindow::reNumber()
 {
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     coupletList.reNumber();
     updateTable();
     setWindowModified(true);
+    QApplication::restoreOverrideCursor();
 }
 
 void MainWindow::showSteps()

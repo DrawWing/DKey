@@ -20,12 +20,13 @@
 
 #include <QTextBrowser>
 #include <QTableWidget>
-#include <QDialog>
-//#include <QSplitter>
+//#include <QDialog>
+#include <QMainWindow>
 
 #include "dkCoupletList.h"
 
-class dkView : public QDialog
+//class dkView : public QDialog
+class dkView : public QMainWindow
 {
     Q_OBJECT
 public:

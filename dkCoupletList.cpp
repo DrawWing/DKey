@@ -149,7 +149,12 @@ void dkCoupletList::importTxt(QStringList & inTxtList)
     if(numbers[0] == numbers[1])
         parse2numberKey(inTxtList);
     else
-        parse1numberKey(inTxtList);
+    {
+        if(isKeyIndented(inTxtList))
+            parseIndentedKey(inTxtList);
+        else
+            parse1numberKey(inTxtList);
+    }
 
     findMaxNumber();
 }
@@ -231,6 +236,46 @@ void dkCoupletList::parse2numberKey(QStringList &inTxtList)
     dkCouplet newCouplet;
     newCouplet.importTxt2(coupletTxt);
     thisList.push_back(newCouplet);
+}
+
+void dkCoupletList::parseIndentedKey(QStringList &inTxtList)
+{
+    for(int lineNo = introSize; lineNo < inTxtList.size(); ++lineNo)
+    {
+        dkString line = inTxtList[lineNo];
+
+        line.removeFrontNonLetterAndDigit();
+        dkString digits1 = line.frontDigits();
+        int number1 = digits1.toInt();
+
+        line.removeFrontDigit();
+        line.removeFrontNonLetterAndDigit();
+        dkString digits2 = line.frontDigits();
+        int number2 = digits2.toInt();
+
+        if( number1 == 0 || number2 == 0 ) // conversion not succesfull
+            continue;
+
+        if( number1 > number2 ) // second lead
+        {
+            int theIndex = getIndexWithNumber(number2);
+            if( theIndex > -1)
+                thisList[theIndex].appendIndented(inTxtList[lineNo], number1);
+            else
+            {
+                dkCouplet newCouplet;
+                newCouplet.setNumber(number2);
+                newCouplet.appendIndented(inTxtList[lineNo], number1);
+                thisList.push_back(newCouplet);
+            }
+        }
+        else
+        {
+            dkCouplet newCouplet;
+            newCouplet.importIndented(inTxtList[lineNo], number1);
+            thisList.push_back(newCouplet);
+        }
+    }
 }
 
 void dkCoupletList::fromDkTxt(const QString & fileName)
@@ -364,6 +409,23 @@ QString dkCoupletList::getDkTxt() const
     return outTxt;
 }
 
+QString dkCoupletList::getRtf() const
+{
+//    QString outTxt = "{\\rtf1\\ansi\\tx426\\tqr\\tldot\\tx8931\n";
+    QString outTxt = "{\\rtf1\\ansi"; // rtf version and encoding
+    outTxt += "\\paperw11906\\paperh16838"; // A4 paper size
+    outTxt += "\\margl1417\\margr1417\\margt1417\\margb1417"; // margings 25 mm
+    outTxt += "\\fi-567\\li567"; // hanging indent 10 mm
+    outTxt += "\\tx567\\tqr\\tldot\\tx8931\n"; // first tab at 10 mm, second tab to the right with leading dots at right margin
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        QString theTxt = thisList[i].getRtf();
+        outTxt += theTxt;
+    }
+    outTxt += "}";
+    return outTxt;
+}
+
 QString dkCoupletList::getHtml() const
 {
     QString htmlTxt;
@@ -376,16 +438,34 @@ QString dkCoupletList::getHtml() const
     return htmlTxt;
 }
 
-QString dkCoupletList::getHtmlTable() const
+QString dkCoupletList::getHtmlTab() const
+{
+    QString htmlTxt;
+    htmlTxt += "<table border=\"1\" cellpadding=\"10\" cellspacing=\"0\" style=\"border-collapse: collapse\" bordercolor=\"#111111\" width=\"100%\">\n";
+
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        dkCouplet theCouplet = thisList[i];
+        QString theHtml = theCouplet.getHtmlTab();
+        htmlTxt.append(theHtml);
+    }
+
+    htmlTxt += "</table>\n";
+    return htmlTxt;
+}
+
+QString dkCoupletList::getHtmlImg(bool withPath) const
 {
     QString htmlTxt;
     for(int i = 0; i < thisList.size(); ++i)
     {
-        dkCouplet theCouplet = thisList[i];
-        QString theHtml = theCouplet.getHtmlTable(filePath);
-        htmlTxt.append(theHtml);
+        QString theHtml;
+        if(withPath)
+            theHtml = thisList[i].getHtmlImg(filePath);
+        else
+            theHtml = thisList[i].getHtmlImg();
+        htmlTxt += theHtml;
     }
-
     return htmlTxt;
 }
 
@@ -734,8 +814,10 @@ bool dkCoupletList::isNumberingOK()
     for(int i = 0; i < thisList.size(); ++i)
     {
         if(thisList[i].getNumber() != i+1)
+        {
             error = QString("Numbering is not consequtive. You need to renumber the key.\n");
-        return false;
+            return false;
+        }
     }
     return true;
 }
@@ -756,7 +838,8 @@ bool dkCoupletList::isContentOK()
         return false;
 }
 
-bool dkCoupletList::isFromOK()
+// return warning if a couplet is referenced more than one time
+bool dkCoupletList::isFromSingle()
 {
     findFrom();
     error.clear();
@@ -767,12 +850,28 @@ bool dkCoupletList::isFromOK()
         if(fromList.size() > 1)
             error += QString("Warning: more than one couplet refers to couplet %1.\n")
                     .arg(thisList[i].getNumber());
+    }
+
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
+}
+
+bool dkCoupletList::isKeyCyclic()
+{
+    findFrom();
+    error.clear();
+
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        QList<int> fromList = thisList[i].getFrom();
         for(int j = 0; j < fromList.size(); ++j)
         {
             dkCouplet theCouplet = getCoupletWithNumber(fromList[j]);
             QList<int> chainList = theCouplet.getPointerChain();
             if(chainList.contains(thisList[i].getNumber()))
-                error += QString("Numbering is cyclic between couplets: %1 and %2;")
+                error += QString("Warning: numbering is cyclic between couplets: %1 and %2;")
                         .arg(thisList[i].getNumber()).arg(theCouplet.getNumber());
         }
     }
@@ -821,9 +920,9 @@ bool dkCoupletList::isPointerOK()
             else if(theIndex == i)
                 error += QString("Couplet %1: first lead refers to the same couplet.\n")
                         .arg(thisList[i].getNumber());
-            else if(theIndex < i)
-                error += QString("Couplet %1: first lead refers to an earlier couplet.\n")
-                        .arg(thisList[i].getNumber());
+//            else if(theIndex < i)
+//                error += QString("Couplet %1: first lead refers to an earlier couplet.\n")
+//                        .arg(thisList[i].getNumber());
 
         }
         int thePointer2 = thisList[i].getPointer2();
@@ -831,16 +930,49 @@ bool dkCoupletList::isPointerOK()
         {
             int theIndex = getIndexWithNumber(thePointer2);
             if(theIndex == -1)
-                error += QString("Couplet %1: secon lead refers to non existant couplet number.\n")
+                error += QString("Couplet %1: second lead refers to non existant couplet number.\n")
                         .arg(thisList[i].getNumber());
             else if(theIndex == i)
                 error += QString("Couplet %1: second lead refers to the same couplet.\n")
                         .arg(thisList[i].getNumber());
-            else if(theIndex < i)
-                error += QString("Couplet %1: second lead refers to an earlier couplet.\n")
+//            else if(theIndex < i)
+//                error += QString("Couplet %1: second lead refers to an earlier couplet.\n")
+//                        .arg(thisList[i].getNumber());
+//            if(thePointer1 == thePointer2)
+//                error += QString("Couplet %1: both leads have the same reference.\n")
+//                        .arg(thisList[i].getNumber());
+        }
+    }
+
+    if(error.isEmpty())
+        return true;
+    else
+        return false;
+}
+
+bool dkCoupletList::isPointerNoWarning()
+{
+    error.clear();
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        int thePointer1 = thisList[i].getPointer1();
+        if(thePointer1 != -1)
+        {
+            int theIndex = getIndexWithNumber(thePointer1);
+            if(theIndex < i)
+                error += QString("Warning: first lead in couplet %1 refers to an earlier couplet.\n")
+                        .arg(thisList[i].getNumber());
+
+        }
+        int thePointer2 = thisList[i].getPointer2();
+        if(thePointer2 != -1)
+        {
+            int theIndex = getIndexWithNumber(thePointer2);
+            if(theIndex < i)
+                error += QString("Warning: second lead in couplet %1 refers to an earlier couplet.\n")
                         .arg(thisList[i].getNumber());
             if(thePointer1 == thePointer2)
-                error += QString("Couplet %1: both leads have the same reference.\n")
+                error += QString("Warning: both leads in couplet %1 have the same pointer.\n")
                         .arg(thisList[i].getNumber());
         }
     }

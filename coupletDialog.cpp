@@ -72,8 +72,8 @@ void coupletDialog::setEndpoints2()
 
 void coupletDialog::createWidget()
 {
-    okButton = new QPushButton("OK");
-    cancelButton = new QPushButton("Cancel");
+    okButton = new QPushButton(tr("OK"));
+    cancelButton = new QPushButton(tr("Cancel"));
 
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->addWidget(okButton);
