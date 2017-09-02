@@ -40,10 +40,6 @@ public:
     coupletDialog(QWidget *parent = 0);
     coupletDialog(dkCouplet * inCouplet, int to, QWidget *parent = 0);
 
-    // user is not able to change couplet number
-//    QLabel *numberLabel;
-//    QSpinBox *numberSpin;
-
     QTextEdit *lead1Text;
     QTextEdit *lead2Text;
 

@@ -31,7 +31,7 @@ HEADERS  += mainwindow.h \
 
 OTHER_FILES += \
     DKey.rc \
-    DKey_icon.ico
+    DKey.ico
 
 RC_FILE = DKey.rc
 

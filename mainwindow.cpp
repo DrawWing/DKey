@@ -63,7 +63,7 @@ void MainWindow::createTable()
 
     QHeaderView *header = table->horizontalHeader();
     QStringList headerStringList;
-    headerStringList<<"No."<<"First lead"<<"Second lead";
+    headerStringList<<tr("No.")<<tr("First lead")<<tr("Second lead");
     table->setHorizontalHeaderLabels(headerStringList);
 
     header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
@@ -94,8 +94,6 @@ void MainWindow::viewBrowser()
 
     coupletList.findPointerChains();
     coupletList.findEndpoints();
-//    dkView view(&coupletList, this);
-//    view.exec();
     dkView * view = new dkView(&coupletList, this);
     view->show();
 }
@@ -106,10 +104,10 @@ void MainWindow::viewHtml()
         return;
 
 
-//    coupletList.findPointerChains();
-//    coupletList.findEndpoints();
-//    dkView view(&coupletList, this);
-//    view.exec();
+    //    coupletList.findPointerChains();
+    //    coupletList.findEndpoints();
+    //    dkView view(&coupletList, this);
+    //    view.exec();
 
     //    if(htmlWindow->isVisible())
     //    {
@@ -132,7 +130,7 @@ void MainWindow::import()
         return;
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Import file"), filePath, "Text files (*.txt)");
+                                                    tr("Import file"), filePath, tr("Text files (*.txt)"));
     if( fileName.isEmpty() )
         return;
 
@@ -163,20 +161,20 @@ void MainWindow::import()
     coupletList.importTxt(outTxtList);
 
 
-//    error = coupletList.getError();
-//    QFile outFile("C:/tmp/errors.txt");
-//    if (!outFile.open(QFile::WriteOnly | QFile::Text))
-//    {
-//        QMessageBox::warning
-//                (this, appName,
-//                 tr("Cannot write file %1:\n%2.")
-//                 .arg(fileName)
-//                 .arg(outFile.errorString())
-//                 );
-//        return;
-//    }
-//    QTextStream outStream(&outFile);
-//    outStream << error;
+    //    error = coupletList.getError();
+    //    QFile outFile("C:/tmp/errors.txt");
+    //    if (!outFile.open(QFile::WriteOnly | QFile::Text))
+    //    {
+    //        QMessageBox::warning
+    //                (this, appName,
+    //                 tr("Cannot write file %1:\n%2.")
+    //                 .arg(fileName)
+    //                 .arg(outFile.errorString())
+    //                 );
+    //        return;
+    //    }
+    //    QTextStream outStream(&outFile);
+    //    outStream << error;
 
     if(coupletList.size() == 0)
         return;
@@ -195,14 +193,11 @@ void MainWindow::import()
 
 void MainWindow::appendFile()
 {
-    if (!okToContinue())
-        return;
-
     if(coupletList.size() == 0)
         return;
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Append file"), filePath, "dKey files (*.dk.txt)");
+                                                    tr("Append file"), filePath, tr("dKey files (*.dk.txt)"));
     if( fileName.isEmpty() )
         return;
 
@@ -216,10 +211,12 @@ void MainWindow::appendFile()
         return;
     }
 
+    int startNumber = coupletList.getMaxNumber();
+    appendCouplets.reNumber(startNumber+1);
     for(int i = 0; i < appendCouplets.size(); ++i)
     {
         int lastRow = coupletList.size();
-        coupletList.copyAt(lastRow, appendCouplets.at(i));
+        coupletList.insertAt(lastRow, appendCouplets.at(i));
         insertTabRow(lastRow);
     }
     setWindowModified(true);
@@ -283,10 +280,6 @@ bool MainWindow::isKeyOK()
     ok = coupletList.isContentOK();
     if(!ok)
         error+= coupletList.getError();
-
-//    ok = coupletList.isEndpointOK();
-//    if(!ok)
-//        error+= coupletList.getError();
 
     ok = coupletList.isPointerOK();
     if(!ok)
@@ -360,7 +353,7 @@ void MainWindow::openFile()
         return;
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open file"), filePath, "dKey files (*.dk.txt)");
+                                                    tr("Open file"), filePath, tr("dKey files (*.dk.txt)"));
     if( fileName.isEmpty() )
         return;
 
@@ -370,14 +363,14 @@ void MainWindow::openFile()
 // used by openFile and open recent files
 bool MainWindow::loadFile(const QString & fileName)
 {
-//    QElapsedTimer timer;
-//    timer.start();
+    //    QElapsedTimer timer;
+    //    timer.start();
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     clear();
     filePath = fileName;
 
-//    qDebug() << timer.elapsed() << "clear";
+    //    qDebug() << timer.elapsed() << "clear";
 
     coupletList.fromDkTxt(fileName);
     QString error = coupletList.getError();
@@ -392,7 +385,7 @@ bool MainWindow::loadFile(const QString & fileName)
     QString path = fileInfo.absolutePath();
     coupletList.setFilePath(path);
     coupletList.findFigs();
-//    coupletList.findFigs(path);
+    //    coupletList.findFigs(path);
 
     fillTable();
     //    qDebug() << timer.elapsed() << "fromDkTxt";
@@ -446,10 +439,10 @@ bool MainWindow::saveFile(const QString &fileName)
     }
 
     QTextStream out(&file);
-//    QApplication::setOverrideCursor(Qt::WaitCursor);
+    //    QApplication::setOverrideCursor(Qt::WaitCursor);
     QString outTxt = coupletList.getDkTxt();
     out << outTxt;
-//    QApplication::restoreOverrideCursor();
+    //    QApplication::restoreOverrideCursor();
 
     if(out.status() == QTextStream::WriteFailed)
         return false;
@@ -461,7 +454,7 @@ bool MainWindow::saveFile(const QString &fileName)
     QFileInfo fileInfo(filePath);
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
 
-//    statusBar()->showMessage(tr("File saved"), 2000);
+    //    statusBar()->showMessage(tr("File saved"), 2000);
     return true;
 }
 
@@ -529,7 +522,7 @@ void MainWindow::insertRow()
     int theRow = selectedRange.bottomRow();
     coupletList.insertDummyAt(theRow + 1);
     insertTabRow(theRow + 1);
-//    updateTable();
+    //    updateTable();
     setWindowModified(true);
 }
 
@@ -562,7 +555,7 @@ void MainWindow::removeRow()
         coupletList.removeAt(theRow);
     }
 
-//    updateTable();
+    //    updateTable();
     setWindowModified(true);
 }
 
@@ -610,8 +603,8 @@ void MainWindow::cutRows()
 
         for(int j = 0; j < selectedCount; ++j)
         {
-            coupletClipboard.push_back(coupletList.at(topRow));
-            toRemove.push_back(topRow);
+            coupletClipboard.push_back(coupletList.at(topRow+j));
+            toRemove.push_back(topRow+j);
         }
     }
     // remove from last to first
@@ -642,18 +635,20 @@ void MainWindow::pasteRows()
     QTableWidgetSelectionRange selectedRange = selectedList.at(0);
     int bottomRow = selectedRange.bottomRow();
 
+    if(isCopy)
+    {
+        int startNumber = coupletList.getMaxNumber();
+        coupletClipboard.reNumber(startNumber+1);
+    }
+
     for(int i = 0; i < coupletClipboard.size(); ++i)
     {
-        if(isCopy)
-            coupletList.copyAt(bottomRow+1+i, coupletClipboard.at(i));
-        else
-            coupletList.insertAt(bottomRow+1+i, coupletClipboard.at(i));
+        coupletList.insertAt(bottomRow+1+i, coupletClipboard.at(i));
         insertTabRow(bottomRow+1+i);
     }
     if(!isCopy)
         coupletClipboard.clear(); // couplets can be pasted only in one place
 
-//    updateTable();
     setWindowModified(true);
 }
 
@@ -683,7 +678,6 @@ void MainWindow::editRow()
 void MainWindow::editClickedRow(int row, int col)
 {
     dkCouplet theCouplet = coupletList.at(row);
-//    coupletDialog dialog(& theCouplet, row+2, coupletList.getMaxNumber(), this);
     coupletDialog dialog(& theCouplet, coupletList.getMaxNumber(), this);
     if (dialog.exec()) {
         coupletList.setCouplet(theCouplet, row);
@@ -735,7 +729,7 @@ void MainWindow::showSteps()
     if(selectedList.size() > 1 || selectedList.size() == 0)
         return;
     QTableWidgetSelectionRange selectedRange = selectedList.at(0);
-//    int bottomRow = selectedRange.bottomRow();
+    //    int bottomRow = selectedRange.bottomRow();
     QString steps = ""; // idChain(bottomRow);
     QMessageBox::warning(this, appName, steps.toLatin1(), QMessageBox::Ok);
 }
@@ -833,7 +827,7 @@ void MainWindow::createMenus()
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
     fileMenu->addAction(exportHtmlAct);
-//    fileMenu->addAction(showStepsAct);
+    //    fileMenu->addAction(showStepsAct);
 
     separatorAction = fileMenu->addSeparator();
     for (int i = 0; i < MaxRecentFiles; ++i)
@@ -892,12 +886,12 @@ void MainWindow::createToolBars()
 void MainWindow::about()
 {
     QString aboutTxt(tr(
-                      "<p><b>%1 version %2</b></p>"
-                      "<p>Author: Adam Tofilski</p>"
-                      "<p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>"
-                      "<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. </p>"
-                      "<p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.</p>"
-                      ));
+                         "<p><b>%1 version %2</b></p>"
+                         "<p>Author: Adam Tofilski</p>"
+                         "<p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>"
+                         "<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. </p>"
+                         "<p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.</p>"
+                         ));
     QMessageBox::about(this, "About",aboutTxt.arg(appName).arg(appVersion));
 }
 
@@ -976,7 +970,7 @@ void MainWindow::closeEvent(QCloseEvent *event) //unreferenced event needst to b
 bool MainWindow::okToContinue()
 {
     if (isWindowModified()) {
-        int r = QMessageBox::warning(this, "Save changes?",
+        int r = QMessageBox::warning(this, tr("Save changes?"),
                                      tr("The key has been modified.\n""Do you want to save changes?"),
                                      QMessageBox::Yes | QMessageBox::Default,
                                      QMessageBox::No,
@@ -995,7 +989,7 @@ bool MainWindow::okToContinue()
 
 void MainWindow::clear()
 {
-//    table->clear(); //does not work
+    //    table->clear(); //does not work
     table->deleteLater();
     createTable();
 

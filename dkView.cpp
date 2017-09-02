@@ -72,7 +72,6 @@ dkView::dkView(dkCoupletList * inList, QWidget *parent) :
     QWidget *remainingContainer = new QWidget;
     remainingContainer->setLayout(remainingLayout);
     tabSpliter->addWidget(remainingContainer);
-//    tabSpliter->addWidget(remainingTab);
 
     excludedTab = new QTableWidget;
     excludedTab->setWordWrap(true);
@@ -90,7 +89,6 @@ dkView::dkView(dkCoupletList * inList, QWidget *parent) :
     QWidget *excludedContainer = new QWidget;
     excludedContainer->setLayout(excludedLayout);
     tabSpliter->addWidget(excludedContainer);
-//    tabSpliter->addWidget(excludedTab);
 
     QVBoxLayout *tabLayout = new QVBoxLayout;
     tabLayout->addWidget(tabSpliter);
@@ -109,7 +107,7 @@ dkView::dkView(dkCoupletList * inList, QWidget *parent) :
     mainContainer->setLayout(mainLayout);
     setCentralWidget(mainContainer);
 
-//    setLayout(mainLayout);
+    //    setLayout(mainLayout);
     setWindowTitle("Key browser");
 
     connect(lead1Browser, SIGNAL( anchorClicked( QUrl ) ),
@@ -196,17 +194,17 @@ void dkView::clickedCouplet(QUrl inUrl)
     QString path =  inUrl.path();
     if(path == "lead1")
     {
-//        if(currCouplet.getPointer1() > 0)
-            goToNumber(currCouplet.getPointer1());
-//        else
-//            goToEndpoint(true);
+        //        if(currCouplet.getPointer1() > 0)
+        goToNumber(currCouplet.getPointer1());
+        //        else
+        //            goToEndpoint(true);
     }
     else if(path == "lead2")
     {
-//        if(currCouplet.getPointer2() > 0)
-            goToNumber(currCouplet.getPointer2());
-//        else
-//            goToEndpoint(false);
+        //        if(currCouplet.getPointer2() > 0)
+        goToNumber(currCouplet.getPointer2());
+        //        else
+        //            goToEndpoint(false);
     }
 }
 

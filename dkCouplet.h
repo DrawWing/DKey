@@ -71,7 +71,6 @@ public:
     QString getHtml() const;
     QString getHtmlTab() const;
     QString getHtmlImg(QString path = QString()) const;
-//    QString findErrors() const;
     void findFigs(QString & path);
     void swapLeads();
     bool isContentOK(void);

@@ -30,31 +30,27 @@ dkCouplet::dkCouplet(const int inNumber)
 {
     clear();
     number = inNumber;
-    lead1 = "Lead 1.";
-    endpoint1 = "Endpoint 1.";
-    lead2 = "Lead 2.";
-    endpoint2 = "Endpoint 2.";
+    //    lead1 = "Lead 1.";
+    //    endpoint1 = "Endpoint 1.";
+    //    lead2 = "Lead 2.";
+    //    endpoint2 = "Endpoint 2.";
 
-    //translation
-//    lead1 = tr("Lead 1.");
-//    endpoint1 = tr("Endpoint 1.");
-//    lead2 = tr("Lead 2.");
-//    endpoint2 = tr("Endpoint 2.");
+    lead1 = QObject::tr("Lead 1.");
+    endpoint1 = QObject::tr("Endpoint 1.");
+    lead2 = QObject::tr("Lead 2.");
+    endpoint2 = QObject::tr("Endpoint 2.");
 }
 
 dkCouplet::dkCouplet(const QStringList &inTxt)
 {
-
     if(inTxt.size() == 0)
         return;
+
     //first line
     dkString line = inTxt[0];
     dkString start = line.findFrontPart();
     dkString startDigits = start.frontDigits();
 
-//    // split into words separated by spaces and non-words
-//    QStringList stringList = line.split(QRegExp("\\W+"),QString::SkipEmptyParts);
-//    QString start0 = stringList.at(0);
     bool ok;
     int startNumber = startDigits.toInt(&ok);
     if(ok)
@@ -76,8 +72,6 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
     dkString txt = line;
     txt.chop(end.size());
     txt.chopFront(start.size());
-//    if(txt.size() > start.size())
-//        txt.remove(0,start.size());
     lead1 = txt.trimmed();
 
     //lead2
@@ -117,8 +111,6 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
     txt = line;
     txt.chop(end.size());
     txt.chopFront(start.size());
-//    if(txt.size() > start.size())
-//        txt.remove(0,start.size());
     lead2 = txt.trimmed();
 }
 
@@ -153,7 +145,7 @@ void dkCouplet::fromDkTxt(const QStringList &inList)
 
     if(inList.size() != 2)
     {
-        error += "Number of lines other than 2. \n";
+        error += QObject::tr("Number of lines other than 2. \n");
         return;
     }
 
@@ -169,7 +161,7 @@ void dkCouplet::readDkTxtLine(const QString &inTxt, bool first)
     QStringList inList = inTxt.split("\t");
     if(inList.size() != 3)
     {
-        error += "Number of tab characterst other than 2. \n";
+        error += QObject::tr("Number of tab characterst other than 2. \n");
         return;
     }
 
@@ -182,7 +174,7 @@ void dkCouplet::readDkTxtLine(const QString &inTxt, bool first)
             number = startNumber;
         else
         {
-            error += "Couplet does not start with number. \n";
+            error += QObject::tr("Couplet does not start with number. \n");
             return;
         }
     }
@@ -190,7 +182,7 @@ void dkCouplet::readDkTxtLine(const QString &inTxt, bool first)
     {
         if(start != "-")
         {
-            error += "Second line does not start with -. \n";
+            error += QObject::tr("Second line does not start with -. \n");
             return;
         }
     }
@@ -230,9 +222,6 @@ void dkCouplet::import1number(const QStringList &inTxt)
     dkString start = line.findFrontPart();
     dkString startDigits = start.frontDigits();
 
-//    // split into words separated by spaces and non-words
-//    QStringList stringList = line.split(QRegExp("\\W+"),QString::SkipEmptyParts);
-//    QString start0 = stringList.at(0);
     bool ok;
     int startNumber = startDigits.toInt(&ok);
     if(ok)
@@ -254,8 +243,6 @@ void dkCouplet::import1number(const QStringList &inTxt)
     dkString txt = line;
     txt.chop(end.size());
     txt.chopFront(start.size());
-//    if(txt.size() > start.size())
-//        txt.remove(0,start.size());
     lead1 = txt.trimmed();
 
     //lead2
@@ -293,8 +280,6 @@ void dkCouplet::import1number(const QStringList &inTxt)
     txt = line;
     txt.chop(end.size());
     txt.chopFront(start.size());
-//    if(txt.size() > start.size())
-//        txt.remove(0,start.size());
     lead2 = txt.trimmed();
 }
 
@@ -759,7 +744,7 @@ QString dkCouplet::removeAB(QString & inTxt, bool first) const
     outTxt.removeFrontNonLetter();
 
     if(outTxt.size() < 2)
-       return inTxt;
+        return inTxt;
     QChar c1 = outTxt.at(1);
     if(c1.isLetter())
         return inTxt;
@@ -793,22 +778,6 @@ QString dkCouplet::removeAB(QString & inTxt, bool first) const
         return inTxt;
 }
 
-//QString dkCouplet::findErrors() const
-//{
-//    QString error;
-//    if(number < 1)
-//        error += "No couplet number. \n";
-//    if(lead1.isEmpty())
-//        error += "No lead 1. \n";
-//    if(lead2.isEmpty())
-//        error += "No lead 2. \n";
-//    if(pointer1 == -1 && endpoint1.isEmpty())
-//        error += "No end reference in lead 1. \n";
-//    if(pointer2 == -1 && endpoint2.isEmpty())
-//        error += "No end reference in lead 2. \n";
-//    return error;
-//}
-
 void dkCouplet::findFigs(QString & path)
 {
     figList1 = findFigs(lead1, path);
@@ -836,7 +805,7 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path) const
         {
             QString subString = subStrList.at(j);
             subString = subString.simplified();
-            subString.prepend("fig_");
+            subString.prepend("fig-");
             subString.append(".png");
             QFileInfo figFileInfo(keyDir, subString);
             if(figFileInfo.exists())
@@ -849,26 +818,6 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path) const
 
     return outList;
 }
-
-//void dkCouplet::stepDownAdr(int thd)
-//{
-//    if(number > thd)
-//        --number;
-//    if(pointer1 > thd)
-//        --pointer1;
-//    if(pointer2 > thd)
-//        --pointer2;
-//}
-
-//void dkCouplet::stepUpAdr(int thd)
-//{
-//    if(number > thd)
-//        ++number;
-//    if(pointer1 > thd)
-//        ++pointer1;
-//    if(pointer2 > thd)
-//        ++pointer2;
-//}
 
 void dkCouplet::swapLeads()
 {
@@ -892,19 +841,19 @@ bool dkCouplet::isContentOK(void)
 {
     error.clear();
     if(lead1.isEmpty() || lead2.isEmpty())
-        error += QString("Couplet %1: Empty lead.\n")
+        error += QString(QObject::tr("Couplet %1: Empty lead.\n"))
                 .arg(number);
     if(pointer1 == -1 && endpoint1.isEmpty())
-        error += QString("Couplet %1: Empty first reference.\n")
+        error += QString(QObject::tr("Couplet %1: Empty first reference.\n"))
                 .arg(number);
     if(pointer2 == -1 && endpoint2.isEmpty())
-        error += QString("Couplet %1: Empty second reference.\n")
+        error += QString(QObject::tr("Couplet %1: Empty second reference.\n"))
                 .arg(number);
     if(pointer1 == pointer2 && pointer1 != -1 && pointer2 != -1)
-        error += QString("Couplet %1: The same pointer in both leads.\n")
+        error += QString(QObject::tr("Couplet %1: The same pointer in both leads.\n"))
                 .arg(number);
     if(endpoint1 == endpoint2 && !endpoint1.isEmpty() && !endpoint2.isEmpty())
-        error += QString("Couplet %1: The same endpoint in both leads.\n")
+        error += QString(QObject::tr("Couplet %1: The same endpoint in both leads.\n"))
                 .arg(number);
 
     if(error.isEmpty())

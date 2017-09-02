@@ -43,10 +43,6 @@ bool dkString::startsWithDigit() const
 
 dkString dkString::findEndPart() const
 {
-//    QStringList stringList = split("\t",QString::SkipEmptyParts);
-//    dkString end;
-//    end = stringList.at(stringList.size()-1);
-//    return end;
     QStringList stringList = split("\t",QString::SkipEmptyParts);
     if(stringList.size() > 1)
     {
@@ -101,17 +97,6 @@ dkString dkString::endDigits() const
     }
     return outTxt;
 }
-
-//int dkString::frontNumber() const
-//{
-//    dkString digits = frontDigits();
-//    bool ok;
-//    int outVal = digits.toInt(&ok);
-//    if(ok)
-//        return outVal;
-//    else
-//        return -1;
-//}
 
 void dkString::removeFrontNonLetter()
 {
@@ -169,11 +154,11 @@ QString dkString::getRtf() const
 }
 
 dkString & dkString::operator=( const dkString & str){
-  this->QString::operator=(str);
-  return *this;
+    this->QString::operator=(str);
+    return *this;
 }
 
 dkString & dkString::operator=( const QString & str){
-  this->QString::operator=(str);
-  return *this;
+    this->QString::operator=(str);
+    return *this;
 }

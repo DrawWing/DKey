@@ -60,7 +60,6 @@ public:
     void findRemaining(int inNumber, QList<bool> & outList) const;
     QList<bool> getRemaining(int inNumber) const;
     void push_back(dkCouplet inCouplet);
-    void copyAt(int i, dkCouplet inCouplet);
     void insertAt(int i, dkCouplet inCouplet);
     void insertDummyAt(int i);
     void removeAt(int i);
@@ -76,11 +75,10 @@ public:
     bool isPointerNoWarning();
     bool isPointerChainOK();
     bool isNumberUnique();
-    bool reNumber();
+    bool reNumber(int startNumber = 1);
     void updatePointers(int from, int to);
 
 private:
-//    void appendCouplet(const QStringList & inTxt);
     QList<int> findStartNumbers(const QString & fileName) const;
     QList<int> findStartNumbers(QStringList & inTxtList) const;
     bool isKeyIndented(QStringList &inTxtList);

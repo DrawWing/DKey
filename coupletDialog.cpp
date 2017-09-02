@@ -25,20 +25,17 @@ coupletDialog::coupletDialog(QWidget *parent)
     createWidget();
 }
 
-//coupletDialog::coupletDialog(dkCouplet * inCouplet, int from, int to, QWidget *parent)
 coupletDialog::coupletDialog(dkCouplet * inCouplet, int to, QWidget *parent)
     : QDialog(parent)
 {
     createWidget();
 
-//    numberSpin->setMinimum(1);
-//    numberSpin->setMaximum(9999);
     pointer1->setMinimum(1);
     pointer1->setMaximum(to);
     pointer2->setMinimum(1);
     pointer2->setMaximum(to);
 
-    thisCouplet  = inCouplet;
+    thisCouplet = inCouplet;
     fillData();
 }
 
@@ -80,15 +77,6 @@ void coupletDialog::createWidget()
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addStretch(1);
 
-//    // number
-//    numberLabel = new QLabel("Couplet number");
-//    numberSpin = new QSpinBox;
-//    QHBoxLayout *numberLayout = new QHBoxLayout;
-//    numberLayout->addWidget(numberLabel);
-//    numberLayout->addWidget(numberSpin);
-//    numberLayout->addStretch(1);
-
-
     // lead1
     radioRef1 = new QRadioButton(tr("&Reference"));
     radioEnd1 = new QRadioButton(tr("&Endpoint"));
@@ -106,7 +94,7 @@ void coupletDialog::createWidget()
     grid1->addLayout(pointer1Layout, 0, 1);
     grid1->addWidget(endpoint1, 1, 1);
 
-    QGroupBox *lead1Box = new QGroupBox(tr("Lead 1"));
+    QGroupBox *lead1Box = new QGroupBox(tr("First lead"));
     lead1Text = new QTextEdit;
 
     QVBoxLayout *lead1Layout = new QVBoxLayout;
@@ -132,7 +120,7 @@ void coupletDialog::createWidget()
     grid2->addLayout(pointer2Layout, 0, 1);
     grid2->addWidget(endpoint2, 1, 1);
 
-    QGroupBox *lead2Box = new QGroupBox(tr("Lead 2"));
+    QGroupBox *lead2Box = new QGroupBox(tr("Second lead"));
     lead2Text = new QTextEdit;
 
     QVBoxLayout *lead2Layout = new QVBoxLayout;
@@ -143,7 +131,6 @@ void coupletDialog::createWidget()
 
     // main layout
     QVBoxLayout *mainLayout = new QVBoxLayout;
-//    mainLayout->addLayout(numberLayout);
     mainLayout->addWidget(lead1Box);
     mainLayout->addWidget(lead2Box);
     mainLayout->addLayout(buttonLayout);
@@ -167,7 +154,6 @@ void coupletDialog::createWidget()
 
 void coupletDialog::fillData()
 {
-//    numberSpin->setValue(thisCouplet->getNumber());
     lead1Text->setText(thisCouplet->getLead1());
     lead2Text->setText(thisCouplet->getLead2());
 
@@ -202,8 +188,7 @@ void coupletDialog::fillData()
 
 void coupletDialog::accept()
 {
-// Update the couplet
-//    thisCouplet->setNumber(numberSpin->value());
+    // Update the couplet
     thisCouplet->setLead1(lead1Text->toPlainText());
     thisCouplet->setLead2(lead2Text->toPlainText());
 
@@ -225,6 +210,6 @@ void coupletDialog::accept()
         thisCouplet->setEndpoint2(endpoint2->text());
     }
 
-//call base class implementation
+    //call base class implementation
     QDialog::accept();
 }
