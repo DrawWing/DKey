@@ -39,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     appName = QGuiApplication::applicationDisplayName();
-    appVersion = QGuiApplication::applicationVersion();;
+    appVersion = QGuiApplication::applicationVersion();
 
     filePath = "";
     createActions();
@@ -678,6 +678,17 @@ void MainWindow::editRow()
 void MainWindow::editClickedRow(int row, int col)
 {
     dkCouplet theCouplet = coupletList.at(row);
+    int max = coupletList.getMaxNumber();
+    if(theCouplet.getPointer1() > max || theCouplet.getPointer2() > max)
+    {
+        if(theCouplet.getPointer1() > max )
+            theCouplet.setPointer1(1);
+        if(theCouplet.getPointer2() > max )
+            theCouplet.setPointer2(1);
+        QMessageBox::warning
+                (this, tr("Edit couplet"), tr("Incorect pointer was changed to 1. Please correct it."));
+    }
+
     coupletDialog dialog(& theCouplet, coupletList.getMaxNumber(), this);
     if (dialog.exec()) {
         coupletList.setCouplet(theCouplet, row);

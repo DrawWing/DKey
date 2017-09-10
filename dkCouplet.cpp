@@ -505,9 +505,9 @@ QString dkCouplet::getLead1html(QString path) const
 {
     QString outTxt;
     if(endpoint1.isEmpty())
-        outTxt = QString ("<a href=\"lead1\">%1</a>").arg(lead1);
+        outTxt = QString ("<a href=\"lead1\">%1. %2</a>").arg(number).arg(lead1);
     else
-        outTxt = QString ("%1<br><b>%2</b>").arg(lead1).arg(endpoint1);
+        outTxt = QString ("%1. %2<br><b>%3</b>").arg(number).arg(lead1).arg(endpoint1);
 
     if(figList1.size() > 0)
         outTxt += QString("<br>");
@@ -521,9 +521,9 @@ QString dkCouplet::getLead2html(QString path) const
 {
     QString outTxt;
     if(endpoint2.isEmpty())
-        outTxt = QString ("<a href=\"lead2\">%1</a>").arg(lead2);
+        outTxt = QString ("<a href=\"lead2\">%1. %2</a>").arg(number).arg(lead2);
     else
-        outTxt = QString ("%1<br><b>%2</b>").arg(lead2).arg(endpoint2);
+        outTxt = QString ("%1. %2<br><b>%3</b>").arg(number).arg(lead2).arg(endpoint2);
 
     if(figList2.size() > 0)
         outTxt += QString("<br>");

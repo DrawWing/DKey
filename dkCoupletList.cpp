@@ -686,9 +686,17 @@ void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList,
                 break; // cyclic numbering
             }
             if(currNumber == prevPointer1)
-                path.push_back(prevCouplet.getLead1());
+            {
+                QString longLead = QString ("%1. %2").arg(prevCouplet.getNumber()).arg(prevCouplet.getLead1());
+//                path.push_back(prevCouplet.getLead1());
+                path.push_back(longLead);
+            }
             else
-                path.push_back(prevCouplet.getLead2());
+            {
+                QString longLead = QString ("%1. %2").arg(prevCouplet.getNumber()).arg(prevCouplet.getLead2());
+                path.push_back(longLead);
+//                path.push_back(prevCouplet.getLead2());
+            }
             chainList.push_back(prevNumber);
             pointerChain(prevNumber, chainList, path);
             break;

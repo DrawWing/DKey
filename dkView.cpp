@@ -134,7 +134,7 @@ void dkView::goToNumber(int inNumber)
     lead2Browser->setHtml(currCouplet.getLead2html(filePath));
 
     // path
-    QList<int>  pointerChain = currCouplet.getPointerChain();
+//    QList<int>  pointerChain = currCouplet.getPointerChain();
     QList<QString>  path = currCouplet.getLeadChain();
     pathTab->setRowCount(path.size());
     for(int i = 0; i < path.size(); ++i)

@@ -78,7 +78,7 @@ void coupletDialog::createWidget()
     buttonLayout->addStretch(1);
 
     // lead1
-    radioRef1 = new QRadioButton(tr("&Reference"));
+    radioRef1 = new QRadioButton(tr("&Pointer"));
     radioEnd1 = new QRadioButton(tr("&Endpoint"));
 
     pointer1 = new QSpinBox;
@@ -104,7 +104,7 @@ void coupletDialog::createWidget()
     lead1Box->setLayout(lead1Layout);
 
     // lead2
-    radioRef2 = new QRadioButton(tr("&Reference"));
+    radioRef2 = new QRadioButton(tr("&Pointer"));
     radioEnd2 = new QRadioButton(tr("&Endpoint"));
 
     pointer2 = new QSpinBox;
