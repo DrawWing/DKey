@@ -485,9 +485,9 @@ QString dkCouplet::getLead1txt() const
 {
     QString outTxt;
     if(endpoint1.isEmpty())
-        outTxt = QString ("%1\t%2").arg(lead1).arg(pointer1);
+        outTxt = QString ("%1 - %2").arg(lead1).arg(pointer1);
     else
-        outTxt = QString ("%1\t%2").arg(lead1).arg(endpoint1);
+        outTxt = QString ("%1 - %2").arg(lead1).arg(endpoint1);
     return outTxt;
 }
 
@@ -495,9 +495,9 @@ QString dkCouplet::getLead2txt() const
 {
     QString outTxt;
     if(endpoint2.isEmpty())
-        outTxt = QString ("%1\t%2").arg(lead2).arg(pointer2);
+        outTxt = QString ("%1 - %2").arg(lead2).arg(pointer2);
     else
-        outTxt = QString ("%1\t%2").arg(lead2).arg(endpoint2);
+        outTxt = QString ("%1 - %2").arg(lead2).arg(endpoint2);
     return outTxt;
 }
 

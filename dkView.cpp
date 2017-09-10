@@ -116,6 +116,10 @@ dkView::dkView(dkCoupletList * inList, QWidget *parent) :
             this, SLOT( clickedCouplet(QUrl ) ));
     connect(pathTab, SIGNAL( cellClicked(int, int) ),
             this, SLOT( clickedPath(int, int) ));
+    connect(remainingTab, SIGNAL( cellClicked(int, int) ),
+            this, SLOT( clickedRemaining(int, int) ));
+    connect(excludedTab, SIGNAL( cellClicked(int, int) ),
+            this, SLOT( clickedExcluded(int, int) ));
 
     coupletList = inList;
     endpointList = coupletList->getEndpointList();
@@ -215,4 +219,42 @@ void dkView::clickedPath(int row, int col)
     --col; // to prevent error messages
 }
 
+void dkView::clickedRemaining(int row, int col)
+{
+    QString theItemString = remainingTab->item(row, col)->text();
+    goToItemTxt(theItemString);
+//    QStringList theList = theItemString.split("-");
+//    QString theString = theList.last().simplified();
+//    int theNumber = theString.toInt();
+//    if(theNumber < 1 || theNumber > coupletList->getMaxNumber())
+//        return;
+//    int theIndex = coupletList->getIndexWithNumber(theNumber);
+//    goToNumber(theIndex+1);
+//    --col; // to prevent error messages
+}
 
+void dkView::clickedExcluded(int row, int col)
+{
+    QString theItemString = excludedTab->item(row, col)->text();
+    goToItemTxt(theItemString);
+
+//    QStringList theList = theItemString.split("-");
+//    QString theString = theList.last().simplified();
+//    int theNumber = theString.toInt();
+//    if(theNumber < 1 || theNumber > coupletList->getMaxNumber())
+//        return;
+//    int theIndex = coupletList->getIndexWithNumber(theNumber);
+//    goToNumber(theIndex+1);
+//    --col; // to prevent error messages
+}
+
+void dkView::goToItemTxt(const QString &theItemString)
+{
+    QStringList theList = theItemString.split("-");
+    QString theString = theList.last().simplified();
+    int theNumber = theString.toInt();
+    if(theNumber < 1 || theNumber > coupletList->getMaxNumber())
+        return;
+    int theIndex = coupletList->getIndexWithNumber(theNumber);
+    goToNumber(theIndex+1);
+}

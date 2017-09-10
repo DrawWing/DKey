@@ -41,7 +41,11 @@ private slots:
     void goToEndpoint(bool first);
     void clickedCouplet(QUrl inUrl);
     void clickedPath(int row, int col);
+    void clickedRemaining(int row, int col);
+    void clickedExcluded(int row, int col);
 private:
+    void goToItemTxt(const QString & theItemString);
+
     int number;
     dkCoupletList * coupletList;
     dkCouplet currCouplet;
