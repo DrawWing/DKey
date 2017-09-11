@@ -143,17 +143,19 @@ void dkCoupletList::importTxt(QStringList & inTxtList)
     findIntro(inTxtList);
 
     QList<int> numbers = findStartNumbers(inTxtList);
-    if(numbers.size() < 2)
-        return;
-    if(numbers[0] == numbers[1])
-        parse2numberKey(inTxtList);
-    else
+    if(numbers.size() == 0)
     {
-        if(isKeyIndented(inTxtList))
-            parseIndentedKey(inTxtList);
-        else
-            parse1numberKey(inTxtList);
+        error = "No couplets were found.";
+        return;
     }
+    if(numbers.size() == 1) // only one couplet
+        parse1numberKey(inTxtList);
+    else if(numbers[0] == numbers[1])
+        parse2numberKey(inTxtList);
+    else if(isKeyIndented(inTxtList))
+        parseIndentedKey(inTxtList);
+    else
+        parse1numberKey(inTxtList);
 
     findMaxNumber();
 }

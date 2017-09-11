@@ -160,26 +160,9 @@ void MainWindow::import()
         return;
     coupletList.importTxt(outTxtList);
 
-
-    //    error = coupletList.getError();
-    //    QFile outFile("C:/tmp/errors.txt");
-    //    if (!outFile.open(QFile::WriteOnly | QFile::Text))
-    //    {
-    //        QMessageBox::warning
-    //                (this, appName,
-    //                 tr("Cannot write file %1:\n%2.")
-    //                 .arg(fileName)
-    //                 .arg(outFile.errorString())
-    //                 );
-    //        return;
-    //    }
-    //    QTextStream outStream(&outFile);
-    //    outStream << error;
-
     if(coupletList.size() == 0)
         return;
 
-    /////
     QFileInfo fileInfo(filePath);
     QString path = fileInfo.absolutePath();
     coupletList.setFilePath(path);

@@ -15,8 +15,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QDir>
-
 #include "dkCouplet.h"
 #include "dkString.h"
 
@@ -806,17 +804,40 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path) const
             QString subString = subStrList.at(j);
             subString = subString.simplified();
             subString.prepend("fig-");
-            subString.append(".png");
-            QFileInfo figFileInfo(keyDir, subString);
-            if(figFileInfo.exists())
-                outList.push_back(subString);
-            else
+
+            QString fileName = figExist(keyDir, subString);
+            if(fileName.isEmpty())
                 break;
+            else
+                outList.push_back(fileName);
+
+//            subString.append(".png");
+//            QFileInfo figFileInfo(keyDir, subString);
+//            if(figFileInfo.exists())
+//                outList.push_back(subString);
+//            else
+//                break;
+
             ++j; //sip separator
         }
     }
 
     return outList;
+}
+
+QString dkCouplet::figExist(QDir & keyDir, QString & inTxt) const
+{
+    QStringList extensionList;
+    extensionList << ".png" << ".jpg";
+    for(int i = 0; i < extensionList.size(); ++i)
+    {
+        QString baseName = inTxt;
+        baseName.append(extensionList[i]);
+        QFileInfo figFileInfo(keyDir, baseName);
+        if(figFileInfo.exists())
+            return baseName;
+    }
+    return QString();
 }
 
 void dkCouplet::swapLeads()

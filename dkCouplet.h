@@ -20,6 +20,7 @@
 
 #include <QString>
 #include <QStringList>
+#include <QDir>
 #include "dkString.h"
 
 class dkCouplet
@@ -72,6 +73,7 @@ public:
     QString getHtmlTab() const;
     QString getHtmlImg(QString path = QString()) const;
     void findFigs(QString & path);
+    QString figExist(QDir &keyDir, QString & inTxt) const;
     void swapLeads();
     bool isContentOK(void);
 
