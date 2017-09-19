@@ -47,14 +47,14 @@ dkString dkString::findEndPart() const
     if(stringList.size() > 1)
     {
         dkString end = stringList.at(stringList.size()-1);
-        return end;
+        return end.simplified();
     }
     else
     {
         // split into words separated by spaces and non-words
         stringList = split(QRegExp("\\W+"),QString::SkipEmptyParts);
         dkString end = stringList.at(stringList.size()-1);
-        return end;
+        return end.simplified();
     }
 }
 
