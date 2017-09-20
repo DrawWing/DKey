@@ -883,14 +883,10 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path) const
             if(fileName.isEmpty())
                 break;
             else
-                outList.push_back(fileName);
-
-//            subString.append(".png");
-//            QFileInfo figFileInfo(keyDir, subString);
-//            if(figFileInfo.exists())
-//                outList.push_back(subString);
-//            else
-//                break;
+            {
+                if(!outList.contains(fileName))
+                    outList.push_back(fileName);
+            }
 
             ++j; //sip separator
         }
