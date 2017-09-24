@@ -22,13 +22,10 @@
 #include <QTextBrowser>
 #include <QDir>
 #include <QMessageBox>
-
 #include <QAction>
 #include <QMenu>
 #include <QToolBar>
-
 #include <QTableWidget>
-
 #include <QList>
 
 #include "dkCouplet.h"
@@ -64,7 +61,6 @@ private slots:
     void editRow();
     void editClickedRow(int row, int col=1);
     void swapLeads();
-    void showSteps();
     void reNumber();
     void findErrors();
     void viewBrowser();
@@ -98,7 +94,6 @@ private:
     QAction *editRowAct;
     QAction *swapLeadsAct;
     QAction *renumberAct;
-    QAction *showStepsAct;
     QAction *findErrorsAct;
     QAction *viewBrowserAct;
     QAction *viewHtmlAct;

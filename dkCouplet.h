@@ -93,7 +93,6 @@ private:
     int pointer2;
     dkString endpoint2;
     QStringList figList2;
-
     QString error;
 };
 

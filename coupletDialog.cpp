@@ -15,9 +15,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "coupletDialog.h"
-
 #include <QtWidgets>
+
+#include "coupletDialog.h"
 
 coupletDialog::coupletDialog(QWidget *parent)
     : QDialog(parent)

@@ -15,25 +15,22 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "mainwindow.h"
-#include "coupletDialog.h"
-#include "dkView.h"
-
 #include <QtGui>
-
 #include <QFile>
 #include <QTextStream>
 #include <QDebug>
 #include <QFileInfo>
 #include <QLineEdit>
 #include <QApplication>
-
 #include <QMenuBar>
 #include <QFileDialog>
 #include <QHeaderView>
-
 #include <QDebug>
 #include <QElapsedTimer>
+
+#include "mainwindow.h"
+#include "coupletDialog.h"
+#include "dkView.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -103,25 +100,11 @@ void MainWindow::viewHtml()
     if(coupletList.size() == 0)
         return;
 
-
-    //    coupletList.findPointerChains();
-    //    coupletList.findEndpoints();
-    //    dkView view(&coupletList, this);
-    //    view.exec();
-
-    //    if(htmlWindow->isVisible())
-    //    {
-    //        htmlWindow->raise();
-    //    }
-    //        else
-    //    {
-
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     QString htmlTxt = coupletList.getHtmlImg();
     htmlWindow->setHtml(htmlTxt);
-    htmlWindow->setWindowTitle(tr("Interactive key"));
+    htmlWindow->setWindowTitle(tr("Hypertext viewer"));
     QApplication::restoreOverrideCursor();
-    //    }
 }
 
 void MainWindow::import()
@@ -246,7 +229,6 @@ void MainWindow::updateTableRow(int i)
 
 bool MainWindow::isKeyOK()
 {
-
     if(coupletList.size() == 0)
         return true;
 
@@ -271,7 +253,6 @@ bool MainWindow::isKeyOK()
     ok = coupletList.isPointerChainOK();
     if(!ok)
         error+= coupletList.getError();
-
 
     if(error.isEmpty())
         return true;
@@ -368,7 +349,6 @@ bool MainWindow::loadFile(const QString & fileName)
     QString path = fileInfo.absolutePath();
     coupletList.setFilePath(path);
     coupletList.findFigs();
-    //    coupletList.findFigs(path);
 
     fillTable();
     //    qDebug() << timer.elapsed() << "fromDkTxt";
@@ -505,7 +485,6 @@ void MainWindow::insertRow()
     int theRow = selectedRange.bottomRow();
     coupletList.insertDummyAt(theRow + 1);
     insertTabRow(theRow + 1);
-    //    updateTable();
     setWindowModified(true);
 }
 
@@ -538,7 +517,6 @@ void MainWindow::removeRow()
         coupletList.removeAt(theRow);
     }
 
-    //    updateTable();
     setWindowModified(true);
 }
 
@@ -717,17 +695,6 @@ void MainWindow::reNumber()
     QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::showSteps()
-{
-    QList<QTableWidgetSelectionRange> selectedList = table->selectedRanges();
-    if(selectedList.size() > 1 || selectedList.size() == 0)
-        return;
-    QTableWidgetSelectionRange selectedRange = selectedList.at(0);
-    //    int bottomRow = selectedRange.bottomRow();
-    QString steps = ""; // idChain(bottomRow);
-    QMessageBox::warning(this, appName, steps.toLatin1(), QMessageBox::Ok);
-}
-
 void MainWindow::createActions()
 {
     newAct = new QAction(QIcon(":/images/new.png"), tr("&New key"), this);
@@ -754,9 +721,6 @@ void MainWindow::createActions()
 
     exportHtmlAct = new QAction(tr("&Export"), this);
     connect(exportHtmlAct, SIGNAL(triggered()), this, SLOT(exportKey()));
-
-    showStepsAct = new QAction(tr("Show s&teps"), this);
-    connect(showStepsAct, SIGNAL(triggered()), this, SLOT(showSteps()));
 
     exitAct = new QAction(tr("E&xit"), this);
     exitAct->setShortcut(tr("Ctrl+Q"));
@@ -795,7 +759,7 @@ void MainWindow::createActions()
     viewBrowserAct = new QAction(QIcon(":/images/interactive.png"), tr("&Key browser"), this);
     connect(viewBrowserAct, SIGNAL(triggered()), this, SLOT(viewBrowser()));
 
-    viewHtmlAct = new QAction(tr("&Hypertext key in table"), this);
+    viewHtmlAct = new QAction(tr("&Hypertext in table"), this);
     connect(viewHtmlAct, SIGNAL(triggered()), this, SLOT(viewHtml()));
 
     QString aboutStr = tr("&About %1");
@@ -882,6 +846,7 @@ void MainWindow::about()
     QString aboutTxt(tr(
                          "<p><b>%1 version %2</b></p>"
                          "<p>Author: Adam Tofilski</p>"
+                         "<p>Home page: <a href=\"http://drawwing.org/dkey\">drawwing.org/dkey</a></p>"
                          "<p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>"
                          "<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. </p>"
                          "<p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.</p>"

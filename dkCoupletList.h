@@ -53,7 +53,6 @@ public:
     QStringList getEndpointList() const;
     void findIntro(QStringList & inTxtList);
     void findFigs();
-//    void findFigs(QString &path);
     void findFrom();
     QList<int> findFrom(int number) const;
     QStringList findEndpoints();

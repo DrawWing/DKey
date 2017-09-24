@@ -30,7 +30,6 @@ public:
     dkString findFrontPart() const;
     dkString frontDigits() const;
     dkString endDigits() const;
-//    int frontNumber() const;
     void removeFrontNonLetter();
     void removeFrontNonLetterAndDigit();
     void removeFrontDigit();
@@ -39,8 +38,6 @@ public:
 
     dkString & operator=( const dkString & );
     dkString & operator=( const QString & );
-
 };
-
 
 #endif // DKSTRING_H

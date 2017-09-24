@@ -28,11 +28,6 @@ dkCouplet::dkCouplet(const int inNumber)
 {
     clear();
     number = inNumber;
-    //    lead1 = "Lead 1.";
-    //    endpoint1 = "Endpoint 1.";
-    //    lead2 = "Lead 2.";
-    //    endpoint2 = "Endpoint 2.";
-
     lead1 = QObject::tr("Lead 1.");
     endpoint1 = QObject::tr("Endpoint 1.");
     lead2 = QObject::tr("Lead 2.");
@@ -67,16 +62,6 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
         pointer1 = -1;
         endpoint1 = end;
     }
-
-//    dkString endDigits = end.endDigits();
-//    if(endDigits.size() == 0){
-//        pointer1 = -1;
-//        endpoint1 = end.trimmed();
-//    }else{
-//        int endNumber = endDigits.toInt(&ok);
-//        pointer1 = endNumber;
-//        endpoint1 = "";
-//    }
 
     dkString txt = line;
     txt.chop(end.size());
@@ -118,16 +103,6 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
         pointer2 = -1;
         endpoint2 = end;
     }
-
-//    endDigits = end.endDigits();
-//    if(endDigits.size() == 0){
-//        pointer2 = -1;
-//        endpoint2 = end.trimmed();
-//    }else{
-//        int endNumber = endDigits.toInt(&ok);
-//        pointer2 = endNumber;
-//        endpoint2 = "";
-//    }
 
     txt = line;
     txt.chop(end.size());
@@ -263,15 +238,6 @@ void dkCouplet::import1number(const QStringList &inTxt)
         endpoint1 = end;
     }
 
-//    if(endDigits.size() == 0){
-//        pointer1 = -1;
-//        endpoint1 = end.trimmed();
-//    }else{
-//        int endNumber = endDigits.toInt(&ok);
-//        pointer1 = endNumber;
-//        endpoint1 = "";
-//    }
-
     dkString txt = line;
     txt.chop(end.size());
     txt.chopFront(start.size());
@@ -310,16 +276,6 @@ void dkCouplet::import1number(const QStringList &inTxt)
         pointer2 = -1;
         endpoint2 = end;
     }
-
-//    endDigits = end.frontDigits();
-//    if(endDigits.size() == 0){
-//        pointer2 = -1;
-//        endpoint2 = end.trimmed();
-//    }else{
-//        int endNumber = endDigits.toInt(&ok);
-//        pointer2 = endNumber;
-//        endpoint2 = "";
-//    }
 
     txt = line;
     txt.chop(end.size());
@@ -416,32 +372,6 @@ void dkCouplet::importTxtLine2(QString & inTxt, bool first)
             endpoint2 = end;
         }
     }
-
-//    dkString endDigits = end.frontDigits();
-//    if(endDigits.size() == 0){
-//        if(first)
-//        {
-//            endpoint1 = end.trimmed();
-//            pointer1 = -1;
-//        }
-//        else
-//        {
-//            endpoint2 = end.trimmed();
-//            pointer2 = -1;
-//        }
-//    }else{
-//        int endNumber = endDigits.toInt();
-//        if(first)
-//        {
-//            pointer1 = endNumber;
-//            endpoint1 = "";
-//        }
-//        else
-//        {
-//            pointer2 = endNumber;
-//            endpoint2 = "";
-//        }
-//    }
 
     dkString txt = line;
     txt.chop(end.size());

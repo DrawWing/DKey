@@ -20,12 +20,10 @@
 
 #include <QTextBrowser>
 #include <QTableWidget>
-//#include <QDialog>
 #include <QMainWindow>
 
 #include "dkCoupletList.h"
 
-//class dkView : public QDialog
 class dkView : public QMainWindow
 {
     Q_OBJECT
@@ -51,8 +49,6 @@ private:
     dkCouplet currCouplet;
     QStringList endpointList;
     QString filePath;
-
-//    QTableWidget *coupletTab;
     QTextBrowser *lead1Browser;
     QTextBrowser *lead2Browser;
     QTableWidget *pathTab;

@@ -18,12 +18,8 @@
 #ifndef COUPLETDIALOG_H
 #define COUPLETDIALOG_H
 
-#include "dkCouplet.h"
-
 #include <QDialog>
-
 QT_BEGIN_NAMESPACE
-//class QLabel;
 class QPushButton;
 class QTextEdit;
 class QLineEdit;
@@ -31,6 +27,8 @@ class QGroupBox;
 class QSpinBox;
 class QRadioButton;
 QT_END_NAMESPACE
+
+#include "dkCouplet.h"
 
 class coupletDialog : public QDialog
 {

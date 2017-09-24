@@ -15,14 +15,14 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "dkView.h"
-
 #include <QHeaderView>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QWidget>
 #include <QSplitter>
 #include <QLabel>
+
+#include "dkView.h"
 
 dkView::dkView(dkCoupletList * inList, QWidget *parent) :
     QMainWindow(parent)
@@ -138,7 +138,6 @@ void dkView::goToNumber(int inNumber)
     lead2Browser->setHtml(currCouplet.getLead2html(filePath));
 
     // path
-//    QList<int>  pointerChain = currCouplet.getPointerChain();
     QList<QString>  path = currCouplet.getLeadChain();
     pathTab->setRowCount(path.size());
     for(int i = 0; i < path.size(); ++i)
@@ -167,7 +166,6 @@ void dkView::goToNumber(int inNumber)
         else
             excludedTab->setItem(excludedCount++, 0, new QTableWidgetItem(endpointList[i]));
     }
-
 }
 
 void dkView::goToEndpoint(bool first)
@@ -198,17 +196,11 @@ void dkView::clickedCouplet(QUrl inUrl)
     QString path =  inUrl.path();
     if(path == "lead1")
     {
-        //        if(currCouplet.getPointer1() > 0)
         goToNumber(currCouplet.getPointer1());
-        //        else
-        //            goToEndpoint(true);
     }
     else if(path == "lead2")
     {
-        //        if(currCouplet.getPointer2() > 0)
         goToNumber(currCouplet.getPointer2());
-        //        else
-        //            goToEndpoint(false);
     }
 }
 
@@ -223,29 +215,12 @@ void dkView::clickedRemaining(int row, int col)
 {
     QString theItemString = remainingTab->item(row, col)->text();
     goToItemTxt(theItemString);
-//    QStringList theList = theItemString.split("-");
-//    QString theString = theList.last().simplified();
-//    int theNumber = theString.toInt();
-//    if(theNumber < 1 || theNumber > coupletList->getMaxNumber())
-//        return;
-//    int theIndex = coupletList->getIndexWithNumber(theNumber);
-//    goToNumber(theIndex+1);
-//    --col; // to prevent error messages
 }
 
 void dkView::clickedExcluded(int row, int col)
 {
     QString theItemString = excludedTab->item(row, col)->text();
     goToItemTxt(theItemString);
-
-//    QStringList theList = theItemString.split("-");
-//    QString theString = theList.last().simplified();
-//    int theNumber = theString.toInt();
-//    if(theNumber < 1 || theNumber > coupletList->getMaxNumber())
-//        return;
-//    int theIndex = coupletList->getIndexWithNumber(theNumber);
-//    goToNumber(theIndex+1);
-//    --col; // to prevent error messages
 }
 
 void dkView::goToItemTxt(const QString &theItemString)
