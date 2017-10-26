@@ -58,6 +58,9 @@ void MainWindow::createTable()
     table->setStyleSheet("QHeaderView::section { background-color:lightGray }");
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
+//    table->model()->setHeaderData(1, Qt::Vertical, Qt::AlignTop , Qt::TextAlignmentRole);
+//    table->model()->setHeaderData(2, Qt::Vertical, Qt::AlignTop , Qt::TextAlignmentRole);
+
     QHeaderView *header = table->horizontalHeader();
     QStringList headerStringList;
     headerStringList<<tr("No.")<<tr("First lead")<<tr("Second lead");
@@ -337,6 +340,8 @@ bool MainWindow::loadFile(const QString & fileName)
     //    qDebug() << timer.elapsed() << "clear";
 
     coupletList.fromDkTxt(fileName);
+    QApplication::restoreOverrideCursor();
+
     QString error = coupletList.getError();
     if(!error.isEmpty())
     {
@@ -356,7 +361,6 @@ bool MainWindow::loadFile(const QString & fileName)
     //proces recent files
     updateRecentFiles(fileName);
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
-    QApplication::restoreOverrideCursor();
     return true;
 }
 

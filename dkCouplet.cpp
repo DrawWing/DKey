@@ -331,6 +331,8 @@ void dkCouplet::importTxt2( QStringList &inTxt)
 void dkCouplet::importTxtLine2(QString & inTxt, bool first)
 {
     dkString line = inTxt.trimmed();
+    if(line.size() == 0)
+        return;
     dkString start = line.findFrontPart();
     dkString startDigits = start.frontDigits();
 
@@ -486,20 +488,24 @@ QString dkCouplet::getTxt() const
 QString dkCouplet::getLead1txt() const
 {
     QString outTxt;
+    QString leadTxt = lead1;
+    leadTxt.replace("<br>","\n");
     if(endpoint1.isEmpty())
-        outTxt = QString ("%1 - %2").arg(lead1).arg(pointer1);
+        outTxt = QString ("%1 - %2").arg(leadTxt).arg(pointer1);
     else
-        outTxt = QString ("%1 - %2").arg(lead1).arg(endpoint1);
+        outTxt = QString ("%1 - %2").arg(leadTxt).arg(endpoint1);
     return outTxt;
 }
 
 QString dkCouplet::getLead2txt() const
 {
     QString outTxt;
+    QString leadTxt = lead2;
+    leadTxt.replace("<br>","\n");
     if(endpoint2.isEmpty())
-        outTxt = QString ("%1 - %2").arg(lead2).arg(pointer2);
+        outTxt = QString ("%1 - %2").arg(leadTxt).arg(pointer2);
     else
-        outTxt = QString ("%1 - %2").arg(lead2).arg(endpoint2);
+        outTxt = QString ("%1 - %2").arg(leadTxt).arg(endpoint2);
     return outTxt;
 }
 
@@ -697,11 +703,13 @@ void dkCouplet::setLeadChain(QList<QString> & inList)
 
 void dkCouplet::setLead1(QString inTxt)
 {
+    inTxt.replace('\n',"<br>");
     lead1 = inTxt;
 }
 
 void dkCouplet::setLead2(QString inTxt)
 {
+    inTxt.replace('\n',"<br>");
     lead2 = inTxt;
 }
 

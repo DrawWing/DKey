@@ -400,6 +400,9 @@ QString dkCoupletList::getRtf() const
         outTxt += theTxt;
     }
     outTxt += "}";
+
+    outTxt.replace("<br>","\\line ");
+
     return outTxt;
 }
 
@@ -687,18 +690,19 @@ void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList,
                 chainList.push_back(prevNumber);
                 break; // cyclic numbering
             }
+            QString leadTxt;
             if(currNumber == prevPointer1)
             {
-                QString longLead = QString ("%1. %2").arg(prevCouplet.getNumber()).arg(prevCouplet.getLead1());
-//                path.push_back(prevCouplet.getLead1());
-                path.push_back(longLead);
+                leadTxt = prevCouplet.getLead1();
             }
             else
             {
-                QString longLead = QString ("%1. %2").arg(prevCouplet.getNumber()).arg(prevCouplet.getLead2());
-                path.push_back(longLead);
-//                path.push_back(prevCouplet.getLead2());
+                leadTxt = prevCouplet.getLead2();
             }
+            leadTxt.replace("<br>", "\n");
+            QString longLead = QString ("%1. %2").arg(prevCouplet.getNumber()).arg(leadTxt);
+            path.push_back(longLead);
+
             chainList.push_back(prevNumber);
             pointerChain(prevNumber, chainList, path);
             break;
