@@ -86,14 +86,15 @@ void MainWindow::viewBrowser()
     if(coupletList.size() == 0)
         return;
 
+    coupletList.findFigs();
+    coupletList.findPointerChains();
+    coupletList.findEndpoints();
     if(!isKeyOK())
     {
         findErrors();
         return;
     }
 
-    coupletList.findPointerChains();
-    coupletList.findEndpoints();
     dkView * view = new dkView(&coupletList, this);
     view->show();
 }
@@ -134,6 +135,7 @@ void MainWindow::import()
     }
 
     QTextStream inStream(&inFile);
+    inStream.setCodec("UTF-8");
     QStringList outTxtList;
     while (!inStream.atEnd())
     {
@@ -152,7 +154,6 @@ void MainWindow::import()
     QFileInfo fileInfo(filePath);
     QString path = fileInfo.absolutePath();
     coupletList.setFilePath(path);
-    coupletList.findFigs();
 
     fillTable();
 
@@ -320,7 +321,7 @@ void MainWindow::openFile()
         return;
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open file"), filePath, tr("dKey files (*.dk.txt)"));
+                                                    tr("Open file"), filePath, tr("DKey files (*.dk.xml)"));
     if( fileName.isEmpty() )
         return;
 
@@ -339,7 +340,33 @@ bool MainWindow::loadFile(const QString & fileName)
 
     //    qDebug() << timer.elapsed() << "clear";
 
-    coupletList.fromDkTxt(fileName);
+    QDomDocument xmlDoc;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
+        return false;
+    }
+
+    QString errorStr;
+    int errorLine;
+    int errorColumn;
+    if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
+        file.close();
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),
+                             QObject::tr("Parse error at line %1, column %2:\n%3")
+                             .arg(errorLine)
+                             .arg(errorColumn)
+                             .arg(errorStr));
+        return false;
+    }
+
+
+    file.close();
+    coupletList.fromDkXml(xmlDoc);
+
     QApplication::restoreOverrideCursor();
 
     QString error = coupletList.getError();
@@ -353,13 +380,13 @@ bool MainWindow::loadFile(const QString & fileName)
     QFileInfo fileInfo(filePath);
     QString path = fileInfo.absolutePath();
     coupletList.setFilePath(path);
-    coupletList.findFigs();
 
     fillTable();
     //    qDebug() << timer.elapsed() << "fromDkTxt";
 
-    //proces recent files
     updateRecentFiles(fileName);
+    updateRecentFileActions();
+
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
     return true;
 }
@@ -369,7 +396,7 @@ bool MainWindow::save()
     if(!isWindowModified())
         return true;
     QFileInfo fileInfo(filePath);
-    if (fileInfo.completeSuffix() == "dk.txt")
+    if (fileInfo.completeSuffix() == "dk.xml")
         return saveFile(filePath);
     else
         return saveAs();
@@ -377,20 +404,30 @@ bool MainWindow::save()
 
 bool MainWindow::saveAs()
 {
+    if(coupletList.size() == 0)
+        return false;
+
     QFileInfo fileInfo(filePath);
     QString newFileName = filePath;
-    if(fileInfo.completeSuffix().toUpper() != "DK.TXT"){
-        newFileName = fileInfo.absolutePath()+"/"+fileInfo.baseName() + ".dk.txt";
+    if(fileInfo.completeSuffix().toUpper() != "DK.XML"){
+        newFileName = fileInfo.absolutePath()+"/"+fileInfo.baseName() + ".dk.xml";
     }
 
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),
-                                                    newFileName);
+                                                    newFileName, tr("DKey files (*.dk.xml)"));
     if (fileName.isEmpty())
         return false;
 
     bool wasSaved = saveFile(fileName);
     if(wasSaved)
+    {
         updateRecentFiles(fileName);
+        updateRecentFileActions();
+
+        QFileInfo fileInfo(filePath);
+        QString path = fileInfo.absolutePath();
+        coupletList.setFilePath(path);
+    }
     return wasSaved;
 }
 
@@ -406,9 +443,14 @@ bool MainWindow::saveFile(const QString &fileName)
     }
 
     QTextStream out(&file);
+    out.setCodec("UTF-8");
+
     //    QApplication::setOverrideCursor(Qt::WaitCursor);
-    QString outTxt = coupletList.getDkTxt();
+
+//    QString outTxt = coupletList.getDkTxt();
+    QString outTxt = coupletList.getDkXml();
     out << outTxt;
+
     //    QApplication::restoreOverrideCursor();
 
     if(out.status() == QTextStream::WriteFailed)

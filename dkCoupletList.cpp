@@ -338,6 +338,94 @@ void dkCoupletList::fromDkTxt(const QString & fileName)
     findMaxNumber();
 }
 
+void dkCoupletList::fromDkXml(const QDomDocument xmlDoc)
+{
+    clear();
+
+    QString elementName = "DKey";
+    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+    QDomElement dkeyElement = dkeyNode.toElement();
+//    QDomElement dkeyElement = xmlDoc.namedItem(elementName).toElement();
+    if ( dkeyElement.isNull() )
+    {
+        error = QObject::tr("No <%1> element found in the XML file!").arg(elementName);
+        return;
+    }
+//    QString versionTxt = docElement.attribute("version");
+//    double version = versionTxt.toDouble();
+
+    elementName = "key";
+    QDomNode keyNode = xmlDoc.namedItem(elementName);
+    QDomElement keyElement = dkeyNode.namedItem(elementName).toElement();
+    if ( keyElement.isNull() )
+    {
+        error = QObject::tr("No <%1> element found in the XML file!").arg(elementName);
+        return;
+    }
+    QDomNodeList keyChildList = keyElement.childNodes();
+    for(int i = 0; i < keyChildList.size(); ++i){
+        QDomNode coupletNode = keyChildList.at(i);
+        QDomElement coupletElement = coupletNode.toElement();
+        if(coupletElement.isNull())
+            continue;
+        if(coupletElement.tagName() == "couplet")
+        {
+            dkCouplet newCouplet;
+            newCouplet.fromDkXml(coupletElement);
+
+            QString coupletError = newCouplet.getError();
+            if(coupletError.isEmpty())
+                thisList.push_back(newCouplet);
+            else
+            {
+                error = coupletError;
+                return;
+            }
+
+        }
+    }
+
+//    QDomElement introElement;
+//    QDomElement keyElement;
+//    QDomNodeList docElemList = docElement.childNodes();
+//    for(int i = 0; i < docElemList.size(); ++i)
+//    {
+//        QDomNode aNode = docElemList.at(i);
+//        QDomElement anElement = aNode.toElement();
+//        if(anElement.isNull())
+//            continue; // report error?
+//        if(anElement.tagName() == "intro")
+//        {
+//            introElement = anElement;
+//        }
+//        else if(anElement.tagName() == "key")
+//        {
+//            QDomNodeList keyElemList = anElement.childNodes();
+//            for(int i = 0; i < keyElemList.size(); ++i){
+//                QDomNode keyNode = keyElemList.at(i);
+//                QDomElement keyElement = keyNode.toElement();
+//                if(keyElement.isNull())
+//                    continue; // report error?
+//                if(keyElement.tagName() == "couplet")
+//                {
+//                    dkCouplet newCouplet;
+//                    newCouplet.fromDkXml(keyElement);
+
+//                    QString coupletError = newCouplet.getError();
+//                    if(coupletError.isEmpty())
+//                        thisList.push_back(newCouplet);
+//                    else
+//                    {
+//                        error = coupletError;
+//                        return;
+//                    }
+
+//                }
+//            }
+//        }
+//    }
+}
+
 QList< dkCouplet > dkCoupletList::getList() const
 {
     return thisList;
@@ -384,6 +472,25 @@ QString dkCoupletList::getDkTxt() const
         QString theTxt = theCouplet.getDkTxt();
         outTxt.append(theTxt);
     }
+    return outTxt;
+}
+
+QString dkCoupletList::getDkXml() const
+{
+    QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    outTxt += "<DKey version=\"1.0\">\n"; //add version from qapplication
+    outTxt += "<key>\n";
+
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        dkCouplet theCouplet = thisList[i];
+        QString theTxt = theCouplet.getDkXml();
+        outTxt.append(theTxt);
+    }
+
+    outTxt += "</key>\n";
+    outTxt += "</DKey>\n";
+
     return outTxt;
 }
 
@@ -434,8 +541,10 @@ QString dkCoupletList::getHtmlTab() const
     return htmlTxt;
 }
 
-QString dkCoupletList::getHtmlImg(bool withPath) const
+QString dkCoupletList::getHtmlImg(bool withPath)
 {
+    findFigs();
+
     QString htmlTxt;
     for(int i = 0; i < thisList.size(); ++i)
     {

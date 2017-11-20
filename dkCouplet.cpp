@@ -206,6 +206,89 @@ void dkCouplet::readDkTxtLine(const QString &inTxt, bool first)
     }
 }
 
+void dkCouplet::fromDkXml(const QDomElement &inElement)
+{
+    clear();
+
+    QString numberTxt = inElement.attribute("number");
+    bool ok;
+    number = numberTxt.toInt(&ok);
+    if(!ok)
+    {
+        error += QObject::tr("Error in reading couplet number. \n");
+        return;
+    }
+
+    QDomNode leadNode = inElement.firstChild();
+    QDomElement leadElem = leadNode.toElement();
+    if(leadElem.isNull() || leadElem.tagName() != "lead")
+    {
+        error += QObject::tr("Error in reading first lead of couplet: %1. \n").arg(number);
+        return;
+    }
+    readXmlLead(leadElem, true);
+
+    leadNode = leadNode.nextSibling();
+    leadElem = leadNode.toElement();
+    if(leadElem.isNull() || leadElem.tagName() != "lead")
+    {
+        error += QObject::tr("Error in reading second lead of couplet: %1. \n").arg(number);
+        return;
+    }
+    readXmlLead(leadElem, false);
+}
+
+void dkCouplet::readXmlLead(const QDomElement &inElement, bool first)
+{
+    QDomNodeList inElemList = inElement.childNodes();
+    for(int i = 0; i < inElemList.size(); ++i){
+        QDomNode aNode = inElemList.at(i);
+        QDomElement anElement = aNode.toElement();
+        if(anElement.isNull())
+            continue;
+        if(anElement.tagName() == "text")
+        {
+            if(first)
+                lead1 = anElement.text();
+            else
+                lead2 = anElement.text();
+        }
+        else if(anElement.tagName() == "pointer")
+        {
+            QString pointerTxt = anElement.text();
+            bool ok;
+            int pointer = pointerTxt.toInt(&ok);
+            if(ok)
+            {
+                if(first)
+                {
+                    pointer1 = pointer;
+                    endpoint1 = "";
+                }
+                else
+                {
+                    pointer2 = pointer;
+                    endpoint2 = "";
+                }
+            } else
+                error += QObject::tr("Pointer cannot be converted to number in couplet: %1. \n").arg(number);
+        }
+        else if(anElement.tagName() == "endpoint")
+        {
+            if(first)
+            {
+                endpoint1 = anElement.text();
+                pointer1 = -1;
+            }
+            else
+            {
+                endpoint2 = anElement.text();
+                pointer2 = -1;
+            }
+        }
+    }
+}
+
 void dkCouplet::import1number(const QStringList &inTxt)
 {
     clear();
@@ -594,6 +677,24 @@ QString dkCouplet::getDkTxt() const
     return outTxt;
 }
 
+QString dkCouplet::getDkXml() const
+{
+    QString outTxt = QStringLiteral("<couplet number=\"%1\">\n").arg(number);
+
+    if(endpoint1.isEmpty())
+        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead> \n").arg(lead1.toHtmlEscaped()).arg(pointer1);
+    else
+        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead> \n").arg(lead1.toHtmlEscaped()).arg(endpoint1.toHtmlEscaped());
+
+    if(endpoint2.isEmpty())
+        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead> \n").arg(lead2.toHtmlEscaped()).arg(pointer2);
+    else
+        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead> \n").arg(lead2.toHtmlEscaped()).arg(endpoint2.toHtmlEscaped());
+
+    outTxt += "</couplet>\n";
+    return outTxt;
+}
+
 QString dkCouplet::getRtf() const
 {
     QString outTxt;
@@ -890,4 +991,3 @@ bool dkCouplet::isContentOK(void)
     else
         return false;
 }
-

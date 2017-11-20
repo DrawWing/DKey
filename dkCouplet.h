@@ -21,6 +21,8 @@
 #include <QString>
 #include <QStringList>
 #include <QDir>
+#include <QDomElement>
+
 #include "dkString.h"
 
 class dkCouplet
@@ -33,6 +35,9 @@ public:
     bool isEmpty() const;
     void fromDkTxt(const QStringList &inList);
     void readDkTxtLine(const QString &inTxt, bool first);
+    void fromDkXml(const QDomElement &inElement);
+    void readXmlLead(const QDomElement &inElement, bool first);
+
     void import1number(const QStringList &inTxt);
     void importTxt2(QStringList &inTxt);
     void importTxtLine2(QString &inTxt, bool first);
@@ -68,6 +73,7 @@ public:
     void setFigList1(QStringList & inList);
     void setFigList2(QStringList & inList);
     QString getDkTxt() const;
+    QString getDkXml() const;
     QString getRtf() const;
     QString getHtml() const;
     QString getHtmlTab() const;
