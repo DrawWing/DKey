@@ -52,6 +52,9 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
         number = -1;
 
     dkString end = line.findEndPart();
+    int endSize = end.size(); // for choping
+    end.removeFrontNonLetterAndDigit();
+    end.removeEndNonLetterAndDigit();
 
     int endNumber = end.toInt(&ok);
     if(ok)
@@ -64,7 +67,7 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
     }
 
     dkString txt = line;
-    txt.chop(end.size());
+    txt.chop(endSize);
     txt.chopFront(start.size());
     lead1 = txt.trimmed();
 
@@ -93,6 +96,9 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
 
     start = line.findFrontPart();
     end = line.findEndPart();
+    endSize = end.size(); // for choping
+    end.removeFrontNonLetterAndDigit();
+    end.removeEndNonLetterAndDigit();
 
     endNumber = end.toInt(&ok);
     if(ok)
@@ -105,7 +111,7 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
     }
 
     txt = line;
-    txt.chop(end.size());
+    txt.chop(endSize);
     txt.chopFront(start.size());
     lead2 = txt.trimmed();
 }

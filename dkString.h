@@ -31,6 +31,7 @@ public:
     dkString frontDigits() const;
     dkString endDigits() const;
     void removeFrontNonLetter();
+    void removeEndNonLetterAndDigit();
     void removeFrontNonLetterAndDigit();
     void removeFrontDigit();
     void chopFront(int n);

@@ -445,13 +445,8 @@ bool MainWindow::saveFile(const QString &fileName)
     QTextStream out(&file);
     out.setCodec("UTF-8");
 
-    //    QApplication::setOverrideCursor(Qt::WaitCursor);
-
-//    QString outTxt = coupletList.getDkTxt();
     QString outTxt = coupletList.getDkXml();
     out << outTxt;
-
-    //    QApplication::restoreOverrideCursor();
 
     if(out.status() == QTextStream::WriteFailed)
         return false;

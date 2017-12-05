@@ -47,14 +47,14 @@ dkString dkString::findEndPart() const
     if(stringList.size() > 1)
     {
         dkString end = stringList.at(stringList.size()-1);
-        return end.simplified();
+        return end;
     }
     else
     {
         // split into words separated by spaces and non-words
         stringList = split(QRegExp("\\W+"),QString::SkipEmptyParts);
         dkString end = stringList.at(stringList.size()-1);
-        return end.simplified();
+        return end;
     }
 }
 
@@ -109,6 +109,20 @@ void dkString::removeFrontNonLetter()
             ++count;
     }
     remove(0,count);
+}
+
+void dkString::removeEndNonLetterAndDigit()
+{
+    int count = 0;
+    for(int i = size()-1; i > -1; --i){
+        QChar c = at(i);
+        if(c.isLetter() || c.isDigit())
+            break;
+        else
+            ++count;
+    }
+//    remove(size() - count,count);
+    chop(count);
 }
 
 void dkString::removeFrontNonLetterAndDigit()
