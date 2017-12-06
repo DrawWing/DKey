@@ -59,7 +59,6 @@ void MainWindow::createTable()
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
 //    table->model()->setHeaderData(1, Qt::Vertical, Qt::AlignTop , Qt::TextAlignmentRole);
-//    table->model()->setHeaderData(2, Qt::Vertical, Qt::AlignTop , Qt::TextAlignmentRole);
 
     QHeaderView *header = table->horizontalHeader();
     QStringList headerStringList;
@@ -167,12 +166,39 @@ void MainWindow::appendFile()
         return;
 
     QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Append file"), filePath, tr("dKey files (*.dk.txt)"));
+                                                    tr("Append file"), filePath, tr("dKey files (*.dk.xml)"));
     if( fileName.isEmpty() )
         return;
 
+///
+    QDomDocument xmlDoc;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
+        return ;
+    }
+
+    QString errorStr;
+    int errorLine;
+    int errorColumn;
+    if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
+        file.close();
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),
+                             QObject::tr("Parse error at line %1, column %2:\n%3")
+                             .arg(errorLine)
+                             .arg(errorColumn)
+                             .arg(errorStr));
+        return;
+    }
+
+
+    file.close();
+///
     dkCoupletList appendCouplets;
-    appendCouplets.fromDkTxt(fileName);
+    appendCouplets.fromDkXml(xmlDoc);
     QString error = coupletList.getError();
     if(!error.isEmpty())
     {
@@ -795,6 +821,7 @@ void MainWindow::createActions()
     connect(renumberAct, SIGNAL(triggered()), this, SLOT(reNumber()));
 
     findErrorsAct = new QAction(QIcon(":/images/error.png"), tr("&Find errors"), this);
+    findErrorsAct->setShortcut(tr("Ctrl+E"));
     connect(findErrorsAct, SIGNAL(triggered()), this, SLOT(findErrors()));
 
     viewBrowserAct = new QAction(QIcon(":/images/interactive.png"), tr("&Key browser"), this);

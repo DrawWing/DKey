@@ -384,46 +384,7 @@ void dkCoupletList::fromDkXml(const QDomDocument xmlDoc)
 
         }
     }
-
-//    QDomElement introElement;
-//    QDomElement keyElement;
-//    QDomNodeList docElemList = docElement.childNodes();
-//    for(int i = 0; i < docElemList.size(); ++i)
-//    {
-//        QDomNode aNode = docElemList.at(i);
-//        QDomElement anElement = aNode.toElement();
-//        if(anElement.isNull())
-//            continue; // report error?
-//        if(anElement.tagName() == "intro")
-//        {
-//            introElement = anElement;
-//        }
-//        else if(anElement.tagName() == "key")
-//        {
-//            QDomNodeList keyElemList = anElement.childNodes();
-//            for(int i = 0; i < keyElemList.size(); ++i){
-//                QDomNode keyNode = keyElemList.at(i);
-//                QDomElement keyElement = keyNode.toElement();
-//                if(keyElement.isNull())
-//                    continue; // report error?
-//                if(keyElement.tagName() == "couplet")
-//                {
-//                    dkCouplet newCouplet;
-//                    newCouplet.fromDkXml(keyElement);
-
-//                    QString coupletError = newCouplet.getError();
-//                    if(coupletError.isEmpty())
-//                        thisList.push_back(newCouplet);
-//                    else
-//                    {
-//                        error = coupletError;
-//                        return;
-//                    }
-
-//                }
-//            }
-//        }
-//    }
+    findMaxNumber();
 }
 
 QList< dkCouplet > dkCoupletList::getList() const
@@ -651,10 +612,10 @@ QList<int>  dkCoupletList::findFrom(int number) const
     {
         int thePointer = thisList[j].getPointer1();
         if(thePointer == number)
-            outList.push_back(j);
+            outList.push_back(thisList[j].getNumber());
         thePointer = thisList[j].getPointer2();
         if(thePointer == number)
-            outList.push_back(j);
+            outList.push_back(thisList[j].getNumber());
     }
     return outList;
 }
@@ -925,7 +886,7 @@ bool dkCoupletList::isKeyCyclic()
             dkCouplet theCouplet = getCoupletWithNumber(fromList[j]);
             QList<int> chainList = theCouplet.getPointerChain();
             if(chainList.contains(thisList[i].getNumber()))
-                error += QString(QObject::tr("Warning: numbering is cyclic between couplets: %1 and %2;"))
+                error += QString(QObject::tr("Warning: numbering is cyclic between couplets: %1 and %2.\n"))
                         .arg(thisList[i].getNumber()).arg(theCouplet.getNumber());
         }
     }
