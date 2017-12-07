@@ -61,6 +61,7 @@ private slots:
 private:
     void createWidget();
     void fillData();
+    bool isNumber(const QString & inTxt);
 
     QPushButton *okButton;
     QPushButton *cancelButton;

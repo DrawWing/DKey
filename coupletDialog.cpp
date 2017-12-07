@@ -188,6 +188,18 @@ void coupletDialog::fillData()
 
 void coupletDialog::accept()
 {
+    if(isNumber(endpoint1->text()) || isNumber(endpoint2->text()))
+    {
+        QMessageBox msgBox;
+        msgBox.setText("Normally numbers are set to pointers not to endpoints.");
+        msgBox.setInformativeText("Are you sure to set a number to an endpoint?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+        int ret = msgBox.exec();
+        if(ret == QMessageBox::No)
+            return;
+    }
+
     // Update the couplet
     thisCouplet->setLead1(lead1Text->toPlainText());
     thisCouplet->setLead2(lead2Text->toPlainText());
@@ -212,4 +224,11 @@ void coupletDialog::accept()
 
     //call base class implementation
     QDialog::accept();
+}
+
+bool coupletDialog::isNumber(const QString &inTxt)
+{
+    bool ok;
+    inTxt.simplified().toInt(&ok);
+    return ok;
 }

@@ -823,24 +823,6 @@ QString dkCouplet::imgHtml(const QString & path, const QString & inName, bool wi
     else
         htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" height=\"%2\">").arg(outName).arg(imgMaxSize);
 
-//    if(withPath)
-//    {
-//        if( x < imgMaxSize && y < imgMaxSize)
-//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\">").arg(imgFileName);
-//        else if( x > y)
-//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" width=\"%2\">").arg(imgFileName).arg(imgMaxSize);
-//        else
-//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" height=\"%2\">").arg(imgFileName).arg(imgMaxSize);
-//    }
-//    else
-//    {
-//        if( x < imgMaxSize && y < imgMaxSize)
-//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\">").arg(inName);
-//        else if( x > y)
-//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" width=\"%2\">").arg(inName).arg(imgMaxSize);
-//        else
-//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" height=\"%2\">").arg(inName).arg(imgMaxSize);
-//    }
     return htmlTxt;
 }
 
