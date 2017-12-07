@@ -526,6 +526,9 @@ void MainWindow::exportKey()
         htmlTxt = coupletList.getHtmlImg(false);
 
     QTextStream outStream(&outFile);
+    if(selectedFilter != "Formated text RTF (*.rtf)")
+        outStream.setCodec("UTF-8");
+
     outStream << htmlTxt;
     //    statusBar()->showMessage(tr("File saved"), 2000);
 }

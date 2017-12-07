@@ -476,7 +476,7 @@ QString dkCoupletList::getRtf() const
 
 QString dkCoupletList::getHtml() const
 {
-    QString htmlTxt;
+    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>";
     for(int i = 0; i < thisList.size(); ++i)
     {
         dkCouplet theCouplet = thisList[i];
@@ -488,7 +488,7 @@ QString dkCoupletList::getHtml() const
 
 QString dkCoupletList::getHtmlTab() const
 {
-    QString htmlTxt;
+    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>";
     htmlTxt += "<table border=\"1\" cellpadding=\"10\" cellspacing=\"0\" style=\"border-collapse: collapse\" bordercolor=\"#111111\" width=\"100%\">\n";
 
     for(int i = 0; i < thisList.size(); ++i)
@@ -506,15 +506,10 @@ QString dkCoupletList::getHtmlImg(bool withPath)
 {
     findFigs();
 
-    QString htmlTxt;
+    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>";
     for(int i = 0; i < thisList.size(); ++i)
     {
-        QString theHtml;
-        if(withPath)
-            theHtml = thisList[i].getHtmlImg(filePath);
-        else
-            theHtml = thisList[i].getHtmlImg();
-        htmlTxt += theHtml;
+        htmlTxt += thisList[i].getHtmlImg(filePath, withPath);
     }
     return htmlTxt;
 }

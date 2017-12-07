@@ -15,6 +15,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <QImageReader>
+
 #include "dkCouplet.h"
 #include "dkString.h"
 
@@ -609,7 +611,7 @@ QString dkCouplet::getLead1html(QString path) const
     if(figList1.size() > 0)
         outTxt += QString("<br>");
     for(int j = 0; j < figList1.size(); ++j)
-        outTxt += QString("<img border=\"1\" src=\"%1\">").arg(path + figList1[j]);
+        outTxt += imgHtml(path, figList1[j]);
 
     return outTxt;
 }
@@ -625,7 +627,7 @@ QString dkCouplet::getLead2html(QString path) const
     if(figList2.size() > 0)
         outTxt += QString("<br>");
     for(int j = 0; j < figList2.size(); ++j)
-        outTxt += QString("<img border=\"1\" src=\"%1\">").arg(path + figList2[j]);
+        outTxt += imgHtml(path, figList2[j]);
 
     return outTxt;
 }
@@ -768,7 +770,7 @@ QString dkCouplet::getHtmlTab() const
     return htmlTxt;
 }
 
-QString dkCouplet::getHtmlImg(QString path) const
+QString dkCouplet::getHtmlImg(const QString & path, bool withPath) const
 {
     QString htmlTxt;
 
@@ -781,7 +783,7 @@ QString dkCouplet::getHtmlImg(QString path) const
     else
         htmlTxt += QStringLiteral("%1<br><b>%2</b><br>").arg(lead1).arg(endpoint1);
     for(int j = 0; j < figList1.size(); ++j)
-        htmlTxt += QStringLiteral("<img border=\"1\" src=\"%1\">").arg(path + figList1[j]);
+        htmlTxt += imgHtml(path, figList1[j], withPath);
     htmlTxt += "</td>";
 
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"50%\">";
@@ -790,11 +792,55 @@ QString dkCouplet::getHtmlImg(QString path) const
     else
         htmlTxt += QStringLiteral("%1<br><b>%2</b><br>").arg(lead2).arg(endpoint2);
     for(int j = 0; j < figList2.size(); ++j)
-        htmlTxt += QStringLiteral("<img border=\"1\" src=\"%1\">").arg(path + figList2[j]);
+        htmlTxt += imgHtml(path, figList2[j], withPath);
     htmlTxt += "</td>";
     htmlTxt += "</tr>\n";
     htmlTxt += "</table>\n";
 
+    return htmlTxt;
+}
+
+QString dkCouplet::imgHtml(const QString & path, const QString & inName, bool withPath) const
+{
+    const int imgMaxSize = 400;
+
+    QString htmlTxt;
+    QString imgFileName = path + inName;
+    QImageReader imgReader(imgFileName);
+    int x = imgReader.size().width();
+    int y = imgReader.size().height();
+
+    QString outName;
+    if(withPath)
+        outName = imgFileName;
+    else
+        outName = inName;
+
+    if( x < imgMaxSize && y < imgMaxSize)
+        htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\">").arg(outName);
+    else if( x > y)
+        htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" width=\"%2\">").arg(outName).arg(imgMaxSize);
+    else
+        htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" height=\"%2\">").arg(outName).arg(imgMaxSize);
+
+//    if(withPath)
+//    {
+//        if( x < imgMaxSize && y < imgMaxSize)
+//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\">").arg(imgFileName);
+//        else if( x > y)
+//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" width=\"%2\">").arg(imgFileName).arg(imgMaxSize);
+//        else
+//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" height=\"%2\">").arg(imgFileName).arg(imgMaxSize);
+//    }
+//    else
+//    {
+//        if( x < imgMaxSize && y < imgMaxSize)
+//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\">").arg(inName);
+//        else if( x > y)
+//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" width=\"%2\">").arg(inName).arg(imgMaxSize);
+//        else
+//            htmlTxt = QStringLiteral("<img border=\"1\" src=\"%1\" height=\"%2\">").arg(inName).arg(imgMaxSize);
+//    }
     return htmlTxt;
 }
 
