@@ -66,6 +66,7 @@ private slots:
     void findErrors();
     void viewBrowser();
     void viewHtml();
+    void viewEndpoints();
     void test();
 
 private:
@@ -100,6 +101,7 @@ private:
     QAction *findErrorsAct;
     QAction *viewBrowserAct;
     QAction *viewHtmlAct;
+    QAction *viewEndpointsAct;
     QAction *aboutAct;
 
     QMenu *fileMenu;

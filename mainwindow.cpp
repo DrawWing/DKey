@@ -108,6 +108,22 @@ void MainWindow::viewHtml()
     QApplication::restoreOverrideCursor();
 }
 
+void MainWindow::viewEndpoints()
+{
+    if(coupletList.size() == 0)
+        return;
+
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    coupletList.findEndpoints();
+    QStringList endpointList = coupletList.getEndpointList();
+    QString outTxt;
+    for(int i = 0; i < endpointList.size(); ++i)
+        outTxt += endpointList[i] + "\n";
+    htmlWindow->setPlainTxt(outTxt);
+    htmlWindow->setWindowTitle(tr("Hypertext viewer"));
+    QApplication::restoreOverrideCursor();
+}
+
 void MainWindow::import()
 {
     if (!okToContinue())
@@ -856,6 +872,9 @@ void MainWindow::createActions()
     viewHtmlAct = new QAction(tr("&Hypertext in table"), this);
     connect(viewHtmlAct, SIGNAL(triggered()), this, SLOT(viewHtml()));
 
+    viewEndpointsAct = new QAction(tr("&Endpoints"), this);
+    connect(viewEndpointsAct, SIGNAL(triggered()), this, SLOT(viewEndpoints()));
+
     QString aboutStr = tr("&About %1");
     aboutAct = new QAction(aboutStr.arg(appName), this);
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
@@ -910,6 +929,7 @@ void MainWindow::createMenus()
     viewMenu = new QMenu(tr("&View"), this);
     viewMenu->addAction(viewBrowserAct);
     viewMenu->addAction(viewHtmlAct);
+    viewMenu->addAction(viewEndpointsAct);
     menuBar()->addMenu(viewMenu);
 
     helpMenu = new QMenu(tr("&Help"), this);
@@ -1054,10 +1074,21 @@ void MainWindow::clear()
 
 MainWindow::~MainWindow()
 {
-
 }
 
 void MainWindow::test()
 {
+    if(coupletList.size() == 0)
+        return;
+
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    coupletList.findEndpoints();
+    QStringList endpointList = coupletList.getEndpointList();
+    QString outTxt;
+    for(int i = 0; i < endpointList.size(); ++i)
+        outTxt += endpointList[i] + "\n";
+    htmlWindow->setPlainTxt(outTxt);
+    htmlWindow->setWindowTitle(tr("Hypertext viewer"));
+    QApplication::restoreOverrideCursor();
 }
 
