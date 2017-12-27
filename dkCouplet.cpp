@@ -38,12 +38,15 @@ dkCouplet::dkCouplet(const int inNumber)
 
 dkCouplet::dkCouplet(const QStringList &inTxt)
 {
+    clear();
     if(inTxt.size() == 0)
         return;
 
     //first line
     dkString line = inTxt[0];
     dkString start = line.findFrontPart();
+    int startSize = start.size();
+    start.removeFrontNonLetterAndDigit();
     dkString startDigits = start.frontDigits();
 
     bool ok;
@@ -70,7 +73,7 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
 
     dkString txt = line;
     txt.chop(endSize);
-    txt.chopFront(start.size());
+    txt.chopFront(startSize);
     lead1 = txt.trimmed();
 
     //lead2
@@ -96,6 +99,8 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
         line = line.trimmed();
     }
 
+    if(line.isEmpty())
+        return;
     start = line.findFrontPart();
     end = line.findEndPart();
     endSize = end.size(); // for choping
@@ -137,10 +142,10 @@ void dkCouplet::clear()
 
 bool dkCouplet::isEmpty() const
 {
-    if( number == -1)
-        return false;
-    else
+    if( number < 1)
         return true;
+    else
+        return false;
 }
 
 void dkCouplet::fromDkTxt(const QStringList &inList)
@@ -581,7 +586,8 @@ QString dkCouplet::getLead1txt() const
     QString outTxt;
     QString leadTxt = lead1;
     leadTxt.replace("<br>","\n");
-    if(endpoint1.isEmpty())
+    if(pointer1 > 0)
+//        if(endpoint1.isEmpty())
         outTxt = QString ("%1 - %2").arg(leadTxt).arg(pointer1);
     else
         outTxt = QString ("%1 - %2").arg(leadTxt).arg(endpoint1);
@@ -593,7 +599,7 @@ QString dkCouplet::getLead2txt() const
     QString outTxt;
     QString leadTxt = lead2;
     leadTxt.replace("<br>","\n");
-    if(endpoint2.isEmpty())
+    if(pointer2 > 0)
         outTxt = QString ("%1 - %2").arg(leadTxt).arg(pointer2);
     else
         outTxt = QString ("%1 - %2").arg(leadTxt).arg(endpoint2);

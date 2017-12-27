@@ -17,6 +17,7 @@
 
 #include <QFile>
 #include <QTextStream>
+#include <QVector>
 
 #include "dkCoupletList.h"
 #include "dkString.h"
@@ -33,15 +34,23 @@ dkCouplet dkCoupletList::at(int i) const
 
 dkCouplet dkCoupletList::getCoupletWithNumber(int number) const
 {
+    if(number < 1 || number > thisList.size() - 1)
+        return dkCouplet();
+
+    // if numbered consequitevely number = index +1
+    if(thisList[number-1].getNumber() == number)
+    {
+        return thisList[number-1];
+    }
+
     for(int i = 0; i < thisList.size(); ++i)
     {
-        dkCouplet theCouplet = thisList[i];
-        int theNumber = theCouplet.getNumber();
-        if(theNumber == number)
-            return theCouplet;
+        if(thisList[i].getNumber() == number)
+        {
+            return thisList[i];
+        }
     }
-    dkCouplet emptyCouplet;
-    return emptyCouplet;
+    return dkCouplet();
 }
 
 int dkCoupletList::getIndexWithNumber(int number) const
@@ -178,7 +187,8 @@ void dkCoupletList::parse1numberKey(QStringList & inTxtList)
 
         if(line.startsWithDigit())
         {
-            QString digits = line.frontDigits();
+//            line.removeFrontNonLetterAndDigit();
+//            QString digits = line.frontDigits();
 
             dkCouplet newCouplet(coupletTxt);
             thisList.push_back(newCouplet);
@@ -788,34 +798,98 @@ void dkCoupletList::findPointerChains()
     }
 }
 
-void dkCoupletList::arrangeCouplets(int currNumber, QList< dkCouplet > & newList)
+void dkCoupletList::arrange()
+{
+    QVector<int> treeLgh = findTreeLength();
+    QList< dkCouplet > newList;
+    arrangeCouplets(1, newList, treeLgh);
+    thisList = newList;
+}
+
+// couplet numbers need to be consequtive; index = number -1
+QVector<int> dkCoupletList::findTreeLength()
+{
+    QVector<int> outList(thisList.size(), -1);
+    // at start filled with -1
+
+    bool progress = true;
+    while(progress)
+    {
+        progress = false;
+        for(int i = thisList.size()-1; i > -1; --i)
+        {
+            if(outList[i] > -1)
+                continue;
+            else
+                progress = true;
+
+            dkCouplet theCouplet = thisList[i];
+
+            int size1 = -1;
+            int thePointer1 = theCouplet.getPointer1();
+            if(thePointer1 > -1)
+            {
+                if(outList[thePointer1 - 1] > -1)
+                    size1 = outList[thePointer1 - 1] + 1;
+            }
+            else
+            {
+                size1 = 0;
+            }
+
+            int size2 = -1;
+            int thePointer2 = theCouplet.getPointer2();
+            if(thePointer2 > -1)
+            {
+                if(outList[thePointer2 - 1] > -1)
+                    size2 = outList[thePointer2 - 1] + 1;
+            }
+            else
+            {
+                size2 = 0;
+            }
+
+            if(size1 == -1 || size2 == -1)
+                continue;
+            else if(size1 > size2)
+                outList[i] = size1;
+            else
+                outList[i] = size2;
+        }
+    }
+    return outList;
+}
+
+void dkCoupletList::arrangeCouplets(int currNumber, QList< dkCouplet > & newList, QVector<int> &treeLgh)
 {
     dkCouplet theCouplet = getCoupletWithNumber(currNumber);
     if(theCouplet.isEmpty())
         return; // couplet with the number was not found
-    int thePointer1 = theCouplet.getPointer1();
-    int thePointer2 = theCouplet.getPointer2();
 
-    if(thePointer1 > -1 && thePointer2 > -1)
-    {
-        dkCouplet couplet1 = getCoupletWithNumber(thePointer1);
-        dkCouplet couplet2 = getCoupletWithNumber(thePointer2);
-        QList<int> chainList1 = couplet1.getPointerChain();
-        QList<int> chainList2 = couplet2.getPointerChain();
-        if(chainList1.size() > chainList2.size())
-            theCouplet.swapLeads(); // move endpoint to first lead
-    }
-    else if(thePointer1 > -1)
-    {
-        theCouplet.swapLeads(); // move endpoint to first lead
-    }
+    int size1;
+    int thePointer1 = theCouplet.getPointer1();
+    if(thePointer1 == -1)
+        size1 = 0;
+    else
+        size1 = treeLgh[thePointer1 - 1] + 1;
+
+    int size2;
+    int thePointer2 = theCouplet.getPointer2();
+    if(thePointer2 == -1)
+        size2 = 0;
+    else
+        size2 = treeLgh[thePointer2 - 1] + 1;
+
+    if(size1 > size2)
+        theCouplet.swapLeads();
+
     newList.push_back(theCouplet);
     thePointer1 = theCouplet.getPointer1(); // in case of swapping
     if(thePointer1 > -1)
-        arrangeCouplets(thePointer1, newList);
+        arrangeCouplets(thePointer1, newList, treeLgh);
     thePointer2 = theCouplet.getPointer2(); // in case of swapping
     if(thePointer2 > -1)
-        arrangeCouplets(thePointer2, newList);
+        arrangeCouplets(thePointer2, newList, treeLgh);
 }
 
 bool dkCoupletList::isNumberingOK()

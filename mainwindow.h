@@ -62,9 +62,11 @@ private slots:
     void editClickedRow(int row, int col=1);
     void swapLeads();
     void reNumber();
+    void arrange();
     void findErrors();
     void viewBrowser();
     void viewHtml();
+    void test();
 
 private:
     void createTable();
@@ -94,6 +96,7 @@ private:
     QAction *editRowAct;
     QAction *swapLeadsAct;
     QAction *renumberAct;
+    QAction *arrangeAct;
     QAction *findErrorsAct;
     QAction *viewBrowserAct;
     QAction *viewHtmlAct;

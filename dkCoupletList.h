@@ -68,7 +68,9 @@ public:
     void removeAt(int i);
     void pointerChain(int currNumber, QList<int> & chainList, QList<QString> &path);
     void findPointerChains();
-    void arrangeCouplets(int currNumber, QList<dkCouplet> &newList);
+    QVector<int> findTreeLength();
+    void arrange();
+    void arrangeCouplets(int currNumber, QList<dkCouplet> &newList, QVector<int> &treeLgh);
     bool isNumberingOK();
     bool isContentOK();
     bool isFromSingle();

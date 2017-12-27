@@ -58,8 +58,6 @@ void MainWindow::createTable()
     table->setStyleSheet("QHeaderView::section { background-color:lightGray }");
     table->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-//    table->model()->setHeaderData(1, Qt::Vertical, Qt::AlignTop , Qt::TextAlignmentRole);
-
     QHeaderView *header = table->horizontalHeader();
     QStringList headerStringList;
     headerStringList<<tr("No.")<<tr("First lead")<<tr("Second lead");
@@ -252,9 +250,11 @@ void MainWindow::updateTableRow(int i)
 
     QString lead1 = theCouplet.getLead1txt();
     table->setItem(i, 1, new QTableWidgetItem(lead1));
+    table->item(i,1)->setTextAlignment(Qt::AlignLeft | Qt::AlignTop);
 
     QString lead2 = theCouplet.getLead2txt();
     table->setItem(i, 2, new QTableWidgetItem(lead2));
+    table->item(i,2)->setTextAlignment(Qt::AlignLeft | Qt::AlignTop);
 }
 
 bool MainWindow::isKeyOK()
@@ -758,9 +758,29 @@ void MainWindow::swapLeads()
 
 void MainWindow::reNumber()
 {
+    if(coupletList.size() == 0)
+        return;
+
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     coupletList.reNumber();
     updateTable();
+    setWindowModified(true);
+    QApplication::restoreOverrideCursor();
+}
+
+void MainWindow::arrange()
+{
+    if(coupletList.size() == 0)
+        return;
+
+    if(!isKeyOK())
+    {
+        findErrors();
+        return;
+    }
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    coupletList.arrange();
+    fillTable();
     setWindowModified(true);
     QApplication::restoreOverrideCursor();
 }
@@ -823,6 +843,9 @@ void MainWindow::createActions()
     renumberAct = new QAction(QIcon(":/images/renumber.png"), tr("&Renumber key"), this);
     connect(renumberAct, SIGNAL(triggered()), this, SLOT(reNumber()));
 
+    arrangeAct = new QAction(tr("&Arrange couplets"), this);
+    connect(arrangeAct, SIGNAL(triggered()), this, SLOT(arrange()));
+
     findErrorsAct = new QAction(QIcon(":/images/error.png"), tr("&Find errors"), this);
     findErrorsAct->setShortcut(tr("Ctrl+E"));
     connect(findErrorsAct, SIGNAL(triggered()), this, SLOT(findErrors()));
@@ -836,6 +859,7 @@ void MainWindow::createActions()
     QString aboutStr = tr("&About %1");
     aboutAct = new QAction(aboutStr.arg(appName), this);
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
+//    connect(aboutAct, SIGNAL(triggered()), this, SLOT(test()));
 
     for (int i = 0; i < MaxRecentFiles; ++i) {
         recentFileActions[i] = new QAction(this);
@@ -876,6 +900,7 @@ void MainWindow::createMenus()
     editMenu->addAction(removeRowAct);
     editMenu->addAction(swapLeadsAct);
     editMenu->addAction(renumberAct);
+    editMenu->addAction(arrangeAct);
     menuBar()->addMenu(editMenu);
 
     debugMenu = new QMenu(tr("&Debug"), this);
@@ -1031,3 +1056,8 @@ MainWindow::~MainWindow()
 {
 
 }
+
+void MainWindow::test()
+{
+}
+

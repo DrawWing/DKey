@@ -66,7 +66,7 @@ dkString dkString::findFrontPart() const
         QChar c = at(i);
         if(c.isLetter())
             break;
-        else
+        else //if(c.isDigit())
             start.append(c);
     }
     return start;

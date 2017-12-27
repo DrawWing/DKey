@@ -159,7 +159,7 @@ void coupletDialog::fillData()
 
     QString endpoint = thisCouplet->getEndpoint1();
     int pointer = thisCouplet->getPointer1();
-    if(endpoint.isEmpty())
+    if(pointer > 0)
     {
         radioRef1->setChecked(true);
         pointer1->setValue(pointer);
@@ -173,7 +173,7 @@ void coupletDialog::fillData()
 
     endpoint = thisCouplet->getEndpoint2();
     pointer = thisCouplet->getPointer2();
-    if(endpoint.isEmpty())
+    if(pointer > 0)
     {
         radioRef2->setChecked(true);
         pointer2->setValue(pointer);
