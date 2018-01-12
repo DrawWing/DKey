@@ -34,6 +34,7 @@ dkCouplet::dkCouplet(const int inNumber)
     endpoint1 = QObject::tr("Endpoint 1.");
     lead2 = QObject::tr("Lead 2.");
     endpoint2 = QObject::tr("Endpoint 2.");
+//    name = "";
 }
 
 dkCouplet::dkCouplet(const QStringList &inTxt)
@@ -121,6 +122,7 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
     txt.chop(endSize);
     txt.chopFront(start.size());
     lead2 = txt.trimmed();
+//    name = "";
 }
 
 void dkCouplet::clear()
@@ -138,6 +140,7 @@ void dkCouplet::clear()
     endpoint2 = "";
     figList2.clear();
     error.clear();
+//    name.clear();
 }
 
 bool dkCouplet::isEmpty() const
@@ -231,6 +234,8 @@ void dkCouplet::fromDkXml(const QDomElement &inElement)
         error += QObject::tr("Error in reading couplet number. \n");
         return;
     }
+
+//    name = inElement.attribute("name");
 
     QDomNode leadNode = inElement.firstChild();
     QDomElement leadElem = leadNode.toElement();
@@ -543,6 +548,11 @@ int dkCouplet::getNumber() const
     return number;
 }
 
+//QString dkCouplet::getName() const
+//{
+//    return name;
+//}
+
 QList<int> dkCouplet::getPointerChain() const
 {
     return pointerChain;
@@ -668,11 +678,16 @@ void dkCouplet::setFrom(QList<int> & inList)
     from = inList;
 }
 
-// use of this function shoulb be careful because maxNumber can change
+// use of this function should be careful because maxNumber can change
 void dkCouplet::setNumber(int inVal)
 {
     number = inVal;
 }
+
+//void dkCouplet::setName(QString inString)
+//{
+//    name = inString;
+//}
 
 QString dkCouplet::getDkTxt() const
 {
@@ -694,16 +709,21 @@ QString dkCouplet::getDkTxt() const
 QString dkCouplet::getDkXml() const
 {
     QString outTxt = QStringLiteral("<couplet number=\"%1\">\n").arg(number);
+//    QString outTxt;
+//    if(name.isEmpty())
+//        outTxt += QStringLiteral("<couplet number=\"%1\">\n").arg(number);
+//    else
+//        outTxt += QStringLiteral("<couplet number=\"%1\" name=\"%2\">\n").arg(number).arg(name);
 
     if(endpoint1.isEmpty())
-        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead> \n").arg(lead1.toHtmlEscaped()).arg(pointer1);
+        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead>\n").arg(lead1.toHtmlEscaped()).arg(pointer1);
     else
-        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead> \n").arg(lead1.toHtmlEscaped()).arg(endpoint1.toHtmlEscaped());
+        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead>\n").arg(lead1.toHtmlEscaped()).arg(endpoint1.toHtmlEscaped());
 
     if(endpoint2.isEmpty())
-        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead> \n").arg(lead2.toHtmlEscaped()).arg(pointer2);
+        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead>\n").arg(lead2.toHtmlEscaped()).arg(pointer2);
     else
-        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead> \n").arg(lead2.toHtmlEscaped()).arg(endpoint2.toHtmlEscaped());
+        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead>\n").arg(lead2.toHtmlEscaped()).arg(endpoint2.toHtmlEscaped());
 
     outTxt += "</couplet>\n";
     return outTxt;

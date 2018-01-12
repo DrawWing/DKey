@@ -26,6 +26,7 @@ class QLineEdit;
 class QGroupBox;
 class QSpinBox;
 class QRadioButton;
+//class QLabel;
 QT_END_NAMESPACE
 
 #include "dkCouplet.h"
@@ -37,6 +38,9 @@ class coupletDialog : public QDialog
 public:
     coupletDialog(QWidget *parent = 0);
     coupletDialog(dkCouplet * inCouplet, int to, QWidget *parent = 0);
+
+//    QLabel * nameLabel;
+//    QLineEdit * nameLineEdit;
 
     QTextEdit *lead1Text;
     QTextEdit *lead2Text;

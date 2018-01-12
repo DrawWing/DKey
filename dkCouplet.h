@@ -45,6 +45,7 @@ public:
     void appendIndented(const QString &inTxt, int lineNumber);
     QList<int> getFrom() const;
     int getNumber() const;
+//    QString getName() const;
     QList<int> getPointerChain() const;
     QList<QString> getLeadChain() const;
     QString getLead1() const;
@@ -62,6 +63,7 @@ public:
     int size() const;
     void setFrom(QList<int> &inList);
     void setNumber(int inVal);
+//    void setName(QString inString);
     void setPointerChain(QList<int> & inList);
     void setLeadChain(QList<QString> & inList);
     void setLead1(QString inTxt);
@@ -102,6 +104,8 @@ private:
     dkString endpoint2;
     QStringList figList2;
     QString error;
+    // name is too complicated use [tag] instead
+//    QString name; // name of the couplet for example "genus Tachina"
 };
 
 #endif // DKCOUPLET_H

@@ -18,15 +18,26 @@
 #include <QHeaderView>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
+#include <QMenuBar>
 #include <QWidget>
 #include <QSplitter>
 #include <QLabel>
+#include <QInputDialog>
+#include <QtGui> // for QGuiApplication
 
 #include "dkView.h"
 
 dkView::dkView(dkCoupletList * inList, QWidget *parent) :
     QMainWindow(parent)
 {
+    coupletList = inList;
+    endpointList = coupletList->getEndpointList();
+    tagList = coupletList->getTagList();
+    filePath = coupletList->getFilePath();
+
+    createActions();
+    createMenus();
+
     lead1Browser = new QTextBrowser(this);
     lead1Browser->setOpenLinks(false);
     lead2Browser = new QTextBrowser(this);
@@ -121,11 +132,68 @@ dkView::dkView(dkCoupletList * inList, QWidget *parent) :
     connect(excludedTab, SIGNAL( cellClicked(int, int) ),
             this, SLOT( clickedExcluded(int, int) ));
 
-    coupletList = inList;
-    endpointList = coupletList->getEndpointList();
-    filePath = coupletList->getFilePath();
-
     goToNumber(1);
+
+}
+
+void dkView::createActions()
+{
+    goToNumberAct = new QAction(tr("&Go to &number"), this);
+    goToNumberAct->setShortcut(tr("Ctrl+N"));
+    connect(goToNumberAct, SIGNAL(triggered()), this, SLOT(goToCouplet()));
+
+    goToTagAct = new QAction(tr("Go to &tag"), this);
+    goToTagAct->setShortcut(tr("Ctrl+T"));
+    connect(goToTagAct, SIGNAL(triggered()), this, SLOT(goToTag()));
+
+    exitAct = new QAction(tr("E&xit"), this);
+    exitAct->setShortcut(tr("Ctrl+Q"));
+    connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
+
+    QString aboutStr = tr("&About %1");
+    aboutAct = new QAction(aboutStr.arg(QGuiApplication::applicationDisplayName()), this);
+    connect(aboutAct, SIGNAL(triggered()), parent(), SLOT(about()));
+
+}
+
+void dkView::createMenus()
+{
+    navMenu = new QMenu(tr("&Navigation"), this);
+    navMenu->addAction(goToNumberAct);
+
+    if(tagList.size() > 0)
+        navMenu->addAction(goToTagAct);
+
+    navMenu->addAction(exitAct);
+    menuBar()->addMenu(navMenu);
+
+    helpMenu = new QMenu(tr("&Help"), this);
+    helpMenu->addAction(aboutAct);
+    menuBar()->addMenu(helpMenu);
+
+}
+
+void dkView::goToCouplet()
+{
+    int max = coupletList->getMaxNumber();
+    bool ok;
+    int inNumber = QInputDialog::getInt(this, tr("Go to couplet"), tr("Go to couplet number:"),
+                                              1, 1, max, 1, &ok);
+    if(!ok)
+        return;
+
+    goToNumber(inNumber);
+}
+
+void dkView::goToTag()
+{
+    bool ok;
+    QString inString = QInputDialog::getItem(this, tr("Go to tag"), tr("Go to tag:"),
+                                              tagList, 0, false, &ok);
+    if(!ok)
+        return;
+
+    goToItemTxt(inString);
 }
 
 void dkView::goToNumber(int inNumber)

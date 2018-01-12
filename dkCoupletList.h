@@ -55,11 +55,13 @@ public:
     QString getHtmlTab() const;
     QString getHtmlImg(bool withPath = true);
     QStringList getEndpointList() const;
+    QStringList getTagList() const;
     void findIntro(QStringList & inTxtList);
     void findFigs();
     void findFrom();
     QList<int> findFrom(int number) const;
     QStringList findEndpoints();
+    QStringList findTags();
     void findRemaining(int inNumber, QList<bool> & outList) const;
     QList<bool> getRemaining(int inNumber) const;
     void push_back(dkCouplet inCouplet);
@@ -90,6 +92,7 @@ private:
 
     QList< dkCouplet > thisList;
     QStringList endpointList;
+    QStringList tagList;
     QString intro;
     int introSize;
     int maxNumber;

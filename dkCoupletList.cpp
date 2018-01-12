@@ -529,6 +529,11 @@ QStringList dkCoupletList::getEndpointList() const
     return endpointList;
 }
 
+QStringList dkCoupletList::getTagList() const
+{
+    return tagList;
+}
+
 void dkCoupletList::findIntro(QStringList & inTxtList)
 {
     introSize = 0;
@@ -651,6 +656,53 @@ QStringList dkCoupletList::findEndpoints()
     }
     endpointList.sort();
     return outList;
+}
+
+// find tags which are strings surrounded by []
+QStringList dkCoupletList::findTags()
+{
+    tagList.clear();
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        int thePointer = thisList[i].getPointer1();
+        if( thePointer != -1 )
+        {
+            QString theLead = thisList[i].getLead1();
+            QRegExp tagRegExp("\\[*\\]");
+            int tagIndex = theLead.lastIndexOf(tagRegExp);
+            if(tagIndex != -1)
+            {
+                int openingIndex = theLead.lastIndexOf("[");
+                ++openingIndex;
+                int closingIndex = theLead.lastIndexOf("]");
+                QString tag = theLead.mid(openingIndex,closingIndex-openingIndex);
+                tag = tag.simplified();
+                QString indexed = QString("%1 - %2").arg(tag).arg(thePointer);
+                tagList.push_back(indexed);
+            }
+        }
+
+        thePointer = thisList[i].getPointer2();
+        if( thePointer != -1 )
+        {
+            QString theLead = thisList[i].getLead2();
+            QRegExp tagRegExp("\\[*\\]");
+            int tagIndex = theLead.lastIndexOf(tagRegExp);
+            if(tagIndex != -1)
+            {
+                int openingIndex = theLead.lastIndexOf("[");
+                ++openingIndex;
+                int closingIndex = theLead.lastIndexOf("]");
+                QString tag = theLead.mid(openingIndex,closingIndex-openingIndex);
+                tag = tag.simplified();
+                QString indexed = QString("%1 - %2").arg(tag).arg(thePointer);
+                tagList.push_back(indexed);
+            }
+        }
+    }
+    tagList.sort();
+    tagList.removeDuplicates();
+    return tagList;
 }
 
 // isNumberingOK needs to be true
@@ -1109,14 +1161,14 @@ bool dkCoupletList::reNumber(int startNumber)
     if(!isNumberUnique())
         return false;
 
-    for(int i = 0; i < thisList.size(); ++i)
+    for(int i = 0, newNumber = startNumber; i < thisList.size(); ++i, ++newNumber)
     {
         dkCouplet currCouplet = thisList.at(i);
         int currNumber = currCouplet.getNumber();
-        int newNumber = startNumber;
-        ++startNumber;
         if(currNumber == newNumber)
+        {
             continue;
+        }
         int nextIndex = getIndexWithNumber(newNumber);
         // there can be only one the same number because isNumerUnique
         if(nextIndex > -1)

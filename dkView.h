@@ -21,6 +21,8 @@
 #include <QTextBrowser>
 #include <QTableWidget>
 #include <QMainWindow>
+#include <QAction>
+#include <QMenu>
 
 #include "dkCoupletList.h"
 
@@ -36,18 +38,32 @@ public slots:
 
 private slots:
     void goToNumber(int inNumber);
+    void goToCouplet();
+    void goToTag();
     void goToEndpoint(bool first);
     void clickedCouplet(QUrl inUrl);
     void clickedPath(int row, int col);
     void clickedRemaining(int row, int col);
     void clickedExcluded(int row, int col);
 private:
+    void createActions();
+    void createMenus();
     void goToItemTxt(const QString & theItemString);
+
+    QAction *goToNumberAct;
+    QAction *goToTagAct;
+    QAction *exitAct;
+    QAction *aboutAct;
+
+    QMenu *navMenu;
+    QMenu *helpMenu;
+    QMenuBar *my_menuBar;
 
     int number;
     dkCoupletList * coupletList;
     dkCouplet currCouplet;
     QStringList endpointList;
+    QStringList tagList;
     QString filePath;
     QTextBrowser *lead1Browser;
     QTextBrowser *lead2Browser;

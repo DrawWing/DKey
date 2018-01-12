@@ -86,6 +86,7 @@ void MainWindow::viewBrowser()
     coupletList.findFigs();
     coupletList.findPointerChains();
     coupletList.findEndpoints();
+    coupletList.findTags();
     if(!isKeyOK())
     {
         findErrors();
@@ -93,7 +94,7 @@ void MainWindow::viewBrowser()
     }
 
     dkView * view = new dkView(&coupletList, this);
-    view->show();
+    view->showMaximized();
 }
 
 void MainWindow::viewHtml()
@@ -116,9 +117,37 @@ void MainWindow::viewEndpoints()
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     coupletList.findEndpoints();
     QStringList endpointList = coupletList.getEndpointList();
+
     QString outTxt;
-    for(int i = 0; i < endpointList.size(); ++i)
-        outTxt += endpointList[i] + "\n";
+    if(endpointList.size() > 0)
+    {
+        outTxt += "List of endpoints:\n";
+        for(int i = 0; i < endpointList.size(); ++i)
+            outTxt += endpointList[i] + "\n";
+    } else
+        outTxt += "No endpoints was found.";
+
+    htmlWindow->setPlainTxt(outTxt);
+    htmlWindow->setWindowTitle(tr("Hypertext viewer"));
+    QApplication::restoreOverrideCursor();
+}
+
+void MainWindow::viewTags()
+{
+    if(coupletList.size() == 0)
+        return;
+
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QStringList tagList = coupletList.findTags();
+
+    QString outTxt;
+    if(tagList.size() > 0)
+    {
+        outTxt += "List of tags:\n";
+        for(int i = 0; i < tagList.size(); ++i)
+            outTxt += tagList[i] + "\n";
+    } else
+        outTxt += "No tags was found.";
     htmlWindow->setPlainTxt(outTxt);
     htmlWindow->setWindowTitle(tr("Hypertext viewer"));
     QApplication::restoreOverrideCursor();
@@ -875,6 +904,9 @@ void MainWindow::createActions()
     viewEndpointsAct = new QAction(tr("&Endpoints"), this);
     connect(viewEndpointsAct, SIGNAL(triggered()), this, SLOT(viewEndpoints()));
 
+    viewTagsAct = new QAction(tr("&Tags"), this);
+    connect(viewTagsAct, SIGNAL(triggered()), this, SLOT(viewTags()));
+
     QString aboutStr = tr("&About %1");
     aboutAct = new QAction(aboutStr.arg(appName), this);
     connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
@@ -930,6 +962,7 @@ void MainWindow::createMenus()
     viewMenu->addAction(viewBrowserAct);
     viewMenu->addAction(viewHtmlAct);
     viewMenu->addAction(viewEndpointsAct);
+    viewMenu->addAction(viewTagsAct);
     menuBar()->addMenu(viewMenu);
 
     helpMenu = new QMenu(tr("&Help"), this);

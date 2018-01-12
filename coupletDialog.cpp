@@ -77,6 +77,13 @@ void coupletDialog::createWidget()
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addStretch(1);
 
+//    // name
+//    nameLabel = new QLabel("Couplet name:");
+//    nameLineEdit = new QLineEdit;
+//    QHBoxLayout *nameLayout = new QHBoxLayout;
+//    nameLayout->addWidget(nameLabel);
+//    nameLayout->addWidget(nameLineEdit);
+
     // lead1
     radioRef1 = new QRadioButton(tr("&Pointer"));
     radioEnd1 = new QRadioButton(tr("&Endpoint"));
@@ -131,6 +138,7 @@ void coupletDialog::createWidget()
 
     // main layout
     QVBoxLayout *mainLayout = new QVBoxLayout;
+//    mainLayout->addLayout(nameLayout);
     mainLayout->addWidget(lead1Box);
     mainLayout->addWidget(lead2Box);
     mainLayout->addLayout(buttonLayout);
@@ -154,6 +162,7 @@ void coupletDialog::createWidget()
 
 void coupletDialog::fillData()
 {
+//    nameLineEdit->setText(thisCouplet->getName());
     lead1Text->setText(thisCouplet->getLead1());
     lead2Text->setText(thisCouplet->getLead2());
 
@@ -201,6 +210,7 @@ void coupletDialog::accept()
     }
 
     // Update the couplet
+//    thisCouplet->setName(nameLineEdit->text());
     thisCouplet->setLead1(lead1Text->toPlainText());
     thisCouplet->setLead2(lead2Text->toPlainText());
 

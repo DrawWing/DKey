@@ -67,6 +67,7 @@ private slots:
     void viewBrowser();
     void viewHtml();
     void viewEndpoints();
+    void viewTags();
     void test();
 
 private:
@@ -102,6 +103,7 @@ private:
     QAction *viewBrowserAct;
     QAction *viewHtmlAct;
     QAction *viewEndpointsAct;
+    QAction *viewTagsAct;
     QAction *aboutAct;
 
     QMenu *fileMenu;
