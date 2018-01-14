@@ -18,15 +18,14 @@
 #include <QtGui>
 #include <QFile>
 #include <QTextStream>
-#include <QDebug>
+//#include <QDebug>
 #include <QFileInfo>
-#include <QLineEdit>
 #include <QApplication>
 #include <QMenuBar>
+//#include <QStatusBar>
 #include <QFileDialog>
 #include <QHeaderView>
-#include <QDebug>
-#include <QElapsedTimer>
+//#include <QElapsedTimer>
 
 #include "mainwindow.h"
 #include "coupletDialog.h"
@@ -42,40 +41,12 @@ MainWindow::MainWindow(QWidget *parent)
     createActions();
     createMenus();
     createToolBars();
+
     readSettings(); //has to be after createActions
     createTable();
     setWindowTitle("[*]");
     htmlWindow = new TxtWindow(this);
     htmlWindow->hide();
-}
-
-void MainWindow::createTable()
-{
-    table = new QTableWidget(this);
-    table->setColumnCount(3);
-    table->setWordWrap(true);
-    table->setAlternatingRowColors(true);
-    table->setStyleSheet("QHeaderView::section { background-color:lightGray }");
-    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-    QHeaderView *header = table->horizontalHeader();
-    QStringList headerStringList;
-    headerStringList<<tr("No.")<<tr("First lead")<<tr("Second lead");
-    table->setHorizontalHeaderLabels(headerStringList);
-
-    header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    header->setSectionResizeMode(1, QHeaderView::Stretch);
-    header->setSectionResizeMode(2, QHeaderView::Stretch);
-
-    QHeaderView *verticalHeader = table->verticalHeader();
-    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
-    verticalHeader->hide();
-
-    table->setSelectionBehavior(QAbstractItemView::SelectRows);
-    connect(table, SIGNAL( cellDoubleClicked(int, int) ),
-            this, SLOT( editClickedRow(int, int) ));
-
-    setCentralWidget(table);
 }
 
 void MainWindow::viewBrowser()
@@ -261,32 +232,49 @@ void MainWindow::appendFile()
     setWindowModified(true);
 }
 
+void MainWindow::createTable()
+{
+    table = new QTableWidget(this);
+    table->setColumnCount(3);
+    table->setWordWrap(true);
+    table->setAlternatingRowColors(true);
+    table->setStyleSheet("QHeaderView::section { background-color:lightGray }");
+    table->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    QHeaderView *header = table->horizontalHeader();
+    QStringList headerStringList;
+    headerStringList<<tr("No.")<<tr("First lead")<<tr("Second lead");
+    table->setHorizontalHeaderLabels(headerStringList);
+
+    header->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(1, QHeaderView::Stretch);
+    header->setSectionResizeMode(2, QHeaderView::Stretch);
+
+    QHeaderView *verticalHeader = table->verticalHeader();
+    verticalHeader->setSectionResizeMode(QHeaderView::ResizeToContents);
+    verticalHeader->hide();
+
+    table->setSelectionBehavior(QAbstractItemView::SelectRows);
+    connect(table, SIGNAL( cellDoubleClicked(int, int) ),
+            this, SLOT( editClickedRow(int, int) ));
+
+    setCentralWidget(table);
+}
 
 void MainWindow::fillTable()
 {
     // clear previous table
-    for(int i = 0; i < table->rowCount(); ++i)
-        table->removeRow(i);
+    while(table->rowCount() > 0)
+        table->removeRow(0);
 
-    table->setRowCount(coupletList.size());
-    updateTable();
+    for(int i = 0; i < coupletList.size(); ++i)
+        insertTabRow(i);
 }
 
 void MainWindow::insertTabRow(int i)
 {
     table->insertRow(i);
-    updateTableRow(i);
-}
 
-void MainWindow::updateTable()
-{
-    for(int i = 0; i < coupletList.size(); ++i)
-        updateTableRow(i);
-}
-
-// used by updateTable and editRow
-void MainWindow::updateTableRow(int i)
-{
     dkCouplet theCouplet = coupletList.at(i);
 
     int theNumber = theCouplet.getNumber();
@@ -300,6 +288,21 @@ void MainWindow::updateTableRow(int i)
     QString lead2 = theCouplet.getLead2txt();
     table->setItem(i, 2, new QTableWidgetItem(lead2));
     table->item(i,2)->setTextAlignment(Qt::AlignLeft | Qt::AlignTop);
+
+}
+
+void MainWindow::updateTable()
+{
+    for(int i = 0; i < coupletList.size(); ++i)
+        updateTableRow(i);
+}
+
+// used by updateTable and editRow
+void MainWindow::updateTableRow(int i)
+{
+    // it is faster to remove the row and insert a new one
+    table->removeRow(i);
+    insertTabRow(i);
 }
 
 bool MainWindow::isKeyOK()
@@ -1097,9 +1100,8 @@ bool MainWindow::okToContinue()
 
 void MainWindow::clear()
 {
-    //    table->clear(); //does not work
-    table->deleteLater();
-    createTable();
+    while(table->rowCount() > 0)
+        table->removeRow(0);
 
     coupletList.clear();
     htmlWindow->hide();

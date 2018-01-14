@@ -21,6 +21,7 @@
 #include <QList>
 #include <QString>
 #include <QDomDocument>
+#include <QStatusBar>
 
 #include "dkCouplet.h"
 
