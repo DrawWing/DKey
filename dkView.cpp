@@ -222,17 +222,30 @@ void dkView::goToNumber(int inNumber)
             ++count;
     }
 
-    remainingTab->setRowCount(count);
-    excludedTab->setRowCount(endpointList.size() - count);
+    //clear tables
+    while(remainingTab->rowCount() > 0)
+        remainingTab->removeRow(0);
+    while(excludedTab->rowCount() > 0)
+        excludedTab->removeRow(0);
+
 
     int tabCount = 0;
     int excludedCount = 0;
     for(int i = 0; i < endpointList.size(); ++i)
     {
         if(remainingList[i])
-            remainingTab->setItem(tabCount++, 0, new QTableWidgetItem(endpointList[i]));
+        {
+            remainingTab->insertRow(tabCount);
+            remainingTab->setItem(tabCount, 0, new QTableWidgetItem(endpointList[i]));
+            ++tabCount;
+        }
         else
-            excludedTab->setItem(excludedCount++, 0, new QTableWidgetItem(endpointList[i]));
+        {
+            excludedTab->insertRow(excludedCount);
+            excludedTab->setItem(excludedCount, 0, new QTableWidgetItem(endpointList[i]));
+            ++excludedCount;
+        }
+
     }
 }
 
