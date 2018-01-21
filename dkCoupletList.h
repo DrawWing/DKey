@@ -55,10 +55,11 @@ public:
     QString getHtml() const;
     QString getHtmlTab() const;
     QString getHtmlImg(bool withPath = true);
+    QStringList getFigList() const;
     QStringList getEndpointList() const;
     QStringList getTagList() const;
     void findIntro(QStringList & inTxtList);
-    void findFigs();
+    QStringList findFigs();
     void findFrom();
     QList<int> findFrom(int number) const;
     QStringList findEndpoints();
@@ -85,6 +86,7 @@ public:
     bool isNumberUnique();
     bool reNumber(int startNumber = 1);
     void updatePointers(int from, int to);
+    int getLastNumber(const QString &inString);
 
 private:
     QList<int> findStartNumbers(const QString & fileName) const;
@@ -92,6 +94,7 @@ private:
     bool isKeyIndented(QStringList &inTxtList);
 
     QList< dkCouplet > thisList;
+    QStringList figList; // for error checking
     QStringList endpointList;
     QStringList tagList;
     QString intro;

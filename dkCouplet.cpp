@@ -34,7 +34,6 @@ dkCouplet::dkCouplet(const int inNumber)
     endpoint1 = QObject::tr("Endpoint 1.");
     lead2 = QObject::tr("Lead 2.");
     endpoint2 = QObject::tr("Endpoint 2.");
-//    name = "";
 }
 
 dkCouplet::dkCouplet(const QStringList &inTxt)
@@ -122,7 +121,6 @@ dkCouplet::dkCouplet(const QStringList &inTxt)
     txt.chop(endSize);
     txt.chopFront(start.size());
     lead2 = txt.trimmed();
-//    name = "";
 }
 
 void dkCouplet::clear()
@@ -140,7 +138,6 @@ void dkCouplet::clear()
     endpoint2 = "";
     figList2.clear();
     error.clear();
-//    name.clear();
 }
 
 bool dkCouplet::isEmpty() const
@@ -234,8 +231,6 @@ void dkCouplet::fromDkXml(const QDomElement &inElement)
         error += QObject::tr("Error in reading couplet number. \n");
         return;
     }
-
-//    name = inElement.attribute("name");
 
     QDomNode leadNode = inElement.firstChild();
     QDomElement leadElem = leadNode.toElement();
@@ -548,11 +543,6 @@ int dkCouplet::getNumber() const
     return number;
 }
 
-//QString dkCouplet::getName() const
-//{
-//    return name;
-//}
-
 QList<int> dkCouplet::getPointerChain() const
 {
     return pointerChain;
@@ -684,11 +674,6 @@ void dkCouplet::setNumber(int inVal)
     number = inVal;
 }
 
-//void dkCouplet::setName(QString inString)
-//{
-//    name = inString;
-//}
-
 QString dkCouplet::getDkTxt() const
 {
     QString outTxt;
@@ -709,11 +694,6 @@ QString dkCouplet::getDkTxt() const
 QString dkCouplet::getDkXml() const
 {
     QString outTxt = QStringLiteral("<couplet number=\"%1\">\n").arg(number);
-//    QString outTxt;
-//    if(name.isEmpty())
-//        outTxt += QStringLiteral("<couplet number=\"%1\">\n").arg(number);
-//    else
-//        outTxt += QStringLiteral("<couplet number=\"%1\" name=\"%2\">\n").arg(number).arg(name);
 
     if(endpoint1.isEmpty())
         outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead>\n").arg(lead1.toHtmlEscaped()).arg(pointer1);
@@ -949,46 +929,91 @@ QString dkCouplet::removeAB(QString & inTxt, bool first) const
         return inTxt;
 }
 
-void dkCouplet::findFigs(QString & path)
+QStringList dkCouplet::findFigs(QString & path)
 {
+    error.clear();
     figList1 = findFigs(lead1, path);
     figList2 = findFigs(lead2, path);
+    QStringList outList = figList1 + figList2;
+    return outList;
 }
 
-QStringList dkCouplet::findFigs(QString & inTxt, QString & path) const
+QStringList dkCouplet::findFigs(QString & inTxt, QString & path)
 {
     QStringList outList;
 
-    std::vector< int > figIndex;
+//    std::vector< int > figIndex;
     QString figPrefix = "fig.";
 
     QDir keyDir(path);
 
-    QStringList strList = inTxt.split(figPrefix, QString::SkipEmptyParts, Qt::CaseInsensitive);
-    for(int i = 1; i < strList.size(); ++i) // start with 1; 0 is first part
+    // split text using brackets in order to restrict search for figures
+    QStringList bracetList = inTxt.split("(", QString::SkipEmptyParts, Qt::CaseInsensitive);
+    for(int i = 0; i < bracetList.size(); ++i)
     {
-        QString theString = strList.at(i);
-        theString = theString.simplified(); // or trimmed
-        // split the string into an alternating sequence of non-word and word tokens
-        QStringList subStrList = theString.split(QRegExp("\\b"));
+        QString theString = bracetList.at(i);
+        if(!theString.contains(figPrefix))
+            continue;
 
-        for(int j = 1; j < subStrList.size(); ++j) // start with 1; 0 is empty string
+        // if immedietly after brace ther is "fig." there can be list of images
+        if(theString.startsWith(figPrefix, Qt::CaseInsensitive) && i > 0)
         {
-            QString subString = subStrList.at(j);
-            subString = subString.simplified();
-            subString.prepend("fig-");
+            QStringList closingBracetList = theString.split(")", QString::SkipEmptyParts, Qt::CaseInsensitive);
+            theString = closingBracetList[0]; // take only the part before closing parenthesis
+            // split the string into an alternating sequence of non-word and word tokens
+            QStringList subStrList = theString.split(QRegExp("\\b"));
 
-            QString fileName = figExist(keyDir, subString);
-            if(fileName.isEmpty())
-                break;
-            else
+            for(int j = 3; j < subStrList.size(); ++j) // start with third 0-separator, 1-fig, 2-separator
             {
-                if(!outList.contains(fileName))
-                    outList.push_back(fileName);
+                QString subString = subStrList.at(j);
+                subString = subString.simplified();
+                subString.prepend("fig-");
+
+                QString fileName = figExist(keyDir, subString);
+                if(fileName.isEmpty())
+                {
+                    error += QString("Image %1 from couplet number %2 was not found.\n").arg(subString).arg(number);
+                } else
+                {
+                    if(!outList.contains(fileName))
+                        outList.push_back(fileName);
+                }
+
+                ++j; //sip separator
+            }
+        } else // find only one imgage file
+        {
+            // split the string into an alternating sequence of non-word and word tokens
+            QStringList subStrList = theString.split(QRegExp("\\b"));
+
+            int j = 1; // start with 1; 0 is empty string
+            for(; j < subStrList.size(); ++j)
+            {
+                QString subString = subStrList.at(j);
+                if(subString == "fig" || subString == "Fig")
+                    break;
+            }
+            ++j; // skip separator
+            ++j;
+            if(j < subStrList.size())
+            {
+                QString subString = subStrList.at(j);
+                subString = subString.simplified();
+                subString.prepend("fig-");
+
+                QString fileName = figExist(keyDir, subString);
+                if(fileName.isEmpty())
+                {
+                    error += QString("Image %1 from couplet number %2 was not found.\n").arg(subString).arg(number);
+                } else
+                {
+                    if(!outList.contains(fileName))
+                        outList.push_back(fileName);
+                }
             }
 
-            ++j; //sip separator
         }
+
     }
 
     return outList;

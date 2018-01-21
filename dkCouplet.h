@@ -45,7 +45,6 @@ public:
     void appendIndented(const QString &inTxt, int lineNumber);
     QList<int> getFrom() const;
     int getNumber() const;
-//    QString getName() const;
     QList<int> getPointerChain() const;
     QList<QString> getLeadChain() const;
     QString getLead1() const;
@@ -63,7 +62,6 @@ public:
     int size() const;
     void setFrom(QList<int> &inList);
     void setNumber(int inVal);
-//    void setName(QString inString);
     void setPointerChain(QList<int> & inList);
     void setLeadChain(QList<QString> & inList);
     void setLead1(QString inTxt);
@@ -82,13 +80,13 @@ public:
     QString getHtmlImg(const QString & path, bool withPath) const;
 //    QString getHtmlImg(QString path = QString()) const;
     QString imgHtml(const QString &path, const QString &inName, bool withPath = true) const;
-    void findFigs(QString & path);
+    QStringList findFigs(QString & path);
     QString figExist(QDir &keyDir, QString & inTxt) const;
     void swapLeads();
     bool isContentOK(void);
 
 private:
-    QStringList findFigs(QString &inTxt, QString & path) const;
+    QStringList findFigs(QString &inTxt, QString & path);
     QString removeAB(QString & inTxt, bool first) const;
 
     int number;
@@ -104,8 +102,6 @@ private:
     dkString endpoint2;
     QStringList figList2;
     QString error;
-    // name is too complicated use [tag] instead
-//    QString name; // name of the couplet for example "genus Tachina"
 };
 
 #endif // DKCOUPLET_H

@@ -55,6 +55,15 @@ dkCouplet dkCoupletList::getCoupletWithNumber(int number) const
 
 int dkCoupletList::getIndexWithNumber(int number) const
 {
+    // if key id consequtive get the quick result
+    if(number > 0 && number < thisList.size()+1)
+    {
+        if(thisList[number-1].getNumber() == number)
+            return number-1;
+    } else
+        return -1;
+
+    // kes is not consequitevely numberd
     for(int i = 0; i < thisList.size(); ++i)
     {
         dkCouplet theCouplet = thisList[i];
@@ -524,6 +533,11 @@ QString dkCoupletList::getHtmlImg(bool withPath)
     return htmlTxt;
 }
 
+QStringList dkCoupletList::getFigList() const
+{
+    return figList;
+}
+
 QStringList dkCoupletList::getEndpointList() const
 {
     return endpointList;
@@ -550,12 +564,16 @@ void dkCoupletList::findIntro(QStringList & inTxtList)
     return;
 }
 
-void dkCoupletList::findFigs()
+QStringList dkCoupletList::findFigs()
 {
+    figList.clear();
+    error.clear();
     for(int i = 0; i < thisList.size(); ++i)
     {
-        thisList[i].findFigs(filePath);
+        figList += thisList[i].findFigs(filePath);
+        error += thisList[i].getError();
     }
+    return figList;
 }
 
 QList<int> dkCoupletList::findStartNumbers(const QString &fileName) const
@@ -1200,6 +1218,17 @@ void dkCoupletList::updatePointers(int from, int to)
         if(thisList[i].getPointer2() == from)
             thisList[i].setPointer2(to);
     }
+}
+
+int dkCoupletList::getLastNumber(const QString & inString)
+{
+    QStringList theList = inString.split("-");
+    QString theString = theList.last().simplified();
+    int theNumber = theString.toInt();
+    if(theNumber < 1 || theNumber > maxNumber)
+        return -1;
+    else
+        return theNumber;
 }
 
 bool dkCoupletList::isKeyIndented(QStringList & inTxtList)

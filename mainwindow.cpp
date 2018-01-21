@@ -25,6 +25,8 @@
 //#include <QStatusBar>
 #include <QFileDialog>
 #include <QHeaderView>
+#include <QInputDialog>
+
 //#include <QElapsedTimer>
 
 #include "mainwindow.h"
@@ -371,6 +373,30 @@ void MainWindow::findErrors()
     htmlWindow->setWindowTitle(tr("Find errors"));
 }
 
+void MainWindow::findImgErrors()
+{
+    QStringList figList = coupletList.findFigs();
+    error = coupletList.getError();
+
+    ///
+    QFileInfo fileInfo(filePath);
+    QString path = fileInfo.absolutePath();
+    QDir inDir( path );
+    QFileInfoList localFileInfoList = inDir.entryInfoList(QStringList("fig-*"), QDir::Files, QDir::Name );
+    for (int i = 0; i < localFileInfoList.size(); ++i) {
+        QFileInfo localFileInfo = localFileInfoList.at(i);
+        QString fileName = localFileInfo.fileName();
+        if(!figList.contains(fileName))
+            error += QString("Image %1 not referenced in the key.\n").arg(fileName);
+    }
+    ///
+
+    if(error.isEmpty())
+        error = tr("No image errors was found.");
+    htmlWindow->setPlainTxt(error);
+    htmlWindow->setWindowTitle(tr("Find image errors"));
+}
+
 void MainWindow::newKey()
 {
     if (!okToContinue())
@@ -482,10 +508,7 @@ bool MainWindow::saveAs()
         return false;
 
     QFileInfo fileInfo(filePath);
-    QString newFileName = filePath;
-    if(fileInfo.completeSuffix().toUpper() != "DK.XML"){
-        newFileName = fileInfo.absolutePath()+"/"+fileInfo.baseName() + ".dk.xml";
-    }
+    QString newFileName = fileInfo.absolutePath()+"/"+fileInfo.baseName();
 
     QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),
                                                     newFileName, tr("DKey files (*.dk.xml)"));
@@ -833,10 +856,44 @@ void MainWindow::arrange()
     QApplication::restoreOverrideCursor();
 }
 
+void MainWindow::goToNumber()
+{
+    if(coupletList.size() == 0)
+        return;
+
+    int max = coupletList.getMaxNumber();
+    bool ok;
+    int inNumber = QInputDialog::getInt(this, tr("Go to couplet"), tr("Go to couplet number:"),
+                                              1, 1, max, 1, &ok);
+    if(!ok)
+        return;
+
+    int index = coupletList.getIndexWithNumber(inNumber);
+    table->selectRow(index);
+}
+
+void MainWindow::goToTag()
+{
+    QStringList tagList = coupletList.findTags();
+    if(tagList.size() == 0)
+        return;
+
+    bool ok;
+    QString inString = QInputDialog::getItem(this, tr("Go to tag"), tr("Go to tag:"),
+                                              tagList, 0, false, &ok);
+    if(!ok)
+        return;
+
+    int inNumber = coupletList.getLastNumber(inString);
+    if( inNumber == -1 )
+        return;
+    int index = coupletList.getIndexWithNumber(inNumber);
+    table->selectRow(index);
+}
+
 void MainWindow::createActions()
 {
     newAct = new QAction(QIcon(":/images/new.png"), tr("&New key"), this);
-    newAct->setShortcut(tr("Ctrl+N"));
     connect(newAct, SIGNAL(triggered()), this, SLOT(newKey()));
 
     openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
@@ -898,6 +955,9 @@ void MainWindow::createActions()
     findErrorsAct->setShortcut(tr("Ctrl+E"));
     connect(findErrorsAct, SIGNAL(triggered()), this, SLOT(findErrors()));
 
+    findImgErrorsAct = new QAction(tr("&Find image errors"), this);
+    connect(findImgErrorsAct, SIGNAL(triggered()), this, SLOT(findImgErrors()));
+
     viewBrowserAct = new QAction(QIcon(":/images/interactive.png"), tr("&Key browser"), this);
     connect(viewBrowserAct, SIGNAL(triggered()), this, SLOT(viewBrowser()));
 
@@ -909,6 +969,14 @@ void MainWindow::createActions()
 
     viewTagsAct = new QAction(tr("&Tags"), this);
     connect(viewTagsAct, SIGNAL(triggered()), this, SLOT(viewTags()));
+
+    goToNumberAct = new QAction(tr("&Go to &number"), this);
+    goToNumberAct->setShortcut(tr("Ctrl+N"));
+    connect(goToNumberAct, SIGNAL(triggered()), this, SLOT(goToNumber()));
+
+    goToTagAct = new QAction(tr("Go to &tag"), this);
+    goToTagAct->setShortcut(tr("Ctrl+T"));
+    connect(goToTagAct, SIGNAL(triggered()), this, SLOT(goToTag()));
 
     QString aboutStr = tr("&About %1");
     aboutAct = new QAction(aboutStr.arg(appName), this);
@@ -959,6 +1027,7 @@ void MainWindow::createMenus()
 
     debugMenu = new QMenu(tr("&Debug"), this);
     debugMenu->addAction(findErrorsAct);
+    debugMenu->addAction(findImgErrorsAct);
     menuBar()->addMenu(debugMenu);
 
     viewMenu = new QMenu(tr("&View"), this);
@@ -967,6 +1036,11 @@ void MainWindow::createMenus()
     viewMenu->addAction(viewEndpointsAct);
     viewMenu->addAction(viewTagsAct);
     menuBar()->addMenu(viewMenu);
+
+    navMenu = new QMenu(tr("&Navigation"), this);
+    navMenu->addAction(goToNumberAct);
+    navMenu->addAction(goToTagAct);
+    menuBar()->addMenu(navMenu);
 
     helpMenu = new QMenu(tr("&Help"), this);
     helpMenu->addAction(aboutAct);

@@ -293,10 +293,8 @@ void dkView::clickedExcluded(int row, int col)
 
 void dkView::goToItemTxt(const QString &theItemString)
 {
-    QStringList theList = theItemString.split("-");
-    QString theString = theList.last().simplified();
-    int theNumber = theString.toInt();
-    if(theNumber < 1 || theNumber > coupletList->getMaxNumber())
+    int theNumber = coupletList->getLastNumber(theItemString);
+    if( theNumber == -1 )
         return;
     int theIndex = coupletList->getIndexWithNumber(theNumber);
     goToNumber(theIndex+1);

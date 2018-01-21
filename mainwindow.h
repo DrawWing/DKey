@@ -62,8 +62,11 @@ private slots:
     void editClickedRow(int row, int col=1);
     void swapLeads();
     void reNumber();
+    void goToTag();
     void arrange();
+    void goToNumber();
     void findErrors();
+    void findImgErrors();
     void viewBrowser();
     void viewHtml();
     void viewEndpoints();
@@ -99,7 +102,10 @@ private:
     QAction *swapLeadsAct;
     QAction *renumberAct;
     QAction *arrangeAct;
+    QAction *goToNumberAct;
+    QAction *goToTagAct;
     QAction *findErrorsAct;
+    QAction *findImgErrorsAct;
     QAction *viewBrowserAct;
     QAction *viewHtmlAct;
     QAction *viewEndpointsAct;
@@ -110,6 +116,7 @@ private:
     QMenu *editMenu;
     QMenu *debugMenu;
     QMenu *viewMenu;
+    QMenu *navMenu;
     QMenu *helpMenu;
 
     QToolBar *fileToolBar;
