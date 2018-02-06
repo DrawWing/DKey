@@ -610,7 +610,8 @@ QString dkCouplet::getLead1html(QString path) const
 {
     QString outTxt;
     if(endpoint1.isEmpty())
-        outTxt = QString ("<a href=\"lead1\">%1. %2</a>").arg(number).arg(lead1);
+        outTxt = QString ("%1. %2<br><a href=\"lead1\">########## Go to: %3 ##########</a>")
+                .arg(number).arg(lead1).arg(pointer1);
     else
         outTxt = QString ("%1. %2<br><b>%3</b>").arg(number).arg(lead1).arg(endpoint1);
 
@@ -626,7 +627,8 @@ QString dkCouplet::getLead2html(QString path) const
 {
     QString outTxt;
     if(endpoint2.isEmpty())
-        outTxt = QString ("<a href=\"lead2\">%1. %2</a>").arg(number).arg(lead2);
+        outTxt = QString ("%1. %2<br><a href=\"lead2\">########## Go to: %3 ##########</a>")
+                .arg(number).arg(lead2).arg(pointer2);
     else
         outTxt = QString ("%1. %2<br><b>%3</b>").arg(number).arg(lead2).arg(endpoint2);
 
@@ -942,7 +944,6 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path)
 {
     QStringList outList;
 
-//    std::vector< int > figIndex;
     QString figPrefix = "fig.";
 
     QDir keyDir(path);
@@ -952,7 +953,7 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path)
     for(int i = 0; i < bracetList.size(); ++i)
     {
         QString theString = bracetList.at(i);
-        if(!theString.contains(figPrefix))
+        if(!theString.contains(figPrefix, Qt::CaseInsensitive))
             continue;
 
         // if immedietly after brace ther is "fig." there can be list of images

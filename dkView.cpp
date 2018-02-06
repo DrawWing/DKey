@@ -245,7 +245,6 @@ void dkView::goToNumber(int inNumber)
             excludedTab->setItem(excludedCount, 0, new QTableWidgetItem(endpointList[i]));
             ++excludedCount;
         }
-
     }
 }
 
