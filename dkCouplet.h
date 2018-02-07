@@ -78,7 +78,6 @@ public:
     QString getHtml() const;
     QString getHtmlTab() const;
     QString getHtmlImg(const QString & path, bool withPath) const;
-//    QString getHtmlImg(QString path = QString()) const;
     QString imgHtml(const QString &path, const QString &inName, bool withPath = true) const;
     QStringList findFigs(QString & path);
     QString figExist(QDir &keyDir, QString & inTxt) const;

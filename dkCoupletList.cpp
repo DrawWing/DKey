@@ -60,8 +60,7 @@ int dkCoupletList::getIndexWithNumber(int number) const
     {
         if(thisList[number-1].getNumber() == number)
             return number-1;
-    } else
-        return -1;
+    }
 
     // kes is not consequitevely numberd
     for(int i = 0; i < thisList.size(); ++i)

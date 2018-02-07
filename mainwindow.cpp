@@ -446,6 +446,7 @@ bool MainWindow::loadFile(const QString & fileName)
 
     //    qDebug() << timer.elapsed() << "clear";
 
+    /// move to function used by append and load
     QDomDocument xmlDoc;
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly))
@@ -471,6 +472,8 @@ bool MainWindow::loadFile(const QString & fileName)
 
 
     file.close();
+    ///
+
     coupletList.fromDkXml(xmlDoc);
 
     QApplication::restoreOverrideCursor();
