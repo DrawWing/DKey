@@ -804,6 +804,7 @@ void MainWindow::editClickedRow(int row, int col)
     if (dialog.exec()) {
         coupletList.setCouplet(theCouplet, row);
         updateTableRow(row);
+        table->selectRow(row);
         setWindowModified(true);
     }
     --col; // to prevent error messages
@@ -1011,7 +1012,6 @@ void MainWindow::createMenus()
     fileMenu->addAction(saveAct);
     fileMenu->addAction(saveAsAct);
     fileMenu->addAction(exportHtmlAct);
-    //    fileMenu->addAction(showStepsAct);
 
     separatorAction = fileMenu->addSeparator();
     for (int i = 0; i < MaxRecentFiles; ++i)
@@ -1031,7 +1031,7 @@ void MainWindow::createMenus()
     editMenu->addAction(removeRowAct);
     editMenu->addAction(swapLeadsAct);
     editMenu->addAction(renumberAct);
-    editMenu->addAction(arrangeAct);
+//    editMenu->addAction(arrangeAct);
     menuBar()->addMenu(editMenu);
 
     debugMenu = new QMenu(tr("&Debug"), this);
