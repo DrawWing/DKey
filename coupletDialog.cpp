@@ -197,7 +197,8 @@ void coupletDialog::fillData()
 
 void coupletDialog::accept()
 {
-    if(isNumber(endpoint1->text()) || isNumber(endpoint2->text()))
+    if( (isNumber(endpoint1->text()) && !radioRef1->isChecked())
+            || (isNumber(endpoint2->text()) && !radioRef2->isChecked()) )
     {
         QMessageBox msgBox;
         msgBox.setText("Normally numbers are set to pointers not to endpoints.");
