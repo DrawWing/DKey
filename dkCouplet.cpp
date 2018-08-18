@@ -563,24 +563,6 @@ QString dkCouplet::getLead2() const
     return lead2;
 }
 
-QString dkCouplet::getTxt() const
-{
-    QString outTxt;
-    if(endpoint1.isEmpty())
-        outTxt = QString ("%1\t%2").arg(lead1).arg(pointer1);
-    else
-        outTxt = QString ("%1\t%2").arg(lead1).arg(endpoint1);
-
-    outTxt += "\n";
-
-    if(endpoint2.isEmpty())
-        outTxt += QString ("%1\t%2").arg(lead2).arg(pointer2);
-    else
-        outTxt += QString ("%1\t%2").arg(lead2).arg(endpoint2);
-
-    return outTxt;
-}
-
 QString dkCouplet::getLead1txt() const
 {
     QString outTxt;
@@ -713,12 +695,26 @@ QString dkCouplet::getDkXml() const
 
 QString dkCouplet::getRtf() const
 {
-    QString outTxt;
+    // couplet number
+    QString outTxt = QString::number(number);
+    // number of previous couplet
+    if(from.size() > 0)
+    {
+        outTxt += QString("(%1").arg(from.at(0));
+        for(int i = 1; i < from.size(); ++i)
+            outTxt += QStringLiteral(", %1").arg(from.at(i));
+        outTxt += ")";
+    }
+    // if the couplet label is long add space otherwise add tabulator
+    if(outTxt.size() > 5)
+        outTxt += QString(" ");
+    else
+        outTxt += QString("\\tab ");
 
     if(endpoint1.isEmpty())
-        outTxt += QString("%1\\tab %2\\tab %3\\par\n").arg(number).arg(lead1.getRtf()).arg(pointer1);
+        outTxt += QString("%1\\tab %2\\par\n").arg(lead1.getRtf()).arg(pointer1);
     else
-        outTxt += QString("%1\\tab %2\\tab %3\\par\n").arg(number).arg(lead1.getRtf()).arg(endpoint1.getRtf());
+        outTxt += QString("%1\\tab %2\\par\n").arg(lead1.getRtf()).arg(endpoint1.getRtf());
 
     if(endpoint2.isEmpty())
         outTxt += QString("-\\tab %1\\tab %2\\par\n").arg(lead2.getRtf()).arg(pointer2);
@@ -728,19 +724,64 @@ QString dkCouplet::getRtf() const
     return outTxt;
 }
 
+QString dkCouplet::getTxt() const
+{
+    // couplet number
+    QString outTxt = QString::number(number);
+    // number of previous couplet
+    if(from.size() > 0)
+    {
+        outTxt += QString("(%1").arg(from.at(0));
+        for(int i = 1; i < from.size(); ++i)
+            outTxt += QStringLiteral(", %1").arg(from.at(i));
+        outTxt += ")";
+    }
+    outTxt += QString("\t%1\t").arg(lead1);
+
+    if(endpoint1.isEmpty())
+        outTxt += QString("%1\n").arg(pointer1);
+    else
+        outTxt += QString("%1\n").arg(endpoint1);
+
+    if(endpoint2.isEmpty())
+        outTxt += QString("-\t%1\t%2\n").arg(lead2).arg(pointer2);
+    else
+        outTxt += QString("-\t%1\t%2\n").arg(lead2).arg(endpoint2);
+
+    return outTxt;
+}
+
+// format number of previous couplet
+QString dkCouplet::previousTxt() const
+{
+    QString fromTxt;
+    if(from.size() == 0)
+    {
+        fromTxt = "";
+    }
+    else
+    {
+        fromTxt = QStringLiteral("(<a href=\"#k%1\">%1</a>").arg(from.at(0));
+        for(int i = 1; i < from.size(); ++i)
+            fromTxt += QStringLiteral(", <a href=\"#k%1\">%1</a>").arg(from.at(i));
+        fromTxt += ")";
+    }
+    return fromTxt;
+}
+
 QString dkCouplet::getHtml() const
 {
     QString htmlTxt;
 
     if(endpoint1.isEmpty())
-        htmlTxt += QStringLiteral("<b id=\"k%1\">%1</b>. %2 <a href=\"#k%3\">%3</a><br>").arg(number).arg(lead1).arg(pointer1);
+        htmlTxt += QStringLiteral("<p id=\"k%1\" class=\"couplet1\">%1%2 %3 <a href=\"#k%4\">%4</a></p>\n").arg(number).arg(previousTxt()).arg(lead1).arg(pointer1);
     else
-        htmlTxt += QStringLiteral("<b id=\"k%1\">%1</b>. %2 <b>%3</b><br>").arg(number).arg(lead1).arg(endpoint1);
+        htmlTxt += QStringLiteral("<p id=\"k%1\" class=\"couplet1\">%1%2 %3 <b>%4</b></p>\n").arg(number).arg(previousTxt()).arg(lead1).arg(endpoint1);
 
     if(endpoint2.isEmpty())
-        htmlTxt += QStringLiteral("<b>-</b> %1 <a href=\"#k%2\">%2</a><br>").arg(lead2).arg(pointer2);
+        htmlTxt += QStringLiteral("<p class=\"couplet2\">- %1 <a href=\"#k%2\">%2</a></p>\n").arg(lead2).arg(pointer2);
     else
-        htmlTxt += QStringLiteral("<b>-</b> %1 <b>%2</b><br>").arg(lead2).arg(endpoint2);
+        htmlTxt += QStringLiteral("<p class=\"couplet2\">- %1 <b>%2</b></p>\n").arg(lead2).arg(endpoint2);
 
     return htmlTxt;
 }
@@ -751,7 +792,7 @@ QString dkCouplet::getHtmlTab() const
 
     htmlTxt += "<tr>";
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"3%\">";
-    htmlTxt += QString("<div id=\"k%1\">%1</div>").arg(number);
+    htmlTxt += QString("<div id=\"k%1\">%1%2</div>").arg(number).arg(previousTxt());
     htmlTxt += "</td>";
 
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"97%\">";
@@ -782,7 +823,7 @@ QString dkCouplet::getHtmlImg(const QString & path, bool withPath) const
 {
     QString htmlTxt;
 
-    htmlTxt = QStringLiteral("<br><b id=\"k%1\">%1</b>.<br>").arg(number);
+    htmlTxt = QStringLiteral("<br><div id=\"k%1\">%1%2</div>").arg(number).arg(previousTxt());
     htmlTxt += "<table border=\"1\" cellpadding=\"10\" cellspacing=\"0\" style=\"border-collapse: collapse\" bordercolor=\"#111111\" width=\"100%\">\n";
     htmlTxt += "<tr>";
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"50%\">";

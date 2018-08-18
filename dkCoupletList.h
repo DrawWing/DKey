@@ -52,6 +52,7 @@ public:
     QString getDkTxt() const;
     QString getDkXml() const;
     QString getRtf() const;
+    QString getTxt() const;
     QString getHtml() const;
     QString getHtmlTab() const;
     QString getHtmlImg(bool withPath = true);

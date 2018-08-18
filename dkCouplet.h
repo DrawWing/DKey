@@ -49,7 +49,6 @@ public:
     QList<QString> getLeadChain() const;
     QString getLead1() const;
     QString getLead2() const;
-    QString getTxt() const;
     QString getLead1txt() const;
     QString getLead2txt() const;
     QString getLead1html(QString path = QString()) const;
@@ -75,6 +74,8 @@ public:
     QString getDkTxt() const;
     QString getDkXml() const;
     QString getRtf() const;
+    QString getTxt() const;
+    QString previousTxt() const;
     QString getHtml() const;
     QString getHtmlTab() const;
     QString getHtmlImg(const QString & path, bool withPath) const;

@@ -578,7 +578,7 @@ void MainWindow::exportKey()
     QString selectedFilter = tr("Formated text RTF (*.rtf)");
     QString fileName = QFileDialog::getSaveFileName
             (this, tr("Export the key as"), outName,
-             tr("Formated text RTF (*.rtf);;Simple HTML (*.html);;HTML table (*.html);;HTML with images (*.html)"),
+             tr("Text (*.txt);;Formated text RTF (*.rtf);;Simple HTML (*.html);;HTML table (*.html);;HTML with images (*.html)"),
              &selectedFilter
              );
     if (fileName.isEmpty())
@@ -596,8 +596,11 @@ void MainWindow::exportKey()
     }
 
     QString htmlTxt;
+    coupletList.findFrom();
     if(selectedFilter == "Formated text RTF (*.rtf)")
         htmlTxt = coupletList.getRtf();
+    else if(selectedFilter == "Text (*.txt)")
+        htmlTxt = coupletList.getTxt();
     else if(selectedFilter == "Simple HTML (*.html)")
         htmlTxt = coupletList.getHtml();
     else if(selectedFilter == "HTML table (*.html)")

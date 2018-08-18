@@ -476,10 +476,11 @@ QString dkCoupletList::getDkXml() const
 QString dkCoupletList::getRtf() const
 {
     QString outTxt = "{\\rtf1\\ansi"; // rtf version and encoding
+    outTxt += "{\\fonttbl {\\f0 Courier;}}"; // font
     outTxt += "\\paperw11906\\paperh16838"; // A4 paper size
     outTxt += "\\margl1417\\margr1417\\margt1417\\margb1417"; // margings 25 mm
-    outTxt += "\\fi-567\\li567"; // hanging indent 10 mm
-    outTxt += "\\tx567\\tqr\\tldot\\tx8931\n"; // first tab at 10 mm, second tab to the right with leading dots at right margin
+    outTxt += "\\fi-1000\\li1000"; // hanging indent 17.63 mm
+    outTxt += "\\tx1000\\tqr\\tldot\\tx8931\n"; // first tab at 17.63 mm, second tab to the right with leading dots at right margin
     for(int i = 0; i < thisList.size(); ++i)
     {
         QString theTxt = thisList[i].getRtf();
@@ -492,9 +493,23 @@ QString dkCoupletList::getRtf() const
     return outTxt;
 }
 
+QString dkCoupletList::getTxt() const
+{
+    QString outTxt;
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        QString theTxt = thisList[i].getTxt();
+        outTxt += theTxt;
+    }
+    return outTxt;
+}
+
 QString dkCoupletList::getHtml() const
 {
-    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>";
+    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
+    htmlTxt += "<style>\n.couplet1 {\n  padding-left: 50px;\n  text-indent: -50px;\n  margin-bottom: 0px;\n}";
+    htmlTxt += ".couplet2 {\n  padding-left: 50px;\n  text-indent: -50px;\n  margin-top: 0px;\n}\n</style>\n";
+
     for(int i = 0; i < thisList.size(); ++i)
     {
         dkCouplet theCouplet = thisList[i];
