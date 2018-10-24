@@ -18,7 +18,6 @@
 #include <QtGui>
 #include <QFile>
 #include <QTextStream>
-//#include <QDebug>
 #include <QFileInfo>
 #include <QApplication>
 #include <QMenuBar>
@@ -26,8 +25,8 @@
 #include <QFileDialog>
 #include <QHeaderView>
 #include <QInputDialog>
-
 //#include <QElapsedTimer>
+//#include <QDebug>
 
 #include "mainwindow.h"
 #include "coupletDialog.h"
@@ -76,6 +75,7 @@ void MainWindow::viewHtml()
         return;
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    coupletList.findFrom();
     QString htmlTxt = coupletList.getHtmlImg();
     htmlWindow->setHtml(htmlTxt);
     htmlWindow->setWindowTitle(tr("Hypertext viewer"));
@@ -94,13 +94,13 @@ void MainWindow::viewEndpoints()
     QString outTxt;
     if(endpointList.size() > 0)
     {
-        outTxt += "List of endpoints:\n";
+        outTxt += "List of endpoints:<br />";
         for(int i = 0; i < endpointList.size(); ++i)
-            outTxt += endpointList[i] + "\n";
+            outTxt += endpointList[i] + "<br />";
     } else
         outTxt += "No endpoints was found.";
 
-    htmlWindow->setPlainTxt(outTxt);
+    htmlWindow->setHtml(outTxt);
     htmlWindow->setWindowTitle(tr("Hypertext viewer"));
     QApplication::restoreOverrideCursor();
 }
@@ -116,12 +116,13 @@ void MainWindow::viewTags()
     QString outTxt;
     if(tagList.size() > 0)
     {
-        outTxt += "List of tags:\n";
+        outTxt += "List of tags:<br />";
         for(int i = 0; i < tagList.size(); ++i)
-            outTxt += tagList[i] + "\n";
+            outTxt += tagList[i] + "<br />";
     } else
         outTxt += "No tags was found.";
-    htmlWindow->setPlainTxt(outTxt);
+
+    htmlWindow->setHtml(outTxt);
     htmlWindow->setWindowTitle(tr("Hypertext viewer"));
     QApplication::restoreOverrideCursor();
 }
@@ -575,10 +576,10 @@ void MainWindow::exportKey()
 
     QFileInfo fileInfo(filePath);
     QString outName = fileInfo.path()+"/"+fileInfo.baseName()+".rtf";
-    QString selectedFilter = tr("Formated text RTF (*.rtf)");
+    QString selectedFilter = tr("HTML with images (*.html)");
     QString fileName = QFileDialog::getSaveFileName
             (this, tr("Export the key as"), outName,
-             tr("Text (*.txt);;Formated text RTF (*.rtf);;Simple HTML (*.html);;HTML table (*.html);;HTML with images (*.html)"),
+             tr("Text (*.txt);;Formated text RTF (*.rtf);;HTML with tabulators (*.html);;HTML table (*.html);;HTML with images (*.html)"),
              &selectedFilter
              );
     if (fileName.isEmpty())
@@ -601,8 +602,8 @@ void MainWindow::exportKey()
         htmlTxt = coupletList.getRtf();
     else if(selectedFilter == "Text (*.txt)")
         htmlTxt = coupletList.getTxt();
-    else if(selectedFilter == "Simple HTML (*.html)")
-        htmlTxt = coupletList.getHtml();
+    else if(selectedFilter == "HTML with tabulators (*.html)")
+        htmlTxt = coupletList.getHtmlTabulator();
     else if(selectedFilter == "HTML table (*.html)")
         htmlTxt = coupletList.getHtmlTab();
     else if(selectedFilter == "HTML with images (*.html)")
@@ -1085,7 +1086,7 @@ void MainWindow::about()
                          "<p><b>%1 version %2</b></p>"
                          "<p>Author: Adam Tofilski</p>"
                          "<p>Home page: <a href=\"http://drawwing.org/dkey\">drawwing.org/dkey</a></p>"
-                         "<p>If you find this software useful please cite it:<br>Tofilski A (2018) DKey software for editing and browsing dichotomous keys. ZooKeys 735: 131-140. <a href=\"https://doi.org/10.3897/zookeys.735.21412\">https://doi.org/10.3897/zookeys.735.21412</a></p>"
+                         "<p>If you find this software useful please cite it:<br />Tofilski A (2018) DKey software for editing and browsing dichotomous keys. ZooKeys 735: 131-140. <a href=\"https://doi.org/10.3897/zookeys.735.21412\">https://doi.org/10.3897/zookeys.735.21412</a></p>"
                          "<p>This program is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>"
                          "<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. </p>"
                          "<p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.</p>"

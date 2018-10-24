@@ -195,9 +195,6 @@ void dkCoupletList::parse1numberKey(QStringList & inTxtList)
 
         if(line.startsWithDigit())
         {
-//            line.removeFrontNonLetterAndDigit();
-//            QString digits = line.frontDigits();
-
             dkCouplet newCouplet(coupletTxt);
             thisList.push_back(newCouplet);
 
@@ -488,7 +485,14 @@ QString dkCoupletList::getRtf() const
     }
     outTxt += "}";
 
-    outTxt.replace("<br>","\\line ");
+    outTxt.replace("&lt;","<");
+    outTxt.replace("&gt;",">");
+    outTxt.replace("&quot;","\"");
+    outTxt.replace("&amp;","&");
+
+    outTxt.replace("<br />","\\line ");
+    outTxt.replace("<span style=\" font-style:italic;\">","\\i ");
+    outTxt.replace("</span>","\\i0 ");
 
     return outTxt;
 }
@@ -507,7 +511,7 @@ QString dkCoupletList::getTxt() const
 QString dkCoupletList::getHtml() const
 {
     QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
-    htmlTxt += "<style>\n.couplet1 {\n  padding-left: 50px;\n  text-indent: -50px;\n  margin-bottom: 0px;\n}";
+    htmlTxt += "<style>\n.couplet1 {\n  padding-left: 50px;\n  text-indent: -50px;\n  margin-bottom: 0px;\n}\n";
     htmlTxt += ".couplet2 {\n  padding-left: 50px;\n  text-indent: -50px;\n  margin-top: 0px;\n}\n</style>\n";
 
     for(int i = 0; i < thisList.size(); ++i)
@@ -516,6 +520,23 @@ QString dkCoupletList::getHtml() const
         QString theHtml = theCouplet.getHtml();
         htmlTxt.append(theHtml);
     }
+
+    return htmlTxt;
+}
+
+QString dkCoupletList::getHtmlTabulator() const
+{
+    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
+    htmlTxt += "<pre>\n";
+
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        dkCouplet theCouplet = thisList[i];
+        QString theHtml = theCouplet.getHtmlTabulator();
+        htmlTxt.append(theHtml);
+    }
+
+    htmlTxt += "</pre>\n";
     return htmlTxt;
 }
 
@@ -852,13 +873,13 @@ void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList,
             QString leadTxt;
             if(currNumber == prevPointer1)
             {
-                leadTxt = prevCouplet.getLead1();
+                leadTxt = prevCouplet.getLead1txt();
             }
             else
             {
-                leadTxt = prevCouplet.getLead2();
+                leadTxt = prevCouplet.getLead2txt();
             }
-            leadTxt.replace("<br>", "\n");
+//            leadTxt.replace("<br />", "\n");
             QString longLead = QString ("%1. %2").arg(prevCouplet.getNumber()).arg(leadTxt);
             path.push_back(longLead);
 

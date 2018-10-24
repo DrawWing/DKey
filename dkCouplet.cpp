@@ -563,28 +563,25 @@ QString dkCouplet::getLead2() const
     return lead2;
 }
 
+// get text only for QTableWidget
 QString dkCouplet::getLead1txt() const
 {
     QString outTxt;
-    QString leadTxt = lead1;
-    leadTxt.replace("<br>","\n");
     if(pointer1 > 0)
-//        if(endpoint1.isEmpty())
-        outTxt = QString ("%1 - %2").arg(leadTxt).arg(pointer1);
+        outTxt = QString ("%1 - %2").arg(lead1.toPlainText()).arg(pointer1);
     else
-        outTxt = QString ("%1 - %2").arg(leadTxt).arg(endpoint1);
+        outTxt = QString ("%1 - %2").arg(lead1.toPlainText()).arg(endpoint1.toPlainText());
     return outTxt;
 }
 
+// get text only for QTableWidget
 QString dkCouplet::getLead2txt() const
 {
     QString outTxt;
-    QString leadTxt = lead2;
-    leadTxt.replace("<br>","\n");
     if(pointer2 > 0)
-        outTxt = QString ("%1 - %2").arg(leadTxt).arg(pointer2);
+        outTxt = QString ("%1 - %2").arg(lead2.toPlainText()).arg(pointer2);
     else
-        outTxt = QString ("%1 - %2").arg(leadTxt).arg(endpoint2);
+        outTxt = QString ("%1 - %2").arg(lead2.toPlainText()).arg(endpoint2.toPlainText());
     return outTxt;
 }
 
@@ -592,13 +589,13 @@ QString dkCouplet::getLead1html(QString path) const
 {
     QString outTxt;
     if(endpoint1.isEmpty())
-        outTxt = QString ("%1. %2<br><a href=\"lead1\">########## Go to: %3 ##########</a>")
+        outTxt = QString ("%1. %2<br><a href=\"lead1\">Go to couplet: %3</a>")
                 .arg(number).arg(lead1).arg(pointer1);
     else
         outTxt = QString ("%1. %2<br><b>%3</b>").arg(number).arg(lead1).arg(endpoint1);
 
     if(figList1.size() > 0)
-        outTxt += QString("<br>");
+        outTxt += QString("<br />");
     for(int j = 0; j < figList1.size(); ++j)
         outTxt += imgHtml(path, figList1[j]);
 
@@ -609,13 +606,13 @@ QString dkCouplet::getLead2html(QString path) const
 {
     QString outTxt;
     if(endpoint2.isEmpty())
-        outTxt = QString ("%1. %2<br><a href=\"lead2\">########## Go to: %3 ##########</a>")
+        outTxt = QString ("%1. %2<br><a href=\"lead2\">Go to couplet: %3</a>")
                 .arg(number).arg(lead2).arg(pointer2);
     else
         outTxt = QString ("%1. %2<br><b>%3</b>").arg(number).arg(lead2).arg(endpoint2);
 
     if(figList2.size() > 0)
-        outTxt += QString("<br>");
+        outTxt += QString("<br />");
     for(int j = 0; j < figList2.size(); ++j)
         outTxt += imgHtml(path, figList2[j]);
 
@@ -736,17 +733,45 @@ QString dkCouplet::getTxt() const
             outTxt += QStringLiteral(", %1").arg(from.at(i));
         outTxt += ")";
     }
-    outTxt += QString("\t%1\t").arg(lead1);
+
+    dkString simpleTxt = lead1;
+    simpleTxt.replace("<br />", " ");
+    simpleTxt.removeHtml();
+    outTxt += QString("\t%1\t").arg(simpleTxt);
 
     if(endpoint1.isEmpty())
         outTxt += QString("%1\n").arg(pointer1);
     else
-        outTxt += QString("%1\n").arg(endpoint1);
+    {
+        dkString simpleTxt = endpoint1;
+        simpleTxt.replace("<br />", " ");
+        simpleTxt.removeHtml();
+        outTxt += QString("%1\n").arg(simpleTxt);
+    }
+
+    simpleTxt = lead2;
+    simpleTxt.replace("<br />", " ");
+    simpleTxt.removeHtml();
+    outTxt += QString("-\t%1\t").arg(simpleTxt);
 
     if(endpoint2.isEmpty())
-        outTxt += QString("-\t%1\t%2\n").arg(lead2).arg(pointer2);
+        outTxt += QString("%1\n").arg(pointer2);
     else
-        outTxt += QString("-\t%1\t%2\n").arg(lead2).arg(endpoint2);
+    {
+        dkString simpleTxt = endpoint2;
+        simpleTxt.replace("<br />", " ");
+        simpleTxt.removeHtml();
+        outTxt += QString("%1\n").arg(simpleTxt);
+    }
+
+//    if(endpoint2.isEmpty())
+//        outTxt += QString("-\t%1\t%2\n").arg(lead2).arg(pointer2);
+//    else
+//    {
+//        dkString simpleTxt = endpoint2;
+//        simpleTxt.removeHtml();
+//        outTxt += QString("-\t%1\t%2\n").arg(lead2).arg(simpleTxt);
+//    }
 
     return outTxt;
 }
@@ -774,14 +799,44 @@ QString dkCouplet::getHtml() const
     QString htmlTxt;
 
     if(endpoint1.isEmpty())
-        htmlTxt += QStringLiteral("<p id=\"k%1\" class=\"couplet1\">%1%2 %3 <a href=\"#k%4\">%4</a></p>\n").arg(number).arg(previousTxt()).arg(lead1).arg(pointer1);
+        htmlTxt += QStringLiteral("<p id=\"k%1\" class=\"couplet1\">%1%2 %3 — <a href=\"#k%4\">%4</a></p>\n").arg(number).arg(previousTxt()).arg(lead1).arg(pointer1);
     else
-        htmlTxt += QStringLiteral("<p id=\"k%1\" class=\"couplet1\">%1%2 %3 <b>%4</b></p>\n").arg(number).arg(previousTxt()).arg(lead1).arg(endpoint1);
+        htmlTxt += QStringLiteral("<p id=\"k%1\" class=\"couplet1\">%1%2 %3 — %4</p>\n").arg(number).arg(previousTxt()).arg(lead1).arg(endpoint1);
 
     if(endpoint2.isEmpty())
-        htmlTxt += QStringLiteral("<p class=\"couplet2\">- %1 <a href=\"#k%2\">%2</a></p>\n").arg(lead2).arg(pointer2);
+        htmlTxt += QStringLiteral("<p class=\"couplet2\">- %1 — <a href=\"#k%2\">%2</a></p>\n").arg(lead2).arg(pointer2);
     else
-        htmlTxt += QStringLiteral("<p class=\"couplet2\">- %1 <b>%2</b></p>\n").arg(lead2).arg(endpoint2);
+        htmlTxt += QStringLiteral("<p class=\"couplet2\">- %1 — %2</p>\n").arg(lead2).arg(endpoint2);
+
+    return htmlTxt;
+}
+
+QString dkCouplet::getHtmlTabulator() const
+{
+    QString htmlTxt;
+
+    QString fromTxt;
+    if(from.size() == 0)
+    {
+        fromTxt = "";
+    }
+    else
+    {
+        fromTxt = QStringLiteral("(%1").arg(from.at(0));
+        for(int i = 1; i < from.size(); ++i)
+            fromTxt += QStringLiteral(", %1").arg(from.at(i));
+        fromTxt += ")";
+    }
+
+    if(endpoint1.isEmpty())
+        htmlTxt += QStringLiteral("%1%2 \t%3 \t%4\n").arg(number).arg(fromTxt).arg(lead1).arg(pointer1);
+    else
+        htmlTxt += QStringLiteral("%1%2 \t%3 \t%4\n").arg(number).arg(fromTxt).arg(lead1).arg(endpoint1);
+
+    if(endpoint2.isEmpty())
+        htmlTxt += QStringLiteral("- \t%1 \t%2\n").arg(lead2).arg(pointer2);
+    else
+        htmlTxt += QStringLiteral("- \t%1 \t%2\n").arg(lead2).arg(endpoint2);
 
     return htmlTxt;
 }
@@ -823,23 +878,23 @@ QString dkCouplet::getHtmlImg(const QString & path, bool withPath) const
 {
     QString htmlTxt;
 
-    htmlTxt = QStringLiteral("<br><div id=\"k%1\">%1%2</div>").arg(number).arg(previousTxt());
+    htmlTxt = QStringLiteral("<br /><div id=\"k%1\">%1%2</div>").arg(number).arg(previousTxt());
     htmlTxt += "<table border=\"1\" cellpadding=\"10\" cellspacing=\"0\" style=\"border-collapse: collapse\" bordercolor=\"#111111\" width=\"100%\">\n";
     htmlTxt += "<tr>";
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"50%\">";
     if(endpoint1.isEmpty())
-        htmlTxt += QStringLiteral("%1<br><a href=\"#k%2\">%2</a><br>").arg(lead1).arg(pointer1);
+        htmlTxt += QStringLiteral("%1<br><a href=\"#k%2\">%2</a><br />").arg(lead1).arg(pointer1);
     else
-        htmlTxt += QStringLiteral("%1<br><b>%2</b><br>").arg(lead1).arg(endpoint1);
+        htmlTxt += QStringLiteral("%1<br><b>%2</b><br />").arg(lead1).arg(endpoint1);
     for(int j = 0; j < figList1.size(); ++j)
         htmlTxt += imgHtml(path, figList1[j], withPath);
     htmlTxt += "</td>";
 
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"50%\">";
     if(endpoint2.isEmpty())
-        htmlTxt += QStringLiteral("%1<br><a href=\"#k%2\">%2</a><br>").arg(lead2).arg(pointer2);
+        htmlTxt += QStringLiteral("%1<br><a href=\"#k%2\">%2</a><br />").arg(lead2).arg(pointer2);
     else
-        htmlTxt += QStringLiteral("%1<br><b>%2</b><br>").arg(lead2).arg(endpoint2);
+        htmlTxt += QStringLiteral("%1<br><b>%2</b><br />").arg(lead2).arg(endpoint2);
     for(int j = 0; j < figList2.size(); ++j)
         htmlTxt += imgHtml(path, figList2[j], withPath);
     htmlTxt += "</td>";
@@ -887,13 +942,11 @@ void dkCouplet::setLeadChain(QList<QString> & inList)
 
 void dkCouplet::setLead1(QString inTxt)
 {
-    inTxt.replace('\n',"<br>");
     lead1 = inTxt;
 }
 
 void dkCouplet::setLead2(QString inTxt)
 {
-    inTxt.replace('\n',"<br>");
     lead2 = inTxt;
 }
 

@@ -77,6 +77,7 @@ public:
     QString getTxt() const;
     QString previousTxt() const;
     QString getHtml() const;
+    QString getHtmlTabulator() const;
     QString getHtmlTab() const;
     QString getHtmlImg(const QString & path, bool withPath) const;
     QString imgHtml(const QString &path, const QString &inName, bool withPath = true) const;

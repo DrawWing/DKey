@@ -26,7 +26,9 @@ class QLineEdit;
 class QGroupBox;
 class QSpinBox;
 class QRadioButton;
-//class QLabel;
+class QTextCharFormat;
+class QAction;
+
 QT_END_NAMESPACE
 
 #include "dkCouplet.h"
@@ -39,9 +41,6 @@ public:
     coupletDialog(QWidget *parent = 0);
     coupletDialog(dkCouplet * inCouplet, int to, QWidget *parent = 0);
 
-//    QLabel * nameLabel;
-//    QLineEdit * nameLineEdit;
-
     QTextEdit *lead1Text;
     QTextEdit *lead2Text;
 
@@ -52,8 +51,8 @@ public:
 
     QSpinBox *pointer1;
     QSpinBox *pointer2;
-    QLineEdit *endpoint1;
-    QLineEdit *endpoint2;
+    QTextEdit *endpoint1;
+    QTextEdit *endpoint2;
 
 protected:
     void accept();
@@ -61,11 +60,26 @@ protected:
 private slots:
     void setEndpoints1();
     void setEndpoints2();
+    void currentCharFormatChanged(const QTextCharFormat &format);
+    void textItalic();
+    void textBold();
+    void textUline();
+    void clearFormat();
+    void showLead1ContextMenu(const QPoint &pt);
+    void showLead2ContextMenu(const QPoint &pt);
+    void showEnd1ContextMenu(const QPoint &pt);
+    void showEnd2ContextMenu(const QPoint &pt);
 
 private:
     void createWidget();
     void fillData();
     bool isNumber(const QString & inTxt);
+    void mergeFormatOnWordOrSelection(const QTextCharFormat &format);
+    QString cleanHtml(const QString inTxt) const;
+    QAction *actionTextItalic;
+    QAction *actionTextBold;
+    QAction *actionTextUline;
+    QAction *actionTextClear;
 
     QPushButton *okButton;
     QPushButton *cancelButton;

@@ -16,7 +16,7 @@
  */
 
 #include <QtWidgets>
-
+#include <QTextCursor>
 #include "coupletDialog.h"
 
 coupletDialog::coupletDialog(QWidget *parent)
@@ -69,6 +69,45 @@ void coupletDialog::setEndpoints2()
 
 void coupletDialog::createWidget()
 {
+    // italic
+    actionTextItalic = new QAction(tr("&Italic"), this);
+    actionTextItalic->setPriority(QAction::LowPriority);
+    actionTextItalic->setShortcut(Qt::CTRL + Qt::Key_I);
+    QFont italic;
+    italic.setItalic(true);
+    actionTextItalic->setFont(italic);
+    connect(actionTextItalic, SIGNAL(triggered()), this, SLOT(textItalic()));
+    addAction(actionTextItalic);
+    actionTextItalic->setCheckable(true);
+
+    // bold
+    actionTextBold = new QAction(tr("&Bold"), this);
+    actionTextBold->setPriority(QAction::LowPriority);
+    actionTextBold->setShortcut(Qt::CTRL + Qt::Key_B);
+    QFont bold;
+    bold.setBold(true);
+    actionTextBold->setFont(bold);
+    connect(actionTextBold, SIGNAL(triggered()), this, SLOT(textBold()));
+    addAction(actionTextBold);
+    actionTextBold->setCheckable(true);
+
+    // underline
+    actionTextUline = new QAction(tr("&Underline"), this);
+    actionTextUline->setPriority(QAction::LowPriority);
+    actionTextUline->setShortcut(Qt::CTRL + Qt::Key_U);
+    QFont underline;
+    underline.setUnderline(true);
+    actionTextUline->setFont(underline);
+    connect(actionTextUline, SIGNAL(triggered()), this, SLOT(textUline()));
+    addAction(actionTextUline);
+    actionTextUline->setCheckable(true);
+
+    // clear formating
+    actionTextClear = new QAction(tr("&Clear formating"), this);
+    actionTextClear->setPriority(QAction::LowPriority);
+    connect(actionTextClear, SIGNAL(triggered()), this, SLOT(clearFormat()));
+    addAction(actionTextClear);
+
     okButton = new QPushButton(tr("OK"));
     cancelButton = new QPushButton(tr("Cancel"));
 
@@ -77,19 +116,23 @@ void coupletDialog::createWidget()
     buttonLayout->addWidget(cancelButton);
     buttonLayout->addStretch(1);
 
-//    // name
-//    nameLabel = new QLabel("Couplet name:");
-//    nameLineEdit = new QLineEdit;
-//    QHBoxLayout *nameLayout = new QHBoxLayout;
-//    nameLayout->addWidget(nameLabel);
-//    nameLayout->addWidget(nameLineEdit);
-
     // lead1
     radioRef1 = new QRadioButton(tr("&Pointer"));
     radioEnd1 = new QRadioButton(tr("&Endpoint"));
 
     pointer1 = new QSpinBox;
-    endpoint1 = new QLineEdit;
+
+    endpoint1 = new QTextEdit;
+    endpoint1->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    endpoint1->setMinimumHeight(20);
+    endpoint1->setMaximumHeight(20);
+    endpoint1->setBaseSize(200, 25);
+    endpoint1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    endpoint1->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(endpoint1,SIGNAL(customContextMenuRequested(const QPoint&)),
+            this,SLOT(showEnd1ContextMenu(const QPoint &)));
+    connect(endpoint1, SIGNAL(currentCharFormatChanged(QTextCharFormat)),
+            this, SLOT(currentCharFormatChanged(QTextCharFormat)));
 
     QHBoxLayout *pointer1Layout = new QHBoxLayout;
     pointer1Layout->addWidget(pointer1);
@@ -103,6 +146,11 @@ void coupletDialog::createWidget()
 
     QGroupBox *lead1Box = new QGroupBox(tr("First lead"));
     lead1Text = new QTextEdit;
+    lead1Text->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(lead1Text,SIGNAL(customContextMenuRequested(const QPoint&)),
+            this,SLOT(showLead1ContextMenu(const QPoint &)));
+    connect(lead1Text, SIGNAL(currentCharFormatChanged(QTextCharFormat)),
+            this, SLOT(currentCharFormatChanged(QTextCharFormat)));
 
     QVBoxLayout *lead1Layout = new QVBoxLayout;
     lead1Layout->addWidget(lead1Text);
@@ -115,7 +163,18 @@ void coupletDialog::createWidget()
     radioEnd2 = new QRadioButton(tr("&Endpoint"));
 
     pointer2 = new QSpinBox;
-    endpoint2 = new QLineEdit;
+
+    endpoint2 = new QTextEdit;
+    endpoint2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    endpoint2->setMinimumHeight(20);
+    endpoint2->setMaximumHeight(20);
+    endpoint2->setBaseSize(200, 25);
+    endpoint2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    endpoint2->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(endpoint2,SIGNAL(customContextMenuRequested(const QPoint&)),
+            this,SLOT(showEnd2ContextMenu(const QPoint &)));
+    connect(endpoint2, SIGNAL(currentCharFormatChanged(QTextCharFormat)),
+            this, SLOT(currentCharFormatChanged(QTextCharFormat)));
 
     QHBoxLayout *pointer2Layout = new QHBoxLayout;
     pointer2Layout->addWidget(pointer2);
@@ -129,6 +188,11 @@ void coupletDialog::createWidget()
 
     QGroupBox *lead2Box = new QGroupBox(tr("Second lead"));
     lead2Text = new QTextEdit;
+    lead2Text->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(lead2Text,SIGNAL(customContextMenuRequested(const QPoint&)),
+            this,SLOT(showLead2ContextMenu(const QPoint &)));
+    connect(lead2Text, SIGNAL(currentCharFormatChanged(QTextCharFormat)),
+            this, SLOT(currentCharFormatChanged(QTextCharFormat)));
 
     QVBoxLayout *lead2Layout = new QVBoxLayout;
     lead2Layout->addWidget(lead2Text);
@@ -138,7 +202,6 @@ void coupletDialog::createWidget()
 
     // main layout
     QVBoxLayout *mainLayout = new QVBoxLayout;
-//    mainLayout->addLayout(nameLayout);
     mainLayout->addWidget(lead1Box);
     mainLayout->addWidget(lead2Box);
     mainLayout->addLayout(buttonLayout);
@@ -162,9 +225,10 @@ void coupletDialog::createWidget()
 
 void coupletDialog::fillData()
 {
-//    nameLineEdit->setText(thisCouplet->getName());
-    lead1Text->setText(thisCouplet->getLead1());
-    lead2Text->setText(thisCouplet->getLead2());
+    setWindowTitle(QString ("Couplet number: %1").arg(thisCouplet->getNumber()));
+
+    lead1Text->setHtml(thisCouplet->getLead1());
+    lead2Text->setHtml(thisCouplet->getLead2());
 
     QString endpoint = thisCouplet->getEndpoint1();
     int pointer = thisCouplet->getPointer1();
@@ -197,8 +261,8 @@ void coupletDialog::fillData()
 
 void coupletDialog::accept()
 {
-    if( (isNumber(endpoint1->text()) && !radioRef1->isChecked())
-            || (isNumber(endpoint2->text()) && !radioRef2->isChecked()) )
+    if( (isNumber(endpoint1->toPlainText()) && !radioRef1->isChecked())
+            || (isNumber(endpoint2->toPlainText()) && !radioRef2->isChecked()) )
     {
         QMessageBox msgBox;
         msgBox.setText("Normally numbers are set to pointers not to endpoints.");
@@ -210,10 +274,12 @@ void coupletDialog::accept()
             return;
     }
 
+//    QString tmp1 = lead1Text->toHtml();
+//    qDebug() << tmp1;
+
     // Update the couplet
-//    thisCouplet->setName(nameLineEdit->text());
-    thisCouplet->setLead1(lead1Text->toPlainText());
-    thisCouplet->setLead2(lead2Text->toPlainText());
+    thisCouplet->setLead1(cleanHtml(lead1Text->toHtml()));
+    thisCouplet->setLead2(cleanHtml(lead2Text->toHtml()));
 
     if(radioRef1->isChecked())
     {
@@ -221,7 +287,7 @@ void coupletDialog::accept()
     }
     else
     {
-        thisCouplet->setEndpoint1(endpoint1->text());
+        thisCouplet->setEndpoint1(cleanHtml(endpoint1->toHtml()));
     }
 
     if(radioRef2->isChecked())
@@ -230,10 +296,9 @@ void coupletDialog::accept()
     }
     else
     {
-        thisCouplet->setEndpoint2(endpoint2->text());
+        thisCouplet->setEndpoint2(cleanHtml(endpoint2->toHtml()));
     }
 
-    //call base class implementation
     QDialog::accept();
 }
 
@@ -242,4 +307,159 @@ bool coupletDialog::isNumber(const QString &inTxt)
     bool ok;
     inTxt.simplified().toInt(&ok);
     return ok;
+}
+
+void coupletDialog::currentCharFormatChanged(const QTextCharFormat &format)
+{
+    QFont theFont = format.font();
+    actionTextItalic->setChecked(theFont.italic());
+    actionTextBold->setChecked(theFont.bold());
+    actionTextUline->setChecked(theFont.underline());
+}
+
+void coupletDialog::textItalic()
+{
+    QTextCharFormat fmt;
+    fmt.setFontItalic(actionTextItalic->isChecked());
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void coupletDialog::textBold()
+{
+    QTextCharFormat fmt;
+    fmt.setFontWeight(actionTextBold->isChecked() ? QFont::Bold : QFont::Normal);
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void coupletDialog::textUline()
+{
+    QTextCharFormat fmt;
+    fmt.setFontUnderline(actionTextUline->isChecked());
+    mergeFormatOnWordOrSelection(fmt);
+}
+
+void coupletDialog::clearFormat()
+{
+    if(lead1Text->hasFocus())
+        lead1Text->setHtml(lead1Text->toPlainText());
+    else if(lead2Text->hasFocus())
+        lead2Text->setHtml(lead2Text->toPlainText());
+    else if(endpoint1->hasFocus())
+        endpoint1->setHtml(endpoint1->toPlainText());
+    else if(endpoint2->hasFocus())
+        endpoint2->setHtml(endpoint2->toPlainText());
+}
+
+void coupletDialog::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
+{
+    if(lead1Text->hasFocus())
+    {
+        QTextCursor cursor = lead1Text->textCursor();
+        if (cursor.hasSelection())
+        {
+            lead1Text->mergeCurrentCharFormat(format);
+        }
+    }
+    else if(lead2Text->hasFocus())
+    {
+        QTextCursor cursor = lead2Text->textCursor();
+        if (cursor.hasSelection())
+        {
+            lead2Text->mergeCurrentCharFormat(format);
+        }
+    }
+    else if(endpoint1->hasFocus())
+    {
+        QTextCursor cursor = endpoint1->textCursor();
+        if (cursor.hasSelection())
+        {
+            endpoint1->mergeCurrentCharFormat(format);
+        }
+    }
+    else if(endpoint2->hasFocus())
+    {
+        QTextCursor cursor = endpoint2->textCursor();
+        if (cursor.hasSelection())
+        {
+            endpoint2->mergeCurrentCharFormat(format);
+        }
+    }
+}
+
+QString coupletDialog::cleanHtml(const QString inTxt) const
+{
+    //remove first 4 lines
+    QStringList inList = inTxt.split('\n');
+    if(inList.size() < 4)
+        return inTxt;
+    for(int i = 0; i < 4; ++i)
+    {
+        inList.pop_front();
+    }
+    // do not separate with '\n'
+    dkString outTxt = inList.join("");
+
+    // remove last </body></html>
+    outTxt.chop(14);
+
+    // convert <p> to <br />
+    outTxt.remove(QRegExp("<p [^>]*>"));
+    outTxt.replace("</p>","<br />");
+    // remove last <br />
+    if(outTxt.right(6) == "<br />")
+        outTxt.chop(6);
+
+    return outTxt;
+}
+
+void coupletDialog::showLead1ContextMenu(const QPoint &pt)
+{
+    QMenu * menu = lead1Text->createStandardContextMenu();
+    menu->removeAction(menu->actions().at(6)); // remove delete
+    menu->addSeparator();
+    menu->addAction(actionTextItalic);
+    menu->addAction(actionTextBold);
+    menu->addAction(actionTextUline);
+    menu->addAction(actionTextClear);
+    menu->exec(lead1Text->mapToGlobal(pt));
+    delete menu;
+}
+
+void coupletDialog::showLead2ContextMenu(const QPoint &pt)
+{
+    QMenu * menu = lead2Text->createStandardContextMenu();
+    menu->removeAction(menu->actions().at(6)); // remove delete
+    menu->addSeparator();
+    menu->addAction(actionTextItalic);
+    menu->addAction(actionTextBold);
+    menu->addAction(actionTextUline);
+    menu->addAction(actionTextClear);
+    menu->exec(lead2Text->mapToGlobal(pt));
+    delete menu;
+}
+
+void coupletDialog::showEnd1ContextMenu(const QPoint &pt)
+{
+    QMenu * menu = endpoint1->createStandardContextMenu();
+    menu->removeAction(menu->actions().at(6)); // remove delete
+    menu->addSeparator();
+    menu->addAction(actionTextItalic);
+    menu->addAction(actionTextBold);
+    menu->addAction(actionTextUline);
+    menu->addAction(actionTextClear);
+    menu->exec(endpoint1->mapToGlobal(pt));
+    delete menu;
+}
+
+void coupletDialog::showEnd2ContextMenu(const QPoint &pt)
+{
+    QMenu * menu = endpoint2->createStandardContextMenu();
+    menu->removeAction(menu->actions().at(6)); // remove delete
+    menu->addSeparator();
+    menu->addAction(actionTextItalic);
+    menu->addAction(actionTextBold);
+    menu->addAction(actionTextUline);
+    menu->addAction(actionTextClear);
+    menu->exec(endpoint2->mapToGlobal(pt));
+    delete menu;
 }

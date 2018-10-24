@@ -19,6 +19,7 @@
 #define DKSTRING_H
 
 #include <QString>
+#include <QTextDocumentFragment> // for toPlainText
 
 class dkString : public QString
 {
@@ -36,6 +37,8 @@ public:
     void removeFrontDigit();
     void chopFront(int n);
     QString getRtf() const;
+    void removeHtml();
+    dkString toPlainText() const;
 
     dkString & operator=( const dkString & );
     dkString & operator=( const QString & );

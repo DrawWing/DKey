@@ -116,12 +116,12 @@ void dkString::removeEndNonLetterAndDigit()
     int count = 0;
     for(int i = size()-1; i > -1; --i){
         QChar c = at(i);
-        if(c.isLetter() || c.isDigit())
+        if(c.isLetter() || c.isDigit() || c == ')')
+//            if(c.isLetter() || c.isDigit())
             break;
         else
             ++count;
     }
-//    remove(size() - count,count);
     chop(count);
 }
 
@@ -160,11 +160,27 @@ void dkString::chopFront(int n)
 
 QString dkString::getRtf() const
 {
-    QString outTxt = *this;
+    QString outTxt = this->toPlainText();
     outTxt.replace("\\", "\\\\");
     outTxt.replace("{", "\\{");
     outTxt.replace("}", "\\}");
     return outTxt;
+}
+
+void dkString::removeHtml()
+{
+    replace("<br />","\n");
+    remove(QRegExp("<[^>]*>"));
+    replace("&lt;","<");
+    replace("&gt;",">");
+    replace("&quot;","\"");
+    replace("&amp;","&");
+}
+
+dkString dkString::toPlainText() const
+{
+    dkString plainText = QTextDocumentFragment::fromHtml( *this ).toPlainText();
+    return plainText;
 }
 
 dkString & dkString::operator=( const dkString & str){
@@ -176,3 +192,4 @@ dkString & dkString::operator=( const QString & str){
     this->QString::operator=(str);
     return *this;
 }
+
