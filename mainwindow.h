@@ -30,7 +30,10 @@
 
 #include "dkCouplet.h"
 #include "dkCoupletList.h"
-#include "txtwindow.h"
+#include "dkTermList.h"
+//#include "txtwindow.h"
+#include "dkFormat.h"
+#include "dkBrowser.h"
 
 class MainWindow : public QMainWindow
 {
@@ -40,6 +43,11 @@ public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
     bool loadFile(const QString &fileName);
+    dkFormat * getFormat();
+    dkTermList * getGlossary();
+    dkTermList * getFigTxt();
+    dkBrowser * getHtmlWindow();
+    QString getFilePath() const;
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -69,8 +77,12 @@ private slots:
     void findImgErrors();
     void viewBrowser();
     void viewHtml();
-    void viewEndpoints();
+    void viewEndpointList();
     void viewTags();
+    void viewIntro();
+    void viewGlossary();
+    void viewEndpoints();
+    void viewFigTxt();
     void test();
 
 private:
@@ -84,6 +96,7 @@ private:
     void updateRecentFileActions();
     bool okToContinue();
     bool saveFile(const QString &fileName);
+    bool isVersionOK(const QString inVersion);
 
     QAction *newAct;
     QAction *openAct;
@@ -108,8 +121,12 @@ private:
     QAction *findImgErrorsAct;
     QAction *viewBrowserAct;
     QAction *viewHtmlAct;
-    QAction *viewEndpointsAct;
+    QAction *viewEndpointListAct;
     QAction *viewTagsAct;
+    QAction *viewIntroAct;
+    QAction *viewGlossaryAct;
+    QAction *viewEndpointsAct;
+    QAction *viewFigTxtAct;
     QAction *aboutAct;
 
     QMenu *fileMenu;
@@ -131,14 +148,15 @@ private:
     QString appVersion;
 
     QTableWidget *table;
-    TxtWindow * htmlWindow;
+    dkBrowser * htmlWindow;
 
     QString filePath;
 
     void fillTable();
-    void insertTabRow(int i);
+    void insertTableRow(int i);
     void updateTable();
     void updateTableRow(int i);
+    QString exportHtmlImg(bool withPath);
     void clear();
     bool isKeyOK();
     void addWarnings();
@@ -146,6 +164,12 @@ private:
     dkCoupletList coupletList;
     dkCoupletList coupletClipboard;
     bool isCopy;
+
+    dkFormat format;
+    QString intro;
+    dkTermList glossary;
+    dkTermList endpoints;
+    dkTermList figTxt;
     QString error;
 };
 

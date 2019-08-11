@@ -24,13 +24,16 @@
 #include <QAction>
 #include <QMenu>
 
+#include "dkFormat.h"
 #include "dkCoupletList.h"
+#include "dkTermList.h"
+#include "mainwindow.h"
 
 class dkView : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit dkView(dkCoupletList *inList, QWidget *parent = 0);
+    explicit dkView(dkCoupletList *inList, MainWindow * parent);
 
 signals:
 
@@ -40,7 +43,7 @@ private slots:
     void goToNumber(int inNumber);
     void goToCouplet();
     void goToTag();
-    void goToEndpoint(bool first);
+//    void goToEndpoint(bool first);
     void clickedCouplet(QUrl inUrl);
     void clickedPath(int row, int col);
     void clickedRemaining(int row, int col);
@@ -49,6 +52,7 @@ private:
     void createActions();
     void createMenus();
     void goToItemTxt(const QString & theItemString);
+    void goToGlossary(int nr);
 
     QAction *goToNumberAct;
     QAction *goToTagAct;
@@ -60,13 +64,20 @@ private:
     QMenuBar *my_menuBar;
 
     int number;
-    dkCoupletList * coupletList;
+    dkCoupletList * coupletList; // get from parent
     dkCouplet currCouplet;
+
+    dkFormat format;
+    dkTermList * glossary;
+    dkBrowser * htmlWindow;
+
     QStringList endpointList;
     QStringList tagList;
     QString filePath;
-    QTextBrowser *lead1Browser;
-    QTextBrowser *lead2Browser;
+
+    QTextBrowser *browser;
+//    QTextBrowser *lead1Browser;
+//    QTextBrowser *lead2Browser;
     QTableWidget *pathTab;
     QTableWidget *remainingTab;
     QTableWidget *excludedTab;

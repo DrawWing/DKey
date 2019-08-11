@@ -220,12 +220,14 @@ void coupletDialog::createWidget()
     connect(radioEnd2, SIGNAL(toggled(bool)), this, SLOT(setEndpoints2()));
 
     setWindowTitle(tr("Edit couplet"));
-    resize(600, 300);
+
+    readSettings();
+//    resize(600, 300);
 }
 
 void coupletDialog::fillData()
 {
-    setWindowTitle(QString ("Couplet number: %1").arg(thisCouplet->getNumber()));
+    setWindowTitle(QString ("Edit couplet number: %1").arg(thisCouplet->getNumber()));
 
     lead1Text->setHtml(thisCouplet->getLead1());
     lead2Text->setHtml(thisCouplet->getLead2());
@@ -261,6 +263,7 @@ void coupletDialog::fillData()
 
 void coupletDialog::accept()
 {
+    writeSettings();
     if( (isNumber(endpoint1->toPlainText()) && !radioRef1->isChecked())
             || (isNumber(endpoint2->toPlainText()) && !radioRef2->isChecked()) )
     {
@@ -278,8 +281,14 @@ void coupletDialog::accept()
 //    qDebug() << tmp1;
 
     // Update the couplet
-    thisCouplet->setLead1(cleanHtml(lead1Text->toHtml()));
-    thisCouplet->setLead2(cleanHtml(lead2Text->toHtml()));
+    dkString htmlTxt = lead1Text->toHtml();
+    htmlTxt = htmlTxt.cleanHtml();
+    thisCouplet->setLead1(htmlTxt);
+//    thisCouplet->setLead1(cleanHtml(lead1Text->toHtml()));
+    htmlTxt = lead2Text->toHtml();
+    htmlTxt = htmlTxt.cleanHtml();
+    thisCouplet->setLead2(htmlTxt);
+//    thisCouplet->setLead2(cleanHtml(lead2Text->toHtml()));
 
     if(radioRef1->isChecked())
     {
@@ -287,7 +296,10 @@ void coupletDialog::accept()
     }
     else
     {
-        thisCouplet->setEndpoint1(cleanHtml(endpoint1->toHtml()));
+        htmlTxt = endpoint1->toHtml();
+        htmlTxt = htmlTxt.cleanHtml();
+        thisCouplet->setEndpoint1(htmlTxt);
+//        thisCouplet->setEndpoint1(cleanHtml(endpoint1->toHtml()));
     }
 
     if(radioRef2->isChecked())
@@ -296,7 +308,10 @@ void coupletDialog::accept()
     }
     else
     {
-        thisCouplet->setEndpoint2(cleanHtml(endpoint2->toHtml()));
+        htmlTxt = endpoint2->toHtml();
+        htmlTxt = htmlTxt.cleanHtml();
+        thisCouplet->setEndpoint2(htmlTxt);
+//        thisCouplet->setEndpoint2(cleanHtml(endpoint2->toHtml()));
     }
 
     QDialog::accept();
@@ -355,62 +370,62 @@ void coupletDialog::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
     if(lead1Text->hasFocus())
     {
         QTextCursor cursor = lead1Text->textCursor();
-        if (cursor.hasSelection())
-        {
-            lead1Text->mergeCurrentCharFormat(format);
-        }
+        if(!cursor.hasSelection())
+            cursor.select(QTextCursor::WordUnderCursor);
+        cursor.mergeCharFormat(format);
+        lead1Text->mergeCurrentCharFormat(format);
     }
     else if(lead2Text->hasFocus())
     {
         QTextCursor cursor = lead2Text->textCursor();
-        if (cursor.hasSelection())
-        {
-            lead2Text->mergeCurrentCharFormat(format);
-        }
+        if(!cursor.hasSelection())
+            cursor.select(QTextCursor::WordUnderCursor);
+        cursor.mergeCharFormat(format);
+        lead2Text->mergeCurrentCharFormat(format);
     }
     else if(endpoint1->hasFocus())
     {
         QTextCursor cursor = endpoint1->textCursor();
-        if (cursor.hasSelection())
-        {
-            endpoint1->mergeCurrentCharFormat(format);
-        }
+        if(!cursor.hasSelection())
+            cursor.select(QTextCursor::WordUnderCursor);
+        cursor.mergeCharFormat(format);
+        endpoint1->mergeCurrentCharFormat(format);
     }
     else if(endpoint2->hasFocus())
     {
         QTextCursor cursor = endpoint2->textCursor();
-        if (cursor.hasSelection())
-        {
-            endpoint2->mergeCurrentCharFormat(format);
-        }
+        if(!cursor.hasSelection())
+            cursor.select(QTextCursor::WordUnderCursor);
+        cursor.mergeCharFormat(format);
+        endpoint2->mergeCurrentCharFormat(format);
     }
 }
 
-QString coupletDialog::cleanHtml(const QString inTxt) const
-{
-    //remove first 4 lines
-    QStringList inList = inTxt.split('\n');
-    if(inList.size() < 4)
-        return inTxt;
-    for(int i = 0; i < 4; ++i)
-    {
-        inList.pop_front();
-    }
-    // do not separate with '\n'
-    dkString outTxt = inList.join("");
+//QString coupletDialog::cleanHtml(const QString inTxt) const
+//{
+//    //remove first 4 lines
+//    QStringList inList = inTxt.split('\n');
+//    if(inList.size() < 4)
+//        return inTxt;
+//    for(int i = 0; i < 4; ++i)
+//    {
+//        inList.pop_front();
+//    }
+//    // do not separate with '\n'
+//    dkString outTxt = inList.join("");
 
-    // remove last </body></html>
-    outTxt.chop(14);
+//    // remove last </body></html>
+//    outTxt.chop(14);
 
-    // convert <p> to <br />
-    outTxt.remove(QRegExp("<p [^>]*>"));
-    outTxt.replace("</p>","<br />");
-    // remove last <br />
-    if(outTxt.right(6) == "<br />")
-        outTxt.chop(6);
+//    // convert <p> to <br />
+//    outTxt.remove(QRegExp("<p [^>]*>"));
+//    outTxt.replace("</p>","<br />");
+//    // remove last <br />
+//    if(outTxt.right(6) == "<br />")
+//        outTxt.chop(6);
 
-    return outTxt;
-}
+//    return outTxt;
+//}
 
 void coupletDialog::showLead1ContextMenu(const QPoint &pt)
 {
@@ -463,3 +478,24 @@ void coupletDialog::showEnd2ContextMenu(const QPoint &pt)
     menu->exec(endpoint2->mapToGlobal(pt));
     delete menu;
 }
+
+void coupletDialog::readSettings()
+{
+    QString companyName = QGuiApplication::organizationName();
+    QString windowName = QGuiApplication::applicationName() + " - coupletDialog";
+    QSettings settings(companyName, windowName);
+    QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
+    QSize size = settings.value("size", QSize(600, 300)).toSize();
+    move(pos);
+    resize(size);
+}
+
+void coupletDialog::writeSettings()
+{
+    QString companyName = QGuiApplication::organizationName();
+    QString windowName = QGuiApplication::applicationName() + " - coupletDialog";
+    QSettings settings(companyName, windowName);
+    settings.setValue("pos", pos());
+    settings.setValue("size", size());
+}
+

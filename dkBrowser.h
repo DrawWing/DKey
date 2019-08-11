@@ -15,36 +15,41 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TXTWINDOW_H
-#define TXTWINDOW_H
+#ifndef DKBROWSER_H
+#define DKBROWSER_H
 
 #include <QMainWindow>
+#include <QUrl>
 
-class QAction;
-class QMenu;
+#include "dkFormat.h"
+
 class QTextBrowser;
 
-class TxtWindow: public QMainWindow
+class dkBrowser: public QMainWindow
 {
     Q_OBJECT
 
 public:
-    TxtWindow(QWidget *parent = 0);
-    ~TxtWindow();
-    TxtWindow(const QString & txt, QWidget *parent = 0);
+    dkBrowser(QWidget *parent = 0);
+    ~dkBrowser();
+    dkBrowser(const QString & txt, QWidget *parent = 0);
     void setPlainTxt(const QString & txt);
     void setHtml(const QString & txt);
+    void setFormat(dkFormat * inFormat);
 
 protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
+    void clickedLink(QUrl inUrl);
 
 private:
     void readSettings();
     void writeSettings();
+    void goToGlossary(int nr);
 
     QTextBrowser *textEdit;
+    dkFormat * format;
 };
 
-#endif //TXTWINDOW_H
+#endif // DKBROWSER_H

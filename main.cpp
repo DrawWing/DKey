@@ -27,6 +27,10 @@ int main(int argc, char *argv[])
     a.setApplicationDisplayName("DKey");
     a.setApplicationVersion(VERSION_STRING);
 
+    QFont appFont = QApplication::font();
+    appFont.setPointSize(10);
+    QApplication::setFont(appFont);
+
     MainWindow w;
     w.show();
 

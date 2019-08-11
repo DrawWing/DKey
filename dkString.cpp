@@ -177,6 +177,33 @@ void dkString::removeHtml()
     replace("&amp;","&");
 }
 
+dkString dkString::cleanHtml() const
+{
+    dkString outTxt;
+    //remove first 4 lines
+    QStringList inList = split('\n');
+    if(inList.size() < 4)
+        return outTxt;
+    for(int i = 0; i < 4; ++i)
+    {
+        inList.pop_front();
+    }
+    // do not separate with '\n'
+    outTxt = inList.join("");
+
+    // remove last </body></html>
+    outTxt.chop(14);
+
+    // convert <p> to <br />
+    outTxt.remove(QRegExp("<p [^>]*>"));
+    outTxt.replace("</p>","<br />");
+    // remove last <br />
+    if(outTxt.right(6) == "<br />")
+        outTxt.chop(6);
+
+    return outTxt;
+}
+
 dkString dkString::toPlainText() const
 {
     dkString plainText = QTextDocumentFragment::fromHtml( *this ).toPlainText();

@@ -27,26 +27,38 @@
 
 #include "dkView.h"
 
-dkView::dkView(dkCoupletList * inList, QWidget *parent) :
+dkView::dkView(dkCoupletList * inList, MainWindow *parent) :
     QMainWindow(parent)
 {
+    glossary = parent->getGlossary();
+    htmlWindow = parent->getHtmlWindow();
+
     coupletList = inList;
     endpointList = coupletList->getEndpointList();
     tagList = coupletList->getTagList();
+    // to do romove filepath from this use from format
     filePath = coupletList->getFilePath();
+
+    format.setFilePath(filePath);
 
     createActions();
     createMenus();
 
-    lead1Browser = new QTextBrowser(this);
-    lead1Browser->setOpenLinks(false);
-    lead2Browser = new QTextBrowser(this);
-    lead2Browser->setOpenLinks(false);
-    QHBoxLayout *browserLayout = new QHBoxLayout;
-    browserLayout->addWidget(lead1Browser);
-    browserLayout->addWidget(lead2Browser);
-    QWidget *browserContainer = new QWidget;
-    browserContainer->setLayout(browserLayout);
+    //____________
+    browser = new QTextBrowser(this);
+    browser->setOpenLinks(false);
+    //____________
+
+
+//    lead1Browser = new QTextBrowser(this);
+//    lead1Browser->setOpenLinks(false);
+//    lead2Browser = new QTextBrowser(this);
+//    lead2Browser->setOpenLinks(false);
+//    QHBoxLayout *browserLayout = new QHBoxLayout;
+//    browserLayout->addWidget(lead1Browser);
+//    browserLayout->addWidget(lead2Browser);
+//    QWidget *browserContainer = new QWidget;
+//    browserContainer->setLayout(browserLayout);
 
     QSplitter * tabSpliter = new QSplitter;
 
@@ -108,7 +120,8 @@ dkView::dkView(dkCoupletList * inList, QWidget *parent) :
 
     QSplitter * mainSpliter = new QSplitter;
     mainSpliter->setOrientation(Qt::Vertical);
-    mainSpliter->addWidget(browserContainer);
+    mainSpliter->addWidget(browser);
+//    mainSpliter->addWidget(browserContainer);
     mainSpliter->addWidget(tabContainer);
 
     QHBoxLayout *mainLayout = new QHBoxLayout;
@@ -121,10 +134,12 @@ dkView::dkView(dkCoupletList * inList, QWidget *parent) :
     //    setLayout(mainLayout);
     setWindowTitle("Key browser");
 
-    connect(lead1Browser, SIGNAL( anchorClicked( QUrl ) ),
-            this, SLOT( clickedCouplet(QUrl ) ));
-    connect(lead2Browser, SIGNAL( anchorClicked( QUrl ) ),
-            this, SLOT( clickedCouplet(QUrl ) ));
+    connect(browser, SIGNAL( anchorClicked( QUrl ) ),
+            this, SLOT( clickedCouplet( QUrl ) ));
+//    connect(lead1Browser, SIGNAL( anchorClicked( QUrl ) ),
+//            this, SLOT( clickedCouplet(QUrl ) ));
+//    connect(lead2Browser, SIGNAL( anchorClicked( QUrl ) ),
+//            this, SLOT( clickedCouplet(QUrl ) ));
     connect(pathTab, SIGNAL( cellClicked(int, int) ),
             this, SLOT( clickedPath(int, int) ));
     connect(remainingTab, SIGNAL( cellClicked(int, int) ),
@@ -201,9 +216,24 @@ void dkView::goToNumber(int inNumber)
     number = inNumber;
     currCouplet = coupletList->at(number-1);
 
-    QString tmp = currCouplet.getLead1html(filePath);
-    lead1Browser->setHtml(currCouplet.getLead1html(filePath));
-    lead2Browser->setHtml(currCouplet.getLead2html(filePath));
+    //________________
+    // format lead1
+//    QString lead1html = currCouplet.getLead1html(filePath);
+
+//    QString html = currCouplet.getHtmlImg(filePath, true);
+    QString html = format.coupletHtml(currCouplet, true);
+
+//    dkFormat format;
+    // todo: use only pointers to glossary in linkGlossary
+//    format.setGlossary(glossary);
+//    html = format.linkGlossary(html);
+    html = glossary->addLinks(html);
+
+    browser->setHtml(html);
+    //________________
+
+//    lead1Browser->setHtml(currCouplet.getLead1html(filePath));
+//    lead2Browser->setHtml(currCouplet.getLead2html(filePath));
 
     // path
     QList<QString>  path = currCouplet.getLeadChain();
@@ -252,40 +282,58 @@ void dkView::goToNumber(int inNumber)
     }
 }
 
-void dkView::goToEndpoint(bool first)
-{
-    QString lastPath;
-    if(first)
-    {
-        QString endpoint = currCouplet.getEndpoint1();
-        lead1Browser->setText(endpoint);
-        lead2Browser->setText("");
-        lastPath = currCouplet.getLead1();
-    }
-    else
-    {
-        QString endpoint = currCouplet.getEndpoint2();
-        lead2Browser->setText(endpoint);
-        lead1Browser->setText("");
-        lastPath = currCouplet.getLead2();
-    }
+//void dkView::goToEndpoint(bool first)
+//{
+////    QString lastPath;
+////    if(first)
+////    {
+////        QString endpoint = currCouplet.getEndpoint1();
+////        lead1Browser->setText(endpoint);
+////        lead2Browser->setText("");
+////        lastPath = currCouplet.getLead1();
+////    }
+////    else
+////    {
+////        QString endpoint = currCouplet.getEndpoint2();
+////        lead2Browser->setText(endpoint);
+////        lead1Browser->setText("");
+////        lastPath = currCouplet.getLead2();
+////    }
 
-    int newRow = pathTab->rowCount();
-    pathTab->insertRow(newRow);
-    pathTab->setItem(newRow, 0, new QTableWidgetItem(lastPath));
-}
+////    int newRow = pathTab->rowCount();
+////    pathTab->insertRow(newRow);
+////    pathTab->setItem(newRow, 0, new QTableWidgetItem(lastPath));
+//}
 
 void dkView::clickedCouplet(QUrl inUrl)
 {
-    QString path =  inUrl.path();
-    if(path == "lead1")
+    QString fragment =  inUrl.fragment();
+    if(fragment[0]=='g')
     {
-        goToNumber(currCouplet.getPointer1());
+        QString nrStr = fragment.mid(1);
+        bool ok;
+        int nr = nrStr.toInt(&ok);
+        if(ok)
+            goToGlossary(nr-1);
     }
-    else if(path == "lead2")
+    else if(fragment[0]=='k')
     {
-        goToNumber(currCouplet.getPointer2());
+        QString nrStr = fragment.mid(1);
+        bool ok;
+        int nr = nrStr.toInt(&ok);
+        if(ok)
+            goToNumber(nr);
     }
+
+//    QString path =  inUrl.path();
+//    if(path == "lead1")
+//    {
+//        goToNumber(currCouplet.getPointer1());
+//    }
+//    else if(path == "lead2")
+//    {
+//        goToNumber(currCouplet.getPointer2());
+//    }
 }
 
 void dkView::clickedPath(int row, int col)
@@ -314,4 +362,19 @@ void dkView::goToItemTxt(const QString &theItemString)
         return;
     int theIndex = coupletList->getIndexWithNumber(theNumber);
     goToNumber(theIndex+1);
+}
+
+void dkView::goToGlossary(int nr)
+{
+    QString outTxt = glossary->at(nr).getDefinition();
+    outTxt += "<br />"; // otherwise images in the same line
+    outTxt += format.imagesHtml(outTxt, true);
+
+    // todo: use only pointers to glossary in linkGlossary
+//    format.setGlossary(glossary);
+//    outTxt = format.linkGlossary(outTxt);
+    outTxt = glossary->addLinks(outTxt);
+
+    htmlWindow->setHtml(outTxt);
+    htmlWindow->setWindowTitle(tr("Hypertext browser"));
 }

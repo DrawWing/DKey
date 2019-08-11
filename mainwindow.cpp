@@ -31,6 +31,8 @@
 #include "mainwindow.h"
 #include "coupletDialog.h"
 #include "dkView.h"
+#include "termWindow.h"
+//#include "txtwindow.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -46,7 +48,9 @@ MainWindow::MainWindow(QWidget *parent)
     readSettings(); //has to be after createActions
     createTable();
     setWindowTitle("[*]");
-    htmlWindow = new TxtWindow(this);
+
+    htmlWindow = new dkBrowser(this);
+    htmlWindow->setFormat(&format);
     htmlWindow->hide();
 }
 
@@ -75,14 +79,29 @@ void MainWindow::viewHtml()
         return;
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QString htmlTxt;
+    htmlTxt += intro;
     coupletList.findFrom();
-    QString htmlTxt = coupletList.getHtmlImg();
+    htmlTxt += coupletList.getHtmlImg();
+
+//    dkFormat format;
+//    QFileInfo fileInfo(filePath);
+//    QString path = fileInfo.absolutePath();
+//    format.setFilePath(path);
+//    format.setFigures(&figTxt);
+//    htmlTxt += format.glossaryHtml(glossary, true);
+    htmlTxt += format.glossaryHtml(true);
+    //    htmlTxt += glossary.getHtml();
+
+    htmlTxt = glossary.addLinks(htmlTxt);
+//    htmlTxt = format.linkGlossary(htmlTxt);
+
     htmlWindow->setHtml(htmlTxt);
     htmlWindow->setWindowTitle(tr("Hypertext viewer"));
     QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::viewEndpoints()
+void MainWindow::viewEndpointList()
 {
     if(coupletList.size() == 0)
         return;
@@ -125,6 +144,35 @@ void MainWindow::viewTags()
     htmlWindow->setHtml(outTxt);
     htmlWindow->setWindowTitle(tr("Hypertext viewer"));
     QApplication::restoreOverrideCursor();
+}
+
+void MainWindow::viewIntro()
+{
+//    intro = "test";
+    dkBrowser *introWindow = new dkBrowser(intro, this);
+    introWindow->setWindowTitle(tr("Introduction")+"[*]");
+    introWindow->show();
+}
+
+void MainWindow::viewGlossary()
+{
+    termWindow * glossaryWindow = new termWindow(&glossary, this);
+    glossaryWindow->setWindowTitle(tr("Glossary")+"[*]");
+    glossaryWindow->show();
+}
+
+void MainWindow::viewEndpoints()
+{
+    termWindow * endpointsWindow = new termWindow(&endpoints, this);
+    endpointsWindow->setWindowTitle(tr("Endpoints")+"[*]");
+    endpointsWindow->show();
+}
+
+void MainWindow::viewFigTxt()
+{
+    termWindow * figTxtWindow = new termWindow(&figTxt, this);
+    figTxtWindow->setWindowTitle(tr("Figure legends")+"[*]");
+    figTxtWindow->show();
 }
 
 void MainWindow::import()
@@ -172,6 +220,7 @@ void MainWindow::import()
     coupletList.setFilePath(path);
 
     fillTable();
+    intro = coupletList.getIntro();
 
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
     setWindowModified(true);
@@ -192,7 +241,6 @@ void MainWindow::appendFile()
     QFile file(fileName);
     if (!file.open(QIODevice::ReadOnly))
     {
-        QApplication::restoreOverrideCursor();
         QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
         return ;
     }
@@ -202,7 +250,6 @@ void MainWindow::appendFile()
     int errorColumn;
     if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
         file.close();
-        QApplication::restoreOverrideCursor();
         QMessageBox::warning(this, QObject::tr("DOM Parser"),
                              QObject::tr("Parse error at line %1, column %2:\n%3")
                              .arg(errorLine)
@@ -213,9 +260,30 @@ void MainWindow::appendFile()
 
 
     file.close();
-///
+    ///
+    QString elementName = "DKey";
+    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+    QDomElement dkeyElement = dkeyNode.toElement();
+    if ( dkeyElement.isNull() )
+    {
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+        return;
+    }
+//    QString versionTxt = docElement.attribute("version");
+//    double version = versionTxt.toDouble();
+
+    elementName = "key";
+//    QDomNode keyNode = xmlDoc.namedItem(elementName);
+    QDomElement keyElement = dkeyNode.namedItem(elementName).toElement();
+    if ( keyElement.isNull() )
+    {
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+        return;
+    }
+    ///
+
     dkCoupletList appendCouplets;
-    appendCouplets.fromDkXml(xmlDoc);
+    appendCouplets.fromDkXml(keyElement);
     QString error = coupletList.getError();
     if(!error.isEmpty())
     {
@@ -230,7 +298,7 @@ void MainWindow::appendFile()
     {
         int lastRow = coupletList.size();
         coupletList.insertAt(lastRow, appendCouplets.at(i));
-        insertTabRow(lastRow);
+        insertTableRow(lastRow);
     }
     setWindowModified(true);
 }
@@ -271,10 +339,10 @@ void MainWindow::fillTable()
         table->removeRow(0);
 
     for(int i = 0; i < coupletList.size(); ++i)
-        insertTabRow(i);
+        insertTableRow(i);
 }
 
-void MainWindow::insertTabRow(int i)
+void MainWindow::insertTableRow(int i)
 {
     table->insertRow(i);
 
@@ -305,7 +373,7 @@ void MainWindow::updateTableRow(int i)
 {
     // it is faster to remove the row and insert a new one
     table->removeRow(i);
-    insertTabRow(i);
+    insertTableRow(i);
 }
 
 bool MainWindow::isKeyOK()
@@ -412,7 +480,7 @@ void MainWindow::newKey()
     clear();
 
     coupletList.insertDummyAt(0);
-    insertTabRow(0);
+    insertTableRow(0);
     setWindowModified(true);
 
     // remove file name to prevent save as previous file
@@ -420,7 +488,6 @@ void MainWindow::newKey()
     QFileInfo fileInfo(filePath);
     filePath = fileInfo.absolutePath();
 }
-
 
 void MainWindow::openFile()
 {
@@ -440,6 +507,7 @@ bool MainWindow::loadFile(const QString & fileName)
 {
     //    QElapsedTimer timer;
     //    timer.start();
+    //    qDebug() << timer.elapsed() << "start";
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     clear();
@@ -473,9 +541,36 @@ bool MainWindow::loadFile(const QString & fileName)
 
 
     file.close();
-    ///
 
-    coupletList.fromDkXml(xmlDoc);
+    ///
+    QString elementName = "DKey";
+    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+    QDomElement dkeyElement = dkeyNode.toElement();
+    if ( dkeyElement.isNull() )
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+        return false;
+    }
+    QString versionTxt = dkeyElement.attribute("version");
+    if(!isVersionOK(versionTxt))
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
+        QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    }
+
+
+    elementName = "key";
+    QDomElement keyElement = dkeyNode.namedItem(elementName).toElement();
+    if ( keyElement.isNull() )
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+        return false;
+    }
+
+    coupletList.fromDkXml(keyElement);
 
     QApplication::restoreOverrideCursor();
 
@@ -490,14 +585,37 @@ bool MainWindow::loadFile(const QString & fileName)
     QFileInfo fileInfo(filePath);
     QString path = fileInfo.absolutePath();
     coupletList.setFilePath(path);
+    format.setFilePath(path);
 
     fillTable();
     //    qDebug() << timer.elapsed() << "fromDkTxt";
 
     updateRecentFiles(fileName);
     updateRecentFileActions();
-
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
+
+    // load introduction
+    QDomElement introElement = dkeyNode.namedItem("introduction").toElement();
+    if(!introElement.isNull())
+        intro = introElement.text();
+
+    // load glossary
+    QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
+    glossary.fromDkXml(glossaryElement);
+    glossary.setTag("glossary");
+    format.setGlossary(&glossary);
+
+    // load endpoints
+    QDomElement endpointsElement = dkeyNode.namedItem("endpoints").toElement();
+    endpoints.fromDkXml(endpointsElement);
+    endpoints.setTag("endpoints");
+    format.setEndpoints(&endpoints);
+
+    // load figures
+    QDomElement figElement = dkeyNode.namedItem("figures").toElement();
+    figTxt.fromDkXml(figElement);
+    figTxt.setTag("figures");
+    format.setFigures(&figTxt);
     return true;
 }
 
@@ -552,7 +670,20 @@ bool MainWindow::saveFile(const QString &fileName)
     QTextStream out(&file);
     out.setCodec("UTF-8");
 
-    QString outTxt = coupletList.getDkXml();
+    ///
+    QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    outTxt += QStringLiteral("<DKey version=\"%1\">\n").arg(appVersion);
+    outTxt += "<introduction>";
+    outTxt += intro.toHtmlEscaped();
+    outTxt += "</introduction>\n";
+    outTxt += coupletList.getDkXml();
+    outTxt += glossary.getDkXml();
+    outTxt += endpoints.getDkXml();
+    outTxt += figTxt.getDkXml();
+    outTxt += "</DKey>\n";
+    ///
+
+//    QString outTxt = coupletList.getDkXml();
     out << outTxt;
 
     if(out.status() == QTextStream::WriteFailed)
@@ -569,13 +700,33 @@ bool MainWindow::saveFile(const QString &fileName)
     return true;
 }
 
+bool MainWindow::isVersionOK(const QString inVersion)
+{
+    if(inVersion == "1.0")
+        return true;
+
+    QStringList inList = inVersion.split('.');
+    if(inList.size() < 3)
+        return false;
+
+    QStringList versionList = appVersion.split('.');
+    if(inList[0] < versionList[0])
+        return false;
+    if(inList[1] < versionList[1])
+        return false;
+    if(inList[2] < versionList[2])
+        return false;
+
+    return true;
+}
+
 void MainWindow::exportKey()
 {
     if(coupletList.size() == 0)
         return;
 
     QFileInfo fileInfo(filePath);
-    QString outName = fileInfo.path()+"/"+fileInfo.baseName()+".rtf";
+    QString outName = fileInfo.path()+"/"+fileInfo.baseName()+".html";
     QString selectedFilter = tr("HTML with images (*.html)");
     QString fileName = QFileDialog::getSaveFileName
             (this, tr("Export the key as"), outName,
@@ -607,7 +758,8 @@ void MainWindow::exportKey()
     else if(selectedFilter == "HTML table (*.html)")
         htmlTxt = coupletList.getHtmlTab();
     else if(selectedFilter == "HTML with images (*.html)")
-        htmlTxt = coupletList.getHtmlImg(false);
+        htmlTxt = exportHtmlImg(false);
+//        htmlTxt = coupletList.getHtmlImg(false);
 
     QTextStream outStream(&outFile);
     if(selectedFilter != "Formated text RTF (*.rtf)")
@@ -615,6 +767,38 @@ void MainWindow::exportKey()
 
     outStream << htmlTxt;
     //    statusBar()->showMessage(tr("File saved"), 2000);
+}
+
+QString MainWindow::exportHtmlImg(bool withPath)
+{
+    QElapsedTimer timer;
+    timer.start();
+
+    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
+    htmlTxt += intro;
+//    htmlTxt += coupletList.getHtmlImg(withPath);
+
+//    dkFormat format;
+//    QFileInfo fileInfo(filePath);
+//    QString path = fileInfo.absolutePath();
+//    format.setFilePath(path);
+//    format.setFigures(&figTxt);
+    htmlTxt += format.keyHtml(coupletList, withPath);
+    qDebug() << timer.elapsed() << "key";
+
+//    htmlTxt += format.glossaryHtml(glossary, withPath);
+    htmlTxt += format.glossaryHtml(withPath);
+    htmlTxt += format.endpointsHtml(withPath);
+    qDebug() << timer.elapsed() << "glossary";
+
+//    htmlTxt += glossary.getHtml();
+//    htmlTxt = format.linkGlossary(htmlTxt);
+//    htmlTxt = format.linkEndpoints(htmlTxt);
+    htmlTxt = format.addLinks(htmlTxt);
+
+    qDebug() << timer.elapsed() << "linking";
+
+    return htmlTxt;
 }
 
 void MainWindow::insertRow()
@@ -638,7 +822,7 @@ void MainWindow::insertRow()
 
     int theRow = selectedRange.bottomRow();
     coupletList.insertDummyAt(theRow + 1);
-    insertTabRow(theRow + 1);
+    insertTableRow(theRow + 1);
     setWindowModified(true);
 }
 
@@ -759,7 +943,7 @@ void MainWindow::pasteRows()
     for(int i = 0; i < coupletClipboard.size(); ++i)
     {
         coupletList.insertAt(bottomRow+1+i, coupletClipboard.at(i));
-        insertTabRow(bottomRow+1+i);
+        insertTableRow(bottomRow+1+i);
     }
     if(!isCopy)
         coupletClipboard.clear(); // couplets can be pasted only in one place
@@ -789,7 +973,7 @@ void MainWindow::editRow()
     editClickedRow(theRow);
 }
 
-// col is only for compativility with cellDoubleClicked(row, col)
+// col is only for compatibility with cellDoubleClicked(row, col)
 void MainWindow::editClickedRow(int row, int col)
 {
     dkCouplet theCouplet = coupletList.at(row);
@@ -978,11 +1162,23 @@ void MainWindow::createActions()
     viewHtmlAct = new QAction(tr("&Hypertext in table"), this);
     connect(viewHtmlAct, SIGNAL(triggered()), this, SLOT(viewHtml()));
 
-    viewEndpointsAct = new QAction(tr("&Endpoints"), this);
-    connect(viewEndpointsAct, SIGNAL(triggered()), this, SLOT(viewEndpoints()));
+    viewEndpointListAct = new QAction(tr("Endpoint &list"), this);
+    connect(viewEndpointListAct, SIGNAL(triggered()), this, SLOT(viewEndpointList()));
 
     viewTagsAct = new QAction(tr("&Tags"), this);
     connect(viewTagsAct, SIGNAL(triggered()), this, SLOT(viewTags()));
+
+    viewIntroAct = new QAction(tr("&Introduction"), this);
+    connect(viewIntroAct, SIGNAL(triggered()), this, SLOT(viewIntro()));
+
+    viewGlossaryAct = new QAction(tr("&Glossary"), this);
+    connect(viewGlossaryAct, SIGNAL(triggered()), this, SLOT(viewGlossary()));
+
+    viewEndpointsAct = new QAction(tr("&Endpoints"), this);
+    connect(viewEndpointsAct, SIGNAL(triggered()), this, SLOT(viewEndpoints()));
+
+    viewFigTxtAct = new QAction(tr("&Figure Legends"), this);
+    connect(viewFigTxtAct, SIGNAL(triggered()), this, SLOT(viewFigTxt()));
 
     goToNumberAct = new QAction(tr("&Go to &number"), this);
     goToNumberAct->setShortcut(tr("Ctrl+N"));
@@ -1046,8 +1242,13 @@ void MainWindow::createMenus()
     viewMenu = new QMenu(tr("&View"), this);
     viewMenu->addAction(viewBrowserAct);
     viewMenu->addAction(viewHtmlAct);
-    viewMenu->addAction(viewEndpointsAct);
+    viewMenu->addAction(viewEndpointListAct);
     viewMenu->addAction(viewTagsAct);
+    viewMenu->addSeparator();
+    viewMenu->addAction(viewIntroAct);
+    viewMenu->addAction(viewGlossaryAct);
+    viewMenu->addAction(viewEndpointsAct);
+    viewMenu->addAction(viewFigTxtAct);
     menuBar()->addMenu(viewMenu);
 
     navMenu = new QMenu(tr("&Navigation"), this);
@@ -1191,12 +1392,40 @@ void MainWindow::clear()
     while(table->rowCount() > 0)
         table->removeRow(0);
 
+    intro.clear();
     coupletList.clear();
+    glossary.clear();
+    figTxt.clear();
     htmlWindow->hide();
 }
 
 MainWindow::~MainWindow()
 {
+}
+
+dkFormat * MainWindow::getFormat()
+{
+    return &format;
+}
+
+dkTermList * MainWindow::getGlossary()
+{
+    return &glossary;
+}
+
+dkTermList * MainWindow::getFigTxt()
+{
+    return &figTxt;
+}
+
+dkBrowser * MainWindow::getHtmlWindow()
+{
+    return htmlWindow;
+}
+
+QString MainWindow::getFilePath() const
+{
+    return filePath;
 }
 
 void MainWindow::test()

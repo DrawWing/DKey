@@ -878,7 +878,7 @@ QString dkCouplet::getHtmlImg(const QString & path, bool withPath) const
 {
     QString htmlTxt;
 
-    htmlTxt = QStringLiteral("<br /><div id=\"k%1\">%1%2</div>").arg(number).arg(previousTxt());
+    htmlTxt = QStringLiteral("<div id=\"k%1\">%1%2</div>").arg(number).arg(previousTxt());
     htmlTxt += "<table border=\"1\" cellpadding=\"10\" cellspacing=\"0\" style=\"border-collapse: collapse\" bordercolor=\"#111111\" width=\"100%\">\n";
     htmlTxt += "<tr>";
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"50%\">";
@@ -898,8 +898,8 @@ QString dkCouplet::getHtmlImg(const QString & path, bool withPath) const
     for(int j = 0; j < figList2.size(); ++j)
         htmlTxt += imgHtml(path, figList2[j], withPath);
     htmlTxt += "</td>";
-    htmlTxt += "</tr>\n";
-    htmlTxt += "</table>\n";
+    htmlTxt += "</tr>";
+    htmlTxt += "</table><br />\n";
 
     return htmlTxt;
 }
@@ -1106,9 +1106,7 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path)
                         outList.push_back(fileName);
                 }
             }
-
         }
-
     }
 
     return outList;

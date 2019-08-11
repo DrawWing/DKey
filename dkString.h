@@ -38,6 +38,7 @@ public:
     void chopFront(int n);
     QString getRtf() const;
     void removeHtml();
+    dkString cleanHtml() const;
     dkString toPlainText() const;
 
     dkString & operator=( const dkString & );

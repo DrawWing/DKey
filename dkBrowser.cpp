@@ -17,18 +17,21 @@
 
 #include <QtWidgets>
 
-#include "txtwindow.h"
+#include "dkBrowser.h"
 
-TxtWindow::TxtWindow(QWidget *parent)
-: QMainWindow(parent)
+dkBrowser::dkBrowser(QWidget *parent)
+    : QMainWindow(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);
     textEdit = new QTextBrowser(this);
+    textEdit->setOpenLinks(false);
+    connect(textEdit, SIGNAL( anchorClicked( QUrl ) ),
+            this, SLOT( clickedLink( QUrl ) ));
     setCentralWidget(textEdit);
     readSettings();
 }
 
-TxtWindow::TxtWindow(const QString & txt, QWidget *parent)
+dkBrowser::dkBrowser(const QString & txt, QWidget *parent)
     : QMainWindow(parent)
 {
     setAttribute(Qt::WA_DeleteOnClose);
@@ -38,33 +41,36 @@ TxtWindow::TxtWindow(const QString & txt, QWidget *parent)
     readSettings();
 }
 
-TxtWindow::~TxtWindow()
+dkBrowser::~dkBrowser()
 {
 }
 
-void TxtWindow::setPlainTxt(const QString &txt)
+void dkBrowser::setPlainTxt(const QString &txt)
 {
     textEdit->setPlainText(txt);
     show();
 }
 
-
-void TxtWindow::setHtml(const QString & txt)
+void dkBrowser::setHtml(const QString & txt)
 {
     textEdit->setHtml(txt);
     show();
 }
 
-void TxtWindow::closeEvent(QCloseEvent *event)
+void dkBrowser::setFormat(dkFormat * inFormat)
+{
+    format = inFormat;
+}
+
+void dkBrowser::closeEvent(QCloseEvent *event)
 {
     writeSettings();
     hide();
-        event->ignore();
+    event->ignore();
     //    event->accept();
 }
 
-
-void TxtWindow::readSettings()
+void dkBrowser::readSettings()
 {
     QString companyName = QGuiApplication::organizationName();
     QString windowName = QGuiApplication::applicationName() + " - Viewer";
@@ -75,7 +81,7 @@ void TxtWindow::readSettings()
     resize(size);
 }
 
-void TxtWindow::writeSettings()
+void dkBrowser::writeSettings()
 {
     QString companyName = QGuiApplication::organizationName();
     QString windowName = QGuiApplication::applicationName() + " - Viewer";
@@ -84,3 +90,36 @@ void TxtWindow::writeSettings()
     settings.setValue("size", size());
 }
 
+void dkBrowser::clickedLink(QUrl inUrl)
+{
+    QString fragment =  inUrl.fragment();
+    if(fragment[0]=='g')
+    {
+        QString nrStr = fragment.mid(1);
+        bool ok;
+        int nr = nrStr.toInt(&ok);
+        if(ok)
+            goToGlossary(nr-1);
+    }
+//    else if(fragment[0]=='k')
+//    {
+//        QString nrStr = fragment.mid(1);
+//        bool ok;
+//        int nr = nrStr.toInt(&ok);
+//        if(ok)
+//            goToNumber(nr);
+//    }
+}
+
+void dkBrowser::goToGlossary(int nr)
+{
+    QString outTxt = format->glossHtml(nr, true);
+//    outTxt += "<br />"; // otherwise images in the same line
+//    outTxt += format.imagesHtml(outTxt, true);
+
+    // todo: use only pointers to glossary in linkGlossary
+//    outTxt = format->linkGlossary(outTxt); //moved to glossHtml
+
+    textEdit->setHtml(outTxt);
+    setWindowTitle(tr("Hypertext viewer"));
+}

@@ -17,17 +17,31 @@ SOURCES += main.cpp\
     coupletDialog.cpp \
     dkCouplet.cpp \
     dkCoupletList.cpp \
-    txtwindow.cpp \
     dkString.cpp \
-    dkView.cpp
+    dkView.cpp \
+    dkTerm.cpp \
+    dkTermList.cpp \
+    termDialog.cpp \
+    termWindow.cpp \
+    dkFormat.cpp \
+    dkStringInt.cpp \
+    dkBrowser.cpp \
+    textEditor.cpp
 
 HEADERS  += mainwindow.h \
     coupletDialog.h \
     dkCouplet.h \
     dkCoupletList.h \
-    txtwindow.h \
     dkString.h \
-    dkView.h
+    dkView.h \
+    dkTerm.h \
+    dkTermList.h \
+    termDialog.h \
+    termWindow.h \
+    dkFormat.h \
+    dkStringInt.h \
+    dkBrowser.h \
+    textEditor.h
 
 OTHER_FILES += \
     DKey.rc \

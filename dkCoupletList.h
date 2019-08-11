@@ -21,7 +21,6 @@
 #include <QList>
 #include <QString>
 #include <QDomDocument>
-#include <QStatusBar>
 
 #include "dkCouplet.h"
 
@@ -42,13 +41,14 @@ public:
     void parse2numberKey(QStringList & inTxtList);
     void parseIndentedKey(QStringList & inTxtList);
     void fromDkTxt(const QString & fileName);
-    void fromDkXml(const QDomDocument xmlDoc);
+    void fromDkXml(const QDomElement &inElement);
 
     QList< dkCouplet > getList() const;
     void findMaxNumber();
     int getMaxNumber() const;
     QString getFilePath() const;
     QString getError() const;
+    QString getIntro() const;
     QString getDkTxt() const;
     QString getDkXml() const;
     QString getRtf() const;

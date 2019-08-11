@@ -353,31 +353,31 @@ void dkCoupletList::fromDkTxt(const QString & fileName)
     findMaxNumber();
 }
 
-void dkCoupletList::fromDkXml(const QDomDocument xmlDoc)
+void dkCoupletList::fromDkXml(const QDomElement &inElement)
+//void dkCoupletList::fromDkXml(const QDomDocument xmlDoc)
 {
     clear();
 
-    QString elementName = "DKey";
-    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
-    QDomElement dkeyElement = dkeyNode.toElement();
-//    QDomElement dkeyElement = xmlDoc.namedItem(elementName).toElement();
-    if ( dkeyElement.isNull() )
-    {
-        error = QObject::tr("No <%1> element found in the XML file!").arg(elementName);
-        return;
-    }
-//    QString versionTxt = docElement.attribute("version");
-//    double version = versionTxt.toDouble();
+//    QString elementName = "DKey";
+//    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+//    QDomElement dkeyElement = dkeyNode.toElement();
+//    if ( dkeyElement.isNull() )
+//    {
+//        error = QObject::tr("No <%1> element found in the XML file!").arg(elementName);
+//        return;
+//    }
+////    QString versionTxt = docElement.attribute("version");
+////    double version = versionTxt.toDouble();
 
-    elementName = "key";
-    QDomNode keyNode = xmlDoc.namedItem(elementName);
-    QDomElement keyElement = dkeyNode.namedItem(elementName).toElement();
-    if ( keyElement.isNull() )
-    {
-        error = QObject::tr("No <%1> element found in the XML file!").arg(elementName);
-        return;
-    }
-    QDomNodeList keyChildList = keyElement.childNodes();
+//    elementName = "key";
+//    QDomNode keyNode = xmlDoc.namedItem(elementName);
+//    QDomElement keyElement = dkeyNode.namedItem(elementName).toElement();
+//    if ( keyElement.isNull() )
+//    {
+//        error = QObject::tr("No <%1> element found in the XML file!").arg(elementName);
+//        return;
+//    }
+    QDomNodeList keyChildList = inElement.childNodes();
     for(int i = 0; i < keyChildList.size(); ++i){
         QDomNode coupletNode = keyChildList.at(i);
         QDomElement coupletElement = coupletNode.toElement();
@@ -396,7 +396,6 @@ void dkCoupletList::fromDkXml(const QDomDocument xmlDoc)
                 error = coupletError;
                 return;
             }
-
         }
     }
     findMaxNumber();
@@ -439,6 +438,11 @@ QString dkCoupletList::getError() const
     return error;
 }
 
+QString dkCoupletList::getIntro() const
+{
+    return intro;
+}
+
 QString dkCoupletList::getDkTxt() const
 {
     QString outTxt;
@@ -453,19 +457,17 @@ QString dkCoupletList::getDkTxt() const
 
 QString dkCoupletList::getDkXml() const
 {
-    QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-    outTxt += "<DKey version=\"1.0\">\n"; //add version from qapplication
-    outTxt += "<key>\n";
-
+//    QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+//    outTxt += "<DKey version=\"1.0\">\n"; //add version from qapplication
+    QString outTxt = "<key>\n";
     for(int i = 0; i < thisList.size(); ++i)
     {
         dkCouplet theCouplet = thisList[i];
         QString theTxt = theCouplet.getDkXml();
         outTxt.append(theTxt);
     }
-
     outTxt += "</key>\n";
-    outTxt += "</DKey>\n";
+//    outTxt += "</DKey>\n";
 
     return outTxt;
 }
@@ -542,7 +544,7 @@ QString dkCoupletList::getHtmlTabulator() const
 
 QString dkCoupletList::getHtmlTab() const
 {
-    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>";
+    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
     htmlTxt += "<table border=\"1\" cellpadding=\"10\" cellspacing=\"0\" style=\"border-collapse: collapse\" bordercolor=\"#111111\" width=\"100%\">\n";
 
     for(int i = 0; i < thisList.size(); ++i)
@@ -560,7 +562,8 @@ QString dkCoupletList::getHtmlImg(bool withPath)
 {
     findFigs();
 
-    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>";
+    QString htmlTxt;
+//    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
     for(int i = 0; i < thisList.size(); ++i)
     {
         htmlTxt += thisList[i].getHtmlImg(filePath, withPath);
@@ -868,6 +871,9 @@ void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList,
             if(chainList.contains(prevNumber))
             {
                 chainList.push_back(prevNumber);
+                //correct cyclic error reporting
+//                error += QString(QObject::tr("Warning: numbering is cyclic between couplets: %1 and %2.\n"))
+//                        .arg(thisList[i].getNumber()).arg(theCouplet.getNumber());
                 break; // cyclic numbering
             }
             QString leadTxt;
@@ -879,7 +885,6 @@ void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList,
             {
                 leadTxt = prevCouplet.getLead2txt();
             }
-//            leadTxt.replace("<br />", "\n");
             QString longLead = QString ("%1. %2").arg(prevCouplet.getNumber()).arg(leadTxt);
             path.push_back(longLead);
 
@@ -1173,7 +1178,8 @@ bool dkCoupletList::isPointerChainOK()
         if(pointerChain.size() == 0)
             error += QString(QObject::tr("Couplet %1 has no reference in other couplets.\n"))
                     .arg(thisList[i].getNumber());
-        else if(pointerChain.last() != 1)
+        else if(!pointerChain.contains(1))
+//            else if(pointerChain.last() != 1)
             error += QString(QObject::tr("Couplet %1 cannot be reached from couplet 1.\n"))
                     .arg(thisList[i].getNumber());
     }
