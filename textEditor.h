@@ -49,8 +49,8 @@ private:
     QAction *actionTextUline;
     QAction *actionTextItalic;
 
-//    QTextEdit *textEdit;
-    QTextBrowser *textEdit;
+    QTextEdit *textEdit;
+//    QTextBrowser *textEdit;
     QString *introString;
     QWidget *parent;
     dkFormat * format;

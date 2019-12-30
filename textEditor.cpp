@@ -21,12 +21,13 @@
 dkEditor::dkEditor(QString *txt, MainWindow *inParent)
     : QMainWindow(inParent)
 {
+    parent = inParent;
     format = inParent->getFormat();
     introString = txt;
     setWindowTitle(QCoreApplication::applicationName());
 
-//    textEdit = new QTextEdit(this);
-    textEdit = new QTextBrowser(this);
+    textEdit = new QTextEdit(this);
+//    textEdit = new QTextBrowser(this);
     textEdit->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(textEdit,SIGNAL(customContextMenuRequested(const QPoint&)),
             this,SLOT(showContextMenu(const QPoint &)));
@@ -39,9 +40,8 @@ dkEditor::dkEditor(QString *txt, MainWindow *inParent)
     //    connect(textEdit, &QTextEdit::cursorPositionChanged,
 //            this, &dkEditor::cursorPositionChanged);
 
-    textEdit->setOpenLinks(false);
-    connect(textEdit, SIGNAL( anchorClicked( QUrl ) ),
-            this, SLOT( clickedLink( QUrl ) ));
+//    connect(textEdit, SIGNAL( anchorClicked( QUrl ) ),
+//            this, SLOT( clickedLink( QUrl ) ));
 
     textEdit->setHtml(*txt);
     setCentralWidget(textEdit);

@@ -48,6 +48,7 @@ public:
     void setSynonyms(QString inTxt);
     void setDefinition(QString inTxt);
     bool isEmpty() const;
+    bool contains(QString inKey);
     bool operator<( const dkTerm &p1 ) const;
 
 private:

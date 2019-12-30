@@ -216,6 +216,19 @@ void dkTermList::sort()
     std::sort(thisList.begin(), thisList.end());
 }
 
+// if thisList contains tag with synonym inKey return term index
+// if no inKey was found return -1
+int dkTermList::contains(QString inKey)
+{
+    for(int i = 0; i < thisList.size(); ++i)
+    {
+        dkTerm theTerm = thisList[i];
+        if(theTerm.contains(inKey))
+            return i+1;
+    }
+    return -1;
+}
+
 void dkTermList::push_back(dkTerm inTerm)
 {
     thisList.push_back(inTerm);
@@ -238,7 +251,6 @@ void dkTermList::removeAt(int i)
 {
     thisList.removeAt(i);
 }
-
 
 // add links to inHtmlTxt
 QString dkTermList::addLinks(QString &inHtmlTxt)

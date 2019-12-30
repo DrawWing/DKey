@@ -59,7 +59,7 @@ void dkFormat::setFigures(dkTermList * inList)
 
 QString dkFormat::keyHtml(dkCoupletList & inList, bool withPath)
 {
-    QString htmlTxt = "Taxonomic key\n";
+    QString htmlTxt = "\n<h3 id=\"k0\">Taxonomic key</h3>\n";
 
     for(int i = 0; i < inList.size(); ++i)
     {
@@ -112,7 +112,9 @@ QString dkFormat::keyHtml(dkCoupletList & inList, bool withPath)
 QString dkFormat::coupletHtml(dkCouplet &theCouplet, bool withPath)
 {
     QString lead1 = theCouplet.getLead1();
+    addFigLinks(lead1);
     QString lead2 = theCouplet.getLead2();
+    addFigLinks(lead2);
     QString endpoint1 = theCouplet.getEndpoint1();
     QString endpoint2 = theCouplet.getEndpoint2();
     int pointer1 = theCouplet.getPointer1();
@@ -147,7 +149,8 @@ QString dkFormat::coupletHtml(dkCouplet &theCouplet, bool withPath)
 //QString dkFormat::glossaryHtml(dkTermList & inList, bool withPath)
 QString dkFormat::glossaryHtml(bool withPath)
 {
-    QString htmlTxt = "Glossary\n";
+    QString htmlTxt = "\n<h3 id=\"g0\">Glossary</h3>\n";
+
     for(int i = 0; i < glossary->size(); ++i)
 //        for(int i = 0; i < inList.size(); ++i)
     {
@@ -168,8 +171,7 @@ QString dkFormat::glossaryHtml(bool withPath)
 
 QString dkFormat::endpointsHtml(bool withPath)
 {
-//    QString htmlTxt = QStringLiteral("<p Endpoints</p>\n");
-    QString htmlTxt = "<br>Endpoints\n";
+    QString htmlTxt = "\n<h3 id=\"e0\">Endpoints</h3>\n";
     for(int i = 0; i < endpoints->size(); ++i)
     {
         dkTerm theTerm = endpoints->at(i);
@@ -183,7 +185,23 @@ QString dkFormat::endpointsHtml(bool withPath)
     return htmlTxt;
 }
 
-//used only in dkBrowser.cpp
+QString dkFormat::figuresHtml(bool withPath)
+{
+    QString htmlTxt = "\n<h3 id=\"f0\">Figures</h3>\n";
+    for(int i = 0; i < figures->size(); ++i)
+    {
+        dkTerm theTerm = figures->at(i);
+        QString theTxt = theTerm.getDefinition();
+
+        htmlTxt += QStringLiteral("<p id=\"f%1\" class=\"glossary\">%1. %2</p>\n").arg(i+1).arg(theTxt);
+
+        htmlTxt += imagesHtml(theTxt, withPath);
+    }
+
+    return htmlTxt;
+}
+
+//used only in dkBrowser and dkEditor
 QString dkFormat::glossHtml(int nr, bool withPath)
 {
     dkTerm theTerm = glossary->at(nr);
@@ -233,11 +251,11 @@ QString dkFormat::imgHtml(const QString & inName, bool withPath) const
         htmlTxt += QStringLiteral(" title=\"%1\"").arg(figTitle);
 
     if( x < imgMaxSize && y < imgMaxSize)
-        htmlTxt += QStringLiteral(">");
+        htmlTxt += QStringLiteral(">\n");
     else if( x > y)
-        htmlTxt += QStringLiteral(" width=\"%1\">").arg(imgMaxSize);
+        htmlTxt += QStringLiteral(" width=\"%1\">\n").arg(imgMaxSize);
     else
-        htmlTxt += QStringLiteral(" height=\"%1\">").arg(imgMaxSize);
+        htmlTxt += QStringLiteral(" height=\"%1\">\n").arg(imgMaxSize);
 
     return htmlTxt;
 }
@@ -360,6 +378,7 @@ void dkFormat::findFigFiles()
 //    return outTxt;
 //}
 
+// moved to dkTermList
 //QString dkFormat::linkGlossary(QString &inHtmlTxt)
 //{
 //    QStringList inHtmlList = inHtmlTxt.split('\n');
@@ -395,156 +414,159 @@ void dkFormat::findFigFiles()
 //    return outTxt;
 //}
 
-QString dkFormat::linkEndpoints(QString &inHtmlTxt)
-{
-    QStringList inHtmlList = inHtmlTxt.split('\n');
+// moved to dkTermList
+//QString dkFormat::linkEndpoints(QString &inHtmlTxt)
+//{
+//    QStringList inHtmlList = inHtmlTxt.split('\n');
 
-    QList< dkStringInt > keyList = endpoints->sortBySize();
+//    QList< dkStringInt > keyList = endpoints->sortBySize();
 
-    for(int i = 0; i < inHtmlList.size(); ++i)
-    {
-        QString htmlTxt = inHtmlList[i];
-        QString plainTxt = QTextDocumentFragment::fromHtml( htmlTxt ).toPlainText();
-        QStringList plainList = plainTxt.split(QRegExp("\\W+")); // only words no separators
-        QStringList htmlList = htmlTxt.split(QRegExp("\\b")); // words and separators
+//    for(int i = 0; i < inHtmlList.size(); ++i)
+//    {
+//        QString htmlTxt = inHtmlList[i];
+//        QString plainTxt = QTextDocumentFragment::fromHtml( htmlTxt ).toPlainText();
+//        QStringList plainList = plainTxt.split(QRegExp("\\W+")); // only words no separators
+//        QStringList htmlList = htmlTxt.split(QRegExp("\\b")); // words and separators
 
-        for(int j = 0; j < keyList.size(); ++j)
-        {
-            dkStringInt theKey = keyList[j];
-            QString keyString = theKey.getString();
-            int keyInt = theKey.getInt();
+//        for(int j = 0; j < keyList.size(); ++j)
+//        {
+//            dkStringInt theKey = keyList[j];
+//            QString keyString = theKey.getString();
+//            int keyInt = theKey.getInt();
 
 
-            QStringList kList = keyString.split(QRegExp("\\W+")); // only words no separators
-            if(kList.size() == 0)
-                continue;
+//            QStringList kList = keyString.split(QRegExp("\\W+")); // only words no separators
+//            if(kList.size() == 0)
+//                continue;
 
-            if(isKeyPresent(kList, plainList))
-                linkKey(kList, keyInt, htmlList);
-        }
+//            if(isKeyPresent(kList, plainList))
+//                linkKey(kList, keyInt, htmlList);
+//        }
 
-        inHtmlList[i] = htmlList.join("");
-    }
+//        inHtmlList[i] = htmlList.join("");
+//    }
 
-    QString outTxt = inHtmlList.join('\n');
-    return outTxt;
-}
+//    QString outTxt = inHtmlList.join('\n');
+//    return outTxt;
+//}
 
-// inList is plain text list of words only
-bool dkFormat::isKeyPresent(QStringList &keyList, QStringList &inList)
-{
-    if(inList.size() < keyList.size())
-        return false; // inList to short
+// moved to dkTermList
+//// inList is plain text list of words only
+//bool dkFormat::isKeyPresent(QStringList &keyList, QStringList &inList)
+//{
+//    if(inList.size() < keyList.size())
+//        return false; // inList to short
 
-    for(int j = 0; j < keyList.size(); ++j)
-    {
-        if(!inList.contains(keyList[j], Qt::CaseInsensitive))
-            return false;
-    }
+//    for(int j = 0; j < keyList.size(); ++j)
+//    {
+//        if(!inList.contains(keyList[j], Qt::CaseInsensitive))
+//            return false;
+//    }
 
-    for(int i = 0; i < inList.size(); ++i)
-    {
-        if(inList.size() < i + keyList.size())
-            return false; // inList to short
-        for(int j = 0; j < keyList.size(); ++j)
-        {
-            if(inList[i+j] != keyList[j])
-                break;
-        }
-        return true;
-    }
-    return false;
-}
+//    for(int i = 0; i < inList.size(); ++i)
+//    {
+//        if(inList.size() < i + keyList.size())
+//            return false; // inList to short
+//        for(int j = 0; j < keyList.size(); ++j)
+//        {
+//            if(inList[i+j] != keyList[j])
+//                break;
+//        }
+//        return true;
+//    }
+//    return false;
+//}
 
-bool dkFormat::isKey(QStringList &keyList, QStringList &inList, int position)
-{
-    if(inList.size() < position + keyList.size())
-        return false; // inList to short
-    for(int i = 0; i < keyList.size(); ++i)
-    {
-        if(inList[position+i] != keyList[i])
-            return false;
-    }
-    return true;
-}
+//bool dkFormat::isKey(QStringList &keyList, QStringList &inList, int position)
+//{
+//    if(inList.size() < position + keyList.size())
+//        return false; // inList to short
+//    for(int i = 0; i < keyList.size(); ++i)
+//    {
+//        if(inList[position+i] != keyList[i])
+//            return false;
+//    }
+//    return true;
+//}
 
-void dkFormat::linkKey(QStringList &keyList, int keyIndex, QStringList &inList)
-{
-    if(inList.size() < keyList.size())
-        return; // inList to short
+// moved to dkTermList
+//void dkFormat::linkKey(QStringList &keyList, int keyIndex, QStringList &inList)
+//{
+//    if(inList.size() < keyList.size())
+//        return; // inList to short
 
-    bool isCode = false;
-    bool isLink = false;
-    int keyPosition = 0; // index of key in keywords consisting from more thoan one word
-    int startIndex = 0; // index of inList at which key starts
-    for(int i = 0; i < inList.size(); ++i)
-    {
-//        QString theTxt = inList[i]; // for debuging
-        if(isCode) // inside html code, no plain text
-        {
-            if(inList[i].contains('>'))
-            {
-                if(i > 0)
-                    if(inList[i-1] == "a")
-                        isLink = false;
+//    bool isCode = false;
+//    bool isLink = false;
+//    int keyPosition = 0; // index of key in keywords consisting from more thoan one word
+//    int startIndex = 0; // index of inList at which key starts
+//    for(int i = 0; i < inList.size(); ++i)
+//    {
+////        QString theTxt = inList[i]; // for debuging
+//        if(isCode) // inside html code, no plain text
+//        {
+//            if(inList[i].contains('>'))
+//            {
+//                if(i > 0)
+//                    if(inList[i-1] == "a")
+//                        isLink = false;
 
-                if(inList[i].contains('<')) // there can be both > and <
-                {
-                    if(i+1 < inList.size())
-                        if(inList[i+1] == "a")
-                            isLink = true;
-                }
-                else
-                    isCode = false;
+//                if(inList[i].contains('<')) // there can be both > and <
+//                {
+//                    if(i+1 < inList.size())
+//                        if(inList[i+1] == "a")
+//                            isLink = true;
+//                }
+//                else
+//                    isCode = false;
 
-                continue;
-            }
-            continue;
-        }
+//                continue;
+//            }
+//            continue;
+//        }
 
-        if(inList[i].contains('<') && !inList[i].contains('>')) // html code started
-        {
-            isCode = true;
-            if(i+1 < inList.size())
-                if(inList[i+1] == "a")
-                    isLink = true;
-            continue;
-        }
+//        if(inList[i].contains('<') && !inList[i].contains('>')) // html code started
+//        {
+//            isCode = true;
+//            if(i+1 < inList.size())
+//                if(inList[i+1] == "a")
+//                    isLink = true;
+//            continue;
+//        }
 
-        if(isLink)
-            continue;
+//        if(isLink)
+//            continue;
 
-        if(!(inList[i][0].isLetter() || inList[i][0].isDigit())) // is first character not letter or digit
-            continue; // separator
+//        if(!(inList[i][0].isLetter() || inList[i][0].isDigit())) // is first character not letter or digit
+//            continue; // separator
 
-        if(i > 0)
-            if(inList[i-1].contains('&')) // is this escape sequence?
-                continue;
+//        if(i > 0)
+//            if(inList[i-1].contains('&')) // is this escape sequence?
+//                continue;
 
-        if(inList[i].toLower() == keyList[keyPosition]) // comparison is case insensitive
-        {
-            if(keyPosition == 0)
-                startIndex = i; // keyword started
+//        if(inList[i].toLower() == keyList[keyPosition]) // comparison is case insensitive
+//        {
+//            if(keyPosition == 0)
+//                startIndex = i; // keyword started
 
-            if(keyList.size() == keyPosition + 1)
-            {
-                // key was found
-                QString prefix = QStringLiteral("<a href=\"#g%1\">").arg(keyIndex);
-                inList[startIndex].prepend(prefix);
-                inList[i].append("</a>");
+//            if(keyList.size() == keyPosition + 1)
+//            {
+//                // key was found
+//                QString prefix = QStringLiteral("<a href=\"#g%1\">").arg(keyIndex);
+//                inList[startIndex].prepend(prefix);
+//                inList[i].append("</a>");
 
-                keyPosition = 0;
-                startIndex = 0; //reset key counter
-            }
-            else
-                ++keyPosition;
-        }
-        else
-            keyPosition = 0;
+//                keyPosition = 0;
+//                startIndex = 0; //reset key counter
+//            }
+//            else
+//                ++keyPosition;
+//        }
+//        else
+//            keyPosition = 0;
 
-    }
-    return;
-}
+//    }
+//    return;
+//}
 
 QString dkFormat::addLinks(QString &inHtmlTxt)
 {
@@ -554,4 +576,58 @@ QString dkFormat::addLinks(QString &inHtmlTxt)
     outTxt = endpoints->addLinks(outTxt);
     return outTxt;
 }
+
+// add links to images in inHtmlTxt
+// images are preceded by Fig. and definition consist of only on word
+void dkFormat::addFigLinks(QString &inHtmlTxt)
+{
+    QStringList inHtmlList = inHtmlTxt.split('\n');
+    for(int i = 0; i < inHtmlList.size(); ++i)
+    {
+        QString htmlTxt = inHtmlList[i];
+        if(!htmlTxt.contains("Fig.", Qt::CaseInsensitive))
+            continue;
+        QStringList htmlList = htmlTxt.split("Fig.", QString::KeepEmptyParts, Qt::CaseInsensitive);
+        if(htmlList.size() < 2)
+            continue;
+        for(int j = 1; j < htmlList.size(); ++j)
+        {
+            if(htmlList[j-1].endsWith('(')) //there is bracket before Fig.
+            {
+                QString theHtml = htmlList[j];
+                QStringList bracketList = theHtml.split(')');
+                QStringList wordList = bracketList[0].split(QRegExp("\\b")); // words and separators
+                for(int k = 1; k < wordList.size(); k+=2)
+                {
+                    int keyIndex = figures->contains(wordList[k]);
+                    if(keyIndex > -1) // key was found
+                    {
+                        QString prefix = QStringLiteral("<a href=\"#f%1\">").arg(keyIndex);
+                        wordList[k].prepend(prefix);
+                        wordList[k].append("</a>");
+                    }
+                }
+                bracketList[0] = wordList.join("");
+                htmlList[j] = bracketList.join(')');
+            } else // verify only one word
+            {
+                QString theHtml = htmlList[j];
+                QStringList wordList = theHtml.split(QRegExp("\\b")); // words and separators
+                int keyIndex = figures->contains(wordList[1]);
+                if(keyIndex > -1) // key was found
+                {
+                    QString prefix = QStringLiteral("<a href=\"#f%1\">").arg(keyIndex);
+                    wordList[1].prepend(prefix);
+                    wordList[1].append("</a>");
+                }
+                htmlList[j] = wordList.join("");
+            }
+        }
+        inHtmlList[i] = htmlList.join("Fig.");
+    }
+
+    inHtmlTxt = inHtmlList.join('\n');
+//    return outTxt;
+}
+
 

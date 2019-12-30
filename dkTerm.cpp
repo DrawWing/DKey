@@ -190,6 +190,17 @@ bool dkTerm::isEmpty() const
         return false;
 }
 
+bool dkTerm::contains(QString inKey)
+{
+    for(int i = 0; i < synonyms.size(); ++i)
+    {
+        QString theKey = synonyms[i];
+        if(theKey == inKey)
+            return true;
+    }
+    return false;
+}
+
 bool dkTerm::operator < ( const dkTerm &p1 ) const
 {
     if(synonyms.size() == 0)

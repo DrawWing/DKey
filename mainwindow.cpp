@@ -32,7 +32,7 @@
 #include "coupletDialog.h"
 #include "dkView.h"
 #include "termWindow.h"
-//#include "txtwindow.h"
+#include "textEditor.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -148,8 +148,7 @@ void MainWindow::viewTags()
 
 void MainWindow::viewIntro()
 {
-//    intro = "test";
-    dkBrowser *introWindow = new dkBrowser(intro, this);
+    dkEditor *introWindow = new dkEditor(&intro, this);
     introWindow->setWindowTitle(tr("Introduction")+"[*]");
     introWindow->show();
 }
@@ -403,6 +402,10 @@ bool MainWindow::isKeyOK()
     if(!ok)
         error+= coupletList.getError();
 
+    ok = coupletList.isCircularityOK();
+    if(!ok)
+        error+= coupletList.getError();
+
     if(error.isEmpty())
         return true;
     else
@@ -422,14 +425,9 @@ void MainWindow::addWarnings()
     if(!ok)
         error+= coupletList.getError();
 
-    ok = coupletList.isPointerNoWarning();
+    ok = coupletList.isPointerIncreasing();
     if(!ok)
         error+= coupletList.getError();
-
-    ok = coupletList.isKeyCyclic(); // needs to be after isPointerChainOK
-    if(!ok)
-        error+= coupletList.getError();
-
 }
 
 void MainWindow::findErrors()
@@ -789,6 +787,7 @@ QString MainWindow::exportHtmlImg(bool withPath)
 //    htmlTxt += format.glossaryHtml(glossary, withPath);
     htmlTxt += format.glossaryHtml(withPath);
     htmlTxt += format.endpointsHtml(withPath);
+    htmlTxt += format.figuresHtml(withPath);
     qDebug() << timer.elapsed() << "glossary";
 
 //    htmlTxt += glossary.getHtml();

@@ -80,10 +80,11 @@ public:
     bool isNumberingOK();
     bool isContentOK();
     bool isFromSingle();
-    bool isKeyCyclic();
+    bool isCircularityOK();
     bool isEndpointOK();
     bool isPointerOK();
-    bool isPointerNoWarning();
+    bool isNumberInChain(int index, int inNumber);
+    bool isPointerIncreasing();
     bool isPointerChainOK();
     bool isNumberUnique();
     bool reNumber(int startNumber = 1);

@@ -39,12 +39,14 @@ public:
     QString coupletHtml(dkCouplet &theCouplet, bool withPath = true);
     QString glossaryHtml(bool withPath = true);
     QString endpointsHtml(bool withPath = true);
+    QString figuresHtml(bool withPath = true);
     QString glossHtml(int nr, bool withPath = true);
     QString imagesHtml(QString &inTxt, bool withPath);
     QString imgHtml(const QString &inName, bool withPath = true) const;
 //    QString linkGlossary(QString &inHtmlTxt);
-    QString linkEndpoints(QString &inHtmlTxt);
+//    QString linkEndpoints(QString &inHtmlTxt);
     QString addLinks(QString &inHtmlTxt);
+    void addFigLinks(QString &inHtmlTxt);
 
 private:
     QStringList findFigs(QString &inTxt);
@@ -53,9 +55,9 @@ private:
     void findFigFiles();
     void linkGlossaryKey(QString &keyTxt, int keyIndex, QString &htmlTxt);
 //    bool isKeyPresent1(QStringList &keyList, QStringList &inList);
-    bool isKeyPresent(QStringList &keyList, QStringList &inList);
-    bool isKey(QStringList &keyList, QStringList &inList, int position);
-    void linkKey(QStringList &keyList, int keyIndex, QStringList &inList);
+//    bool isKeyPresent(QStringList &keyList, QStringList &inList);
+//    bool isKey(QStringList &keyList, QStringList &inList, int position);
+//    void linkKey(QStringList &keyList, int keyIndex, QStringList &inList);
 
     QString filePath;
     dkTermList * glossary;

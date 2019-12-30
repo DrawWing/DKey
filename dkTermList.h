@@ -45,6 +45,7 @@ public:
     QString linkGlossary(QString &inTxt) const;
     QList< dkStringInt > sortBySize() const;
     void sort();
+    int contains(QString inKey);
 
     void push_back(dkTerm inTerm);
     void insertAt(int i, dkTerm inTerm);

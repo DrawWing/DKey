@@ -856,6 +856,7 @@ void dkCoupletList::removeAt(int i)
     thisList.removeAt(i);
 }
 
+// find chainList recursively
 void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList,
                                  QList<QString> &path)
 {
@@ -872,8 +873,8 @@ void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList,
             {
                 chainList.push_back(prevNumber);
                 //correct cyclic error reporting
-//                error += QString(QObject::tr("Warning: numbering is cyclic between couplets: %1 and %2.\n"))
-//                        .arg(thisList[i].getNumber()).arg(theCouplet.getNumber());
+//                error += QString(QObject::tr("Error: numbering is cyclic between couplets: %1 and %2.\n"))
+//                        .arg(currNumber).arg(prevNumber);
                 break; // cyclic numbering
             }
             QString leadTxt;
@@ -1052,28 +1053,44 @@ bool dkCoupletList::isFromSingle()
         return false;
 }
 
-bool dkCoupletList::isKeyCyclic()
+bool dkCoupletList::isCircularityOK()
 {
     findFrom();
     error.clear();
-
     for(int i = 0; i < thisList.size(); ++i)
     {
-        QList<int> fromList = thisList[i].getFrom();
-        for(int j = 0; j < fromList.size(); ++j)
+        int thePointer1 = thisList[i].getPointer1();
+        if(thePointer1 != -1)
         {
-            dkCouplet theCouplet = getCoupletWithNumber(fromList[j]);
-            QList<int> chainList = theCouplet.getPointerChain();
-            if(chainList.contains(thisList[i].getNumber()))
-                error += QString(QObject::tr("Warning: numbering is cyclic between couplets: %1 and %2.\n"))
-                        .arg(thisList[i].getNumber()).arg(theCouplet.getNumber());
+            int theIndex = getIndexWithNumber(thePointer1);
+            if(theIndex < i)
+            {
+                if( isNumberInChain(i, thePointer1))
+                {
+                    error += QString(QObject::tr("Error: numbering is cyclic between couplets: %1 and %2.\n"))
+                            .arg(thisList[i].getNumber()).arg(thePointer1);
+                    return false; // it is not safe to continue
+                }
+
+            }
+        }
+        int thePointer2 = thisList[i].getPointer2();
+        if(thePointer2 != -1)
+        {
+            int theIndex = getIndexWithNumber(thePointer2);
+            if(theIndex < i)
+            {
+                if( isNumberInChain(i, thePointer2))
+                {
+                    error += QString(QObject::tr("Error: numbering is cyclic between couplets: %1 and %2.\n"))
+                            .arg(thisList[i].getNumber()).arg(thePointer2);
+                    return false; // it is not safe to continue
+                }
+            }
         }
     }
 
-    if(error.isEmpty())
         return true;
-    else
-        return false;
 }
 
 bool dkCoupletList::isEndpointOK()
@@ -1135,7 +1152,23 @@ bool dkCoupletList::isPointerOK()
         return false;
 }
 
-bool dkCoupletList::isPointerNoWarning()
+// find circularity when multiple references are present
+bool dkCoupletList::isNumberInChain(int index, int inNumber)
+{
+    QList<int> fromList = thisList[index].getFrom();
+    for(int i = 0; i < fromList.size(); ++i)
+    {
+        if(fromList[i] == inNumber)
+            return true;
+
+        int nextIndex = getIndexWithNumber(fromList[i]);
+        if(isNumberInChain(nextIndex, inNumber))
+            return true;
+    }
+    return false;
+}
+
+bool dkCoupletList::isPointerIncreasing()
 {
     error.clear();
     for(int i = 0; i < thisList.size(); ++i)
@@ -1145,17 +1178,20 @@ bool dkCoupletList::isPointerNoWarning()
         {
             int theIndex = getIndexWithNumber(thePointer1);
             if(theIndex < i)
+            {
                 error += QString(QObject::tr("Warning: first lead in couplet %1 refers to an earlier couplet.\n"))
                         .arg(thisList[i].getNumber());
-
+            }
         }
         int thePointer2 = thisList[i].getPointer2();
         if(thePointer2 != -1)
         {
             int theIndex = getIndexWithNumber(thePointer2);
             if(theIndex < i)
+            {
                 error += QString(QObject::tr("Warning: second lead in couplet %1 refers to an earlier couplet.\n"))
                         .arg(thisList[i].getNumber());
+            }
             if(thePointer1 == thePointer2)
                 error += QString(QObject::tr("Warning: both leads in couplet %1 have the same pointer.\n"))
                         .arg(thisList[i].getNumber());
