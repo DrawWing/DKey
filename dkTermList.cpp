@@ -323,7 +323,17 @@ void dkTermList::linkKey(QStringList &keyList, int keyIndex, QStringList &inList
     int startIndex = 0; // index of inList at which key starts
     for(int i = 0; i < inList.size(); ++i)
     {
-//        QString theTxt = inList[i]; // for debuging
+        QString theTxt = inList[i]; // for debuging only
+
+        if(isLink) // inside link
+        {
+            if(inList[i].contains("</a>")) // inserted link ended
+            {
+                isLink = false;
+                continue;
+            }
+        }
+
         if(isCode) // inside html code, no plain text
         {
             if(inList[i].contains('>'))
@@ -346,6 +356,19 @@ void dkTermList::linkKey(QStringList &keyList, int keyIndex, QStringList &inList
             continue;
         }
 
+        if(inList[i].startsWith("<a") ) // inserted link started
+        {
+            if(inList[i].contains("</a>")) // link ended in the same part
+                continue;
+            isLink = true;
+            continue;
+        }
+
+//        if(inList[i].contains('<') && !inList[i].contains('>')) // html code started
+//        {
+//                isCode = true;
+//            continue;
+//        }
         if(inList[i].contains('<') && !inList[i].contains('>')) // html code started
         {
             isCode = true;

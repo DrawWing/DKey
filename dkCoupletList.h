@@ -73,6 +73,7 @@ public:
     void insertDummyAt(int i);
     void removeAt(int i);
     void pointerChain(int currNumber, QList<int> & chainList, QList<QString> &path);
+    QString newick();
     void findPointerChains();
     QVector<int> findTreeLength();
     void arrange();
@@ -95,6 +96,7 @@ private:
     QList<int> findStartNumbers(const QString & fileName) const;
     QList<int> findStartNumbers(QStringList & inTxtList) const;
     bool isKeyIndented(QStringList &inTxtList);
+    QString newick(int currNumber);
 
     QList< dkCouplet > thisList;
     QStringList figList; // for error checking

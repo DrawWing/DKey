@@ -55,7 +55,7 @@ dkCouplet dkCoupletList::getCoupletWithNumber(int number) const
 
 int dkCoupletList::getIndexWithNumber(int number) const
 {
-    // if key id consequtive get the quick result
+    // if key is consequtive get the quick result
     if(number > 0 && number < thisList.size()+1)
     {
         if(thisList[number-1].getNumber() == number)
@@ -896,6 +896,73 @@ void dkCoupletList::pointerChain(int currNumber, QList<int> &chainList,
     }
 }
 
+// find tree in newick format
+QString dkCoupletList::newick()
+{
+    QString outTxt = newick(0);
+    outTxt += ";";
+    return outTxt;
+}
+
+// find tree in newick format
+QString dkCoupletList::newick(int currNumber)
+{
+    QString outTxt = "(";
+    dkCouplet theCouplet = thisList[currNumber];
+
+    int theNumber = theCouplet.getNumber();
+    QString numberTxt = QString::number(theNumber);
+
+    int thePointer1 = theCouplet.getPointer1();
+    if(thePointer1 == -1)
+    {
+        outTxt += QStringLiteral("\"%1 - %2\"").arg(theCouplet.getEndpoint1()).arg(numberTxt);
+    }
+    else
+    {
+        int theIndex = getIndexWithNumber(thePointer1);
+        if(theIndex == -1)
+            outTxt += "error";
+        else
+        {
+            QList<int> theFrom = thisList[theIndex].getFrom();
+            if(theFrom.size() == 1)
+                outTxt += newick(theIndex);
+            else if(theFrom[0] == theNumber)
+                outTxt += newick(theIndex);
+            else
+                outTxt += QStringLiteral("go from node %1 to node %2").arg(theNumber).arg(thePointer1);
+        }
+    }
+    outTxt += ",";
+
+    int thePointer2 = theCouplet.getPointer2();
+    if(thePointer2 == -1)
+    {
+        outTxt += QStringLiteral("\"%1 - %2\"").arg(theCouplet.getEndpoint2()).arg(numberTxt);
+    }
+    else
+    {
+        int theIndex = getIndexWithNumber(thePointer2);
+        if(theIndex == -1)
+            outTxt += "error";
+        else
+        {
+            QList<int> theFrom = thisList[theIndex].getFrom();
+            if(theFrom.size() == 1)
+                outTxt += newick(theIndex);
+            else if(theFrom[0] == theNumber)
+                outTxt += newick(theIndex);
+            else
+                outTxt += QStringLiteral("go from node %1 to node %2").arg(theNumber).arg(thePointer2);
+        }
+    }
+    outTxt += ")";
+    outTxt += numberTxt;
+
+    return outTxt;
+}
+
 void dkCoupletList::findPointerChains()
 {
     for(int i = 0; i < thisList.size(); ++i)
@@ -1090,7 +1157,7 @@ bool dkCoupletList::isCircularityOK()
         }
     }
 
-        return true;
+    return true;
 }
 
 bool dkCoupletList::isEndpointOK()

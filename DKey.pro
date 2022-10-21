@@ -26,7 +26,8 @@ SOURCES += main.cpp\
     dkFormat.cpp \
     dkStringInt.cpp \
     dkBrowser.cpp \
-    textEditor.cpp
+    textEditor.cpp \
+    commands.cpp
 
 HEADERS  += mainwindow.h \
     coupletDialog.h \
@@ -41,7 +42,8 @@ HEADERS  += mainwindow.h \
     dkFormat.h \
     dkStringInt.h \
     dkBrowser.h \
-    textEditor.h
+    textEditor.h \
+    commands.h
 
 OTHER_FILES += \
     DKey.rc \
@@ -49,7 +51,7 @@ OTHER_FILES += \
 
 RC_FILE = DKey.rc
 
-DEFINES += VERSION_STRING=\\\"1.5.0\\\"
+DEFINES += VERSION_STRING=\\\"2.0.0\\\"
 
 RESOURCES += \
     DKey.qrc

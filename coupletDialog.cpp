@@ -222,7 +222,6 @@ void coupletDialog::createWidget()
     setWindowTitle(tr("Edit couplet"));
 
     readSettings();
-//    resize(600, 300);
 }
 
 void coupletDialog::fillData()

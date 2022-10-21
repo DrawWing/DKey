@@ -27,6 +27,7 @@
 #include <QToolBar>
 #include <QTableWidget>
 #include <QList>
+#include <QUndoStack>
 
 #include "dkCouplet.h"
 #include "dkCoupletList.h"
@@ -48,6 +49,10 @@ public:
     dkTermList * getFigTxt();
     dkBrowser * getHtmlWindow();
     QString getFilePath() const;
+    void updateCouplet(dkCouplet & theCouplet, int row);
+    void removeCouplets(QList<int> &inList);
+    void insertCouplets(QList<int> &inRows, QList<dkCouplet> &inCouplets);
+    void insertEmptyCouplet(int inRow);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -106,6 +111,8 @@ private:
     QAction *saveAsAct;
     QAction *exportHtmlAct;
     QAction *exitAct;
+    QAction *undoAction;
+    QAction *redoAction;
     QAction *insertRowAct;
     QAction *removeRowAct;
     QAction *copyAct;
@@ -171,6 +178,8 @@ private:
     dkTermList endpoints;
     dkTermList figTxt;
     QString error;
+
+    QUndoStack *undoStack;
 };
 
 #endif // MAINWINDOW_H

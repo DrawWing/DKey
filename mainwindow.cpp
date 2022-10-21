@@ -33,12 +33,15 @@
 #include "dkView.h"
 #include "termWindow.h"
 #include "textEditor.h"
+#include "commands.h"
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
     appName = QGuiApplication::applicationDisplayName();
     appVersion = QGuiApplication::applicationVersion();
+
+    undoStack = new QUndoStack(this);
 
     filePath = "";
     createActions();
@@ -709,13 +712,13 @@ bool MainWindow::isVersionOK(const QString inVersion)
 
     QStringList versionList = appVersion.split('.');
     if(inList[0] < versionList[0])
-        return false;
+        return true;
     if(inList[1] < versionList[1])
-        return false;
-    if(inList[2] < versionList[2])
-        return false;
+        return true;
+    if(inList[2] <= versionList[2])
+        return true;
 
-    return true;
+    return false;
 }
 
 void MainWindow::exportKey()
@@ -728,7 +731,7 @@ void MainWindow::exportKey()
     QString selectedFilter = tr("HTML with images (*.html)");
     QString fileName = QFileDialog::getSaveFileName
             (this, tr("Export the key as"), outName,
-             tr("Text (*.txt);;Formated text RTF (*.rtf);;HTML with tabulators (*.html);;HTML table (*.html);;HTML with images (*.html)"),
+             tr("Text (*.txt);;Formated text RTF (*.rtf);;HTML with tabulators (*.html);;HTML table (*.html);;HTML with images (*.html);;Newick tree (*.nwk)"),
              &selectedFilter
              );
     if (fileName.isEmpty())
@@ -757,7 +760,8 @@ void MainWindow::exportKey()
         htmlTxt = coupletList.getHtmlTab();
     else if(selectedFilter == "HTML with images (*.html)")
         htmlTxt = exportHtmlImg(false);
-//        htmlTxt = coupletList.getHtmlImg(false);
+    else if(selectedFilter == "Newick tree (*.nwk)")
+        htmlTxt = coupletList.newick();
 
     QTextStream outStream(&outFile);
     if(selectedFilter != "Formated text RTF (*.rtf)")
@@ -819,10 +823,15 @@ void MainWindow::insertRow()
         return;
     }
 
-    int theRow = selectedRange.bottomRow();
-    coupletList.insertDummyAt(theRow + 1);
-    insertTableRow(theRow + 1);
-    setWindowModified(true);
+    int theRow = selectedRange.bottomRow() + 1;
+    //
+    QUndoCommand *insertCommand = new InsertCommand(this, theRow);
+    undoStack->push(insertCommand);
+    //
+
+//    coupletList.insertDummyAt(theRow + 1);
+//    insertTableRow(theRow + 1);
+//    setWindowModified(true);
 }
 
 void MainWindow::removeRow()
@@ -835,6 +844,15 @@ void MainWindow::removeRow()
         return;
     }
 
+    //
+    QMessageBox::StandardButton reply;
+    reply = QMessageBox::question(this, appName,
+                                  tr("Do you want to remove the selected couplets?"),
+                                  QMessageBox::Yes|QMessageBox::No);
+    if (reply != QMessageBox::Yes)
+        return;
+    //
+
     QList<int> toRemove;
     for(int i = 0; i < selectedList.size(); ++i)
     {
@@ -843,18 +861,30 @@ void MainWindow::removeRow()
         int topRow = selectedRange.topRow();
 
         for(int j = 0; j < selectedCount; ++j)
-            toRemove.push_back(topRow);
+            toRemove.push_back(topRow + j);
     }
-    // remove from last to first
     std::sort(toRemove.begin(), toRemove.end());
-    while(toRemove.size())
-    {
-        int theRow = toRemove.takeLast();
-        table->removeRow(theRow);
-        coupletList.removeAt(theRow);
-    }
 
-    setWindowModified(true);
+    //
+    QList<dkCouplet> outList;
+    for(int i = 0; i < toRemove.size(); ++i)
+    {
+        dkCouplet theCouplet = coupletList.at(toRemove[i]);
+        outList.push_back(theCouplet);
+    }
+    QUndoCommand *removeCommand = new RemoveCommand(this, toRemove,
+                                                    outList);
+    undoStack->push(removeCommand);
+    //
+
+//    // remove from last to first
+//    while(toRemove.size())
+//    {
+//        int theRow = toRemove.takeLast();
+//        table->removeRow(theRow);
+//        coupletList.removeAt(theRow);
+//    }
+//    setWindowModified(true);
 }
 
 void MainWindow::copyRows()
@@ -892,6 +922,7 @@ void MainWindow::cutRows()
 
     coupletClipboard.clear();
     isCopy = false;
+
     QList<int> toRemove;
     for(int i = 0; i < selectedList.size(); ++i)
     {
@@ -905,16 +936,28 @@ void MainWindow::cutRows()
             toRemove.push_back(topRow+j);
         }
     }
-    // remove from last to first
     std::sort(toRemove.begin(), toRemove.end());
-    while(toRemove.size())
-    {
-        int theRow = toRemove.takeLast();
-        table->removeRow(theRow);
-        coupletList.removeAt(theRow);
-    }
 
-    setWindowModified(true);
+    //
+    QList<dkCouplet> outList;
+    for(int i = 0; i < toRemove.size(); ++i)
+    {
+        dkCouplet theCouplet = coupletList.at(toRemove[i]);
+        outList.push_back(theCouplet);
+    }
+    QUndoCommand *cutCommand = new CutCommand(this, toRemove,
+                                                    outList);
+    undoStack->push(cutCommand);
+    //
+
+//    // remove from last to first
+//    while(toRemove.size())
+//    {
+//        int theRow = toRemove.takeLast();
+//        table->removeRow(theRow);
+//        coupletList.removeAt(theRow);
+//    }
+//    setWindowModified(true);
 }
 
 void MainWindow::pasteRows()
@@ -939,15 +982,34 @@ void MainWindow::pasteRows()
         coupletClipboard.reNumber(startNumber+1);
     }
 
+    //
+    QList<int> toRemove;
     for(int i = 0; i < coupletClipboard.size(); ++i)
     {
-        coupletList.insertAt(bottomRow+1+i, coupletClipboard.at(i));
-        insertTableRow(bottomRow+1+i);
+        toRemove.push_back(bottomRow+1+i);
     }
+
+    QList<dkCouplet> outList;
+    for(int i = 0; i < coupletClipboard.size(); ++i)
+    {
+        dkCouplet theCouplet = coupletClipboard.at(i);
+        outList.push_back(theCouplet);
+    }
+    QUndoCommand *pasteCommand = new PasteCommand(this, toRemove,
+                                                    outList);
+    undoStack->push(pasteCommand);
+    //
+
+//    for(int i = 0; i < coupletClipboard.size(); ++i)
+//    {
+//        coupletList.insertAt(bottomRow+1+i, coupletClipboard.at(i));
+//        insertTableRow(bottomRow+1+i);
+//    }
+
     if(!isCopy)
         coupletClipboard.clear(); // couplets can be pasted only in one place
 
-    setWindowModified(true);
+//    setWindowModified(true);
 }
 
 void MainWindow::editRow()
@@ -988,13 +1050,74 @@ void MainWindow::editClickedRow(int row, int col)
     }
 
     coupletDialog dialog(& theCouplet, coupletList.getMaxNumber(), this);
-    if (dialog.exec()) {
-        coupletList.setCouplet(theCouplet, row);
-        updateTableRow(row);
-        table->selectRow(row);
-        setWindowModified(true);
+    if (dialog.exec())
+    {
+        //
+        dkCouplet oldCouplet = coupletList.at(row);
+        QUndoCommand *editCommand = new EditCommand(this, theCouplet,
+                                                    oldCouplet, row);
+        undoStack->push(editCommand);
+        //
+
+//        coupletList.setCouplet(theCouplet, row);
+//        updateTableRow(row);
+//        table->selectRow(row);
+//        setWindowModified(true); // use undo clean state
     }
     --col; // to prevent error messages
+}
+
+// public undo command
+void MainWindow::updateCouplet(dkCouplet & theCouplet, int row)
+{
+    table->clearSelection();
+
+    coupletList.setCouplet(theCouplet, row);
+    updateTableRow(row);
+    table->selectRow(row);
+    setWindowModified(true); // change to undo clean state
+}
+
+// public undo command
+void MainWindow::removeCouplets(QList<int> &inList)
+{
+    table->clearSelection();
+
+    // remove from last to first
+    for(int i = inList.size() - 1; i >= 0; --i)
+    {
+        coupletList.removeAt(inList[i]);
+        table->removeRow(inList[i]);
+    }
+    setWindowModified(true);
+}
+
+// public undo command
+void MainWindow::insertCouplets(QList<int> &inRows, QList<dkCouplet> &inCouplets)
+{
+    table->clearSelection();
+
+    // insert from first to last
+    for(int i = 0; i < inRows.size(); ++i)
+    {
+        int theRow = inRows[i];
+        dkCouplet theCouplet =  inCouplets[i];
+        coupletList.insertAt(theRow, theCouplet);
+        insertTableRow(theRow);
+        table->selectRow(theRow);
+    }
+    setWindowModified(true);
+}
+
+// public undo command
+void MainWindow::insertEmptyCouplet(int inRow)
+{
+    table->clearSelection();
+
+    coupletList.insertDummyAt(inRow);
+    insertTableRow(inRow);
+    table->selectRow(inRow);
+    setWindowModified(true);
 }
 
 void MainWindow::swapLeads()
@@ -1118,6 +1241,12 @@ void MainWindow::createActions()
     exitAct->setShortcut(tr("Ctrl+Q"));
     connect(exitAct, SIGNAL(triggered()), this, SLOT(close()));
 
+    undoAction = undoStack->createUndoAction(this, tr("&Undo"));
+    undoAction->setShortcuts(QKeySequence::Undo);
+
+    redoAction = undoStack->createRedoAction(this, tr("&Redo"));
+    redoAction->setShortcuts(QKeySequence::Redo);
+
     insertRowAct = new QAction(QIcon(":/images/insert.png"), tr("&Insert couplet below"), this);
     connect(insertRowAct, SIGNAL(triggered()), this, SLOT(insertRow()));
 
@@ -1222,6 +1351,10 @@ void MainWindow::createMenus()
     menuBar()->addMenu(fileMenu);
 
     editMenu = new QMenu(tr("&Edit"), this);
+    editMenu->addAction(undoAction);
+    editMenu->addAction(redoAction);
+    editMenu->addSeparator();
+
     editMenu->addAction(cutAct);
     editMenu->addAction(copyAct);
     editMenu->addAction(pasteAct);
