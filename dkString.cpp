@@ -16,8 +16,12 @@
  */
 
 #include <QStringList>
+#include <QRegularExpression>
+#include <QDomDocument>
 
 #include "dkString.h"
+
+const QString dkString::htmlBr = "<br />";
 
 dkString::dkString()
     : QString()
@@ -43,7 +47,7 @@ bool dkString::startsWithDigit() const
 
 dkString dkString::findEndPart() const
 {
-    QStringList stringList = split("\t",QString::SkipEmptyParts);
+    QStringList stringList = split("\t",Qt::SkipEmptyParts);
     if(stringList.size() > 1)
     {
         dkString end = stringList.at(stringList.size()-1);
@@ -52,7 +56,7 @@ dkString dkString::findEndPart() const
     else
     {
         // split into words separated by spaces and non-words
-        stringList = split(QRegExp("\\W+"),QString::SkipEmptyParts);
+        stringList = split(QRegularExpression("\\W+"),Qt::SkipEmptyParts);
         dkString end = stringList.at(stringList.size()-1);
         return end;
     }
@@ -158,19 +162,76 @@ void dkString::chopFront(int n)
         remove(0, n);
 }
 
-QString dkString::getRtf() const
+dkString dkString::getRtf() const
 {
-    QString outTxt = this->toPlainText();
-    outTxt.replace("\\", "\\\\");
-    outTxt.replace("{", "\\{");
-    outTxt.replace("}", "\\}");
+    QString inTxt = *this;
+    inTxt.replace("\\", "\\\\");
+    inTxt.replace("{", "\\{");
+    inTxt.replace("}", "\\}");
+    //    inTxt.replace(htmlBr," ");
+    inTxt.replace(htmlBr,"\\line ");
+
+    // without xml tag surrounding the text it is not working
+    inTxt.prepend("<dummy>");
+    inTxt.append("</dummy>");
+    QDomDocument xml;
+    xml.setContent(inTxt);
+    QDomNodeList spanList = xml.elementsByTagName("span");
+    for(int i = 0; i < spanList.size(); ++i)
+    {
+        QDomNode theNode = spanList.at(i);
+        QDomElement theElement = theNode.toElement();
+        if(theElement.isNull())
+            continue;
+        QString styleAttribute = theElement.attribute("style");
+        if(styleAttribute.isEmpty())
+            continue;
+        QStringList styleList = styleAttribute.split(";");
+        bool italic = false;
+        bool bold = false;
+        bool underline = false;
+        for(int j = 0; j < styleList.size(); ++j)
+        {
+            QString theStyle = styleList.at(j);
+            theStyle = theStyle.simplified();
+            if(theStyle == "font-style:italic")
+                italic = true;
+            else if(theStyle == "font-weight:600")
+                bold = true;
+            else if(theStyle == "text-decoration: underline")
+                underline = true;
+        }
+        if(italic || bold || underline)
+        {
+            QString theText = theElement.text();
+            if(italic)
+            {
+                theText.prepend("\\i ");
+                theText.append(" \\i0");
+            }
+            if(bold)
+            {
+                theText.prepend("\\b ");
+                theText.append(" \\b0");
+            }
+            if(underline)
+            {
+                theText.prepend("\\ul ");
+                theText.append(" \\ul0");
+            }
+            xml.documentElement().elementsByTagName("span").at(i).firstChild().setNodeValue(theText);
+        }
+    }
+
+    dkString outTxt = xml.toString(-1);
+    outTxt = outTxt.toPlainText();
     return outTxt;
 }
 
 void dkString::removeHtml()
 {
-    replace("<br />","\n");
-    remove(QRegExp("<[^>]*>"));
+    replace(" />","\n");
+    remove(QRegularExpression("<[^>]*>"));
     replace("&lt;","<");
     replace("&gt;",">");
     replace("&quot;","\"");
@@ -179,30 +240,89 @@ void dkString::removeHtml()
 
 dkString dkString::cleanHtml() const
 {
-    dkString outTxt;
-    //remove first 4 lines
-    QStringList inList = split('\n');
-    if(inList.size() < 4)
-        return outTxt;
-    for(int i = 0; i < 4; ++i)
+    QString inTxt = *this;
+
+    QDomDocument xml;
+    xml.setContent(inTxt);
+
+//    QDomNodeList pNodeList = xml.elementsByTagName("p");
+//    int n = pNodeList.size();
+//    if(pNodeList.size() == 0)
+//        return QString();
+//    QDomNode theNode = pNodeList.at(0);
+//    QString outTxt = theNode.firstChild().nodeValue();
+//    QDomElement pElement = theNode.toElement();
+//    pElement.removeAttribute("style");
+//    QDomDocument pDoc;
+//    // Create new document for html export
+//    QDomNode importedNode = pDoc.importNode(theNode, true);
+//    pDoc.appendChild(importedNode);
+//    QString toTxt = pDoc.toString(-1);
+//    QDomElement theElement = theNode.toElement();
+//    QString tmp = theElement.text();
+//    return outTxt;
+
+    QDomElement htmlElement = xml.firstChildElement("html");
+    QDomElement bodyElement = htmlElement.firstChildElement("body");
+//    QDomElement pElement = bodyElement.firstChildElement("p");
+//    if(pElement.isNull())
+//        return QString();
+    //    pElement.removeAttribute("style");
+    //    QDomDocument pDoc;    // Create new document for html export
+    //    QDomNode importedNode = pDoc.importNode(pElement, true);
+    //    pDoc.appendChild(importedNode);
+
+    QDomDocument pDoc;    // Create new document for html export
+    QDomNodeList pList = bodyElement.elementsByTagName("p");
+    for(int i = 0; i < pList.size(); ++i)
     {
-        inList.pop_front();
+        QDomNode pNode = pList.at(i);
+        QDomElement pElement = pNode.toElement();
+        if(pElement.isNull())
+            continue;
+        pElement.removeAttribute("style");
+        QDomNode importedNode = pDoc.importNode(pElement, true);
+        pDoc.appendChild(importedNode);
     }
-    // do not separate with '\n'
-    outTxt = inList.join("");
 
-    // remove last </body></html>
-    outTxt.chop(14);
 
-    // convert <p> to <br />
-    outTxt.remove(QRegExp("<p [^>]*>"));
-    outTxt.replace("</p>","<br />");
-    // remove last <br />
-    if(outTxt.right(6) == "<br />")
-        outTxt.chop(6);
+    QString outTxt = pDoc.toString(-1);
+    outTxt = outTxt.remove("<p>");
+    outTxt = outTxt.replace("</p>", htmlBr);
+    if(outTxt.endsWith(htmlBr))
+        outTxt.chop(htmlBr.length());
 
     return outTxt;
 }
+
+//dkString dkString::cleanHtml() const
+//{
+//    dkString outTxt;
+//    unsigned n = 4;
+//    //remove first n lines
+//    // number of lines to remove changed from 4 in Qt5 to 6 in Qt6
+//    QStringList inList = split('\n');
+//    if(inList.size() < n)
+//        return outTxt;
+//    for(unsigned i = 0; i < n; ++i)
+//    {
+//        inList.pop_front();
+//    }
+//    // do not separate with '\n'
+//    outTxt = inList.join("");
+
+//    // remove last </body></html>
+//    outTxt.chop(14);
+
+//    // convert <p> to  />
+//    outTxt.remove(QRegularExpression("<p [^>]*>"));
+//    outTxt.replace("</p>"," />");
+//    // remove last  />
+//    if(outTxt.right(6) == " />")
+//        outTxt.chop(6);
+
+//    return outTxt;
+//}
 
 dkString dkString::toPlainText() const
 {

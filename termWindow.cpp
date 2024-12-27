@@ -425,6 +425,7 @@ void termWindow::import()
 
     QTextStream inStream(&inFile);
     inStream.setCodec("UTF-8");
+// qt6   inStream.setEncoding(QStringConverter::Utf8);
     QStringList outTxtList;
     while (!inStream.atEnd())
     {
@@ -469,6 +470,7 @@ void termWindow::exportTxt()
 
     QTextStream outStream(&inFile);
     outStream.setCodec("UTF-8");
+// qt6   outStream.setEncoding(QStringConverter::Utf8);
 
     QString outTxt = termList->exportTxt();
     outStream << outTxt;

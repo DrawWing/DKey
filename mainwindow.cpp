@@ -86,18 +86,8 @@ void MainWindow::viewHtml()
     htmlTxt += intro;
     coupletList.findFrom();
     htmlTxt += coupletList.getHtmlImg();
-
-//    dkFormat format;
-//    QFileInfo fileInfo(filePath);
-//    QString path = fileInfo.absolutePath();
-//    format.setFilePath(path);
-//    format.setFigures(&figTxt);
-//    htmlTxt += format.glossaryHtml(glossary, true);
     htmlTxt += format.glossaryHtml(true);
-    //    htmlTxt += glossary.getHtml();
-
-    htmlTxt = glossary.addLinks(htmlTxt);
-//    htmlTxt = format.linkGlossary(htmlTxt);
+//    htmlTxt = glossary.addLinks(htmlTxt);
 
     htmlWindow->setHtml(htmlTxt);
     htmlWindow->setWindowTitle(tr("Hypertext viewer"));
@@ -202,6 +192,7 @@ void MainWindow::import()
 
     QTextStream inStream(&inFile);
     inStream.setCodec("UTF-8");
+// qt6    inStream.setEncoding(QStringConverter::Utf8);
     QStringList outTxtList;
     while (!inStream.atEnd())
     {
@@ -670,6 +661,7 @@ bool MainWindow::saveFile(const QString &fileName)
 
     QTextStream out(&file);
     out.setCodec("UTF-8");
+ // qt6   out.setEncoding(QStringConverter::Utf8);
 
     ///
     QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
@@ -766,6 +758,7 @@ void MainWindow::exportKey()
     QTextStream outStream(&outFile);
     if(selectedFilter != "Formated text RTF (*.rtf)")
         outStream.setCodec("UTF-8");
+// qt6        outStream.setEncoding(QStringConverter::Utf8);
 
     outStream << htmlTxt;
     //    statusBar()->showMessage(tr("File saved"), 2000);
@@ -773,33 +766,21 @@ void MainWindow::exportKey()
 
 QString MainWindow::exportHtmlImg(bool withPath)
 {
-    QElapsedTimer timer;
-    timer.start();
+//    QElapsedTimer timer;
+//    timer.start();
 
     QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
     htmlTxt += intro;
-//    htmlTxt += coupletList.getHtmlImg(withPath);
-
-//    dkFormat format;
-//    QFileInfo fileInfo(filePath);
-//    QString path = fileInfo.absolutePath();
-//    format.setFilePath(path);
-//    format.setFigures(&figTxt);
     htmlTxt += format.keyHtml(coupletList, withPath);
-    qDebug() << timer.elapsed() << "key";
+//    qDebug() << timer.elapsed() << "key";
 
-//    htmlTxt += format.glossaryHtml(glossary, withPath);
     htmlTxt += format.glossaryHtml(withPath);
     htmlTxt += format.endpointsHtml(withPath);
     htmlTxt += format.figuresHtml(withPath);
-    qDebug() << timer.elapsed() << "glossary";
+//    qDebug() << timer.elapsed() << "glossary";
 
-//    htmlTxt += glossary.getHtml();
-//    htmlTxt = format.linkGlossary(htmlTxt);
-//    htmlTxt = format.linkEndpoints(htmlTxt);
     htmlTxt = format.addLinks(htmlTxt);
-
-    qDebug() << timer.elapsed() << "linking";
+//    qDebug() << timer.elapsed() << "linking";
 
     return htmlTxt;
 }
@@ -1376,11 +1357,11 @@ void MainWindow::createMenus()
     viewMenu->addAction(viewHtmlAct);
     viewMenu->addAction(viewEndpointListAct);
     viewMenu->addAction(viewTagsAct);
-    viewMenu->addSeparator();
-    viewMenu->addAction(viewIntroAct);
-    viewMenu->addAction(viewGlossaryAct);
-    viewMenu->addAction(viewEndpointsAct);
-    viewMenu->addAction(viewFigTxtAct);
+    // viewMenu->addSeparator();
+    // viewMenu->addAction(viewIntroAct);
+    // viewMenu->addAction(viewGlossaryAct);
+    // viewMenu->addAction(viewEndpointsAct);
+    // viewMenu->addAction(viewFigTxtAct);
     menuBar()->addMenu(viewMenu);
 
     navMenu = new QMenu(tr("&Navigation"), this);

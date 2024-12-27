@@ -16,6 +16,7 @@
  */
 
 #include "dkTermList.h"
+#include <QRegularExpression>
 
 dkTermList::dkTermList()
 {
@@ -182,7 +183,7 @@ QList< dkStringInt > dkTermList::sortBySize() const
         {
             QString key = synList[j];
             dkStringInt keyInt(key, i+1); // glossary numbers start with 1
-            QStringList keyList = key.split(QRegExp("\\W+")); // the same split as in dkFormat
+            QStringList keyList = key.split(QRegularExpression("\\W+")); // the same split as in dkFormat
             int keySize = keyList.size();
             switch ( keySize ) {
             case 0:
@@ -262,8 +263,8 @@ QString dkTermList::addLinks(QString &inHtmlTxt)
     {
         QString htmlTxt = inHtmlList[i];
         QString plainTxt = QTextDocumentFragment::fromHtml( htmlTxt ).toPlainText();
-        QStringList plainList = plainTxt.split(QRegExp("\\W+")); // only words no separators
-        QStringList htmlList = htmlTxt.split(QRegExp("\\b")); // words and separators
+        QStringList plainList = plainTxt.split(QRegularExpression("\\W+")); // only words no separators
+        QStringList htmlList = htmlTxt.split(QRegularExpression("\\b")); // words and separators
 
         for(int j = 0; j < keyList.size(); ++j)
         {
@@ -271,7 +272,7 @@ QString dkTermList::addLinks(QString &inHtmlTxt)
             QString keyString = theKey.getString();
             int keyInt = theKey.getInt();
 
-            QStringList kList = keyString.split(QRegExp("\\W+")); // only words no separators
+            QStringList kList = keyString.split(QRegularExpression("\\W+")); // only words no separators
             if(kList.size() == 0)
                 continue;
 

@@ -1,16 +1,22 @@
-#-------------------------------------------------
-#
-# Project created by QtCreator 2017-08-06T20:01:41
-#
-#-------------------------------------------------
+ # This file is part of DKey software.
+ # Copyright (c) 2017 Adam Tofilski
+ #
+ # This program is free software: you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation, version 3.
+ #
+ # This program is distributed in the hope that it will be useful, but
+ # WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ # General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-QT       += core gui xml
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui widgets xml
 
 TARGET = DKey
 TEMPLATE = app
-
 
 SOURCES += main.cpp\
         mainwindow.cpp \
@@ -51,8 +57,15 @@ OTHER_FILES += \
 
 RC_FILE = DKey.rc
 
-DEFINES += VERSION_STRING=\\\"2.0.0\\\"
+DEFINES += VERSION_STRING=\\\"2.2.0\\\"
 
 RESOURCES += \
     DKey.qrc
 
+win32 {
+DESTDIR = $$PWD/../DKey-bin
+QMAKE_POST_LINK =  windeployqt $$shell_path($$DESTDIR/$${TARGET}.exe)
+}
+
+DISTFILES += \
+    bin/DKey-windows-binaries.zip

@@ -24,7 +24,7 @@ dkTerm::dkTerm()
 
 dkTerm::dkTerm(const QString &inTxt)
 {
-    QStringList inList = inTxt.split("\t",QString::SkipEmptyParts);
+    QStringList inList = inTxt.split("\t",Qt::SkipEmptyParts);
     if(inList.size() == 0)
         return;
     else if(inList.size() == 1)
@@ -34,13 +34,13 @@ dkTerm::dkTerm(const QString &inTxt)
     else if(inList.size() == 2)
     {
         QString inSynonyms = inList[0];
-        synonyms = inSynonyms.split(",", QString::SkipEmptyParts);
+        synonyms = inSynonyms.split(",", Qt::SkipEmptyParts);
         definition = inList[1];
     }
     else
     {
         QString inSynonyms = inList[0];
-        synonyms = inSynonyms.split(",", QString::SkipEmptyParts);
+        synonyms = inSynonyms.split(",", Qt::SkipEmptyParts);
         for(int i = 1; i < inList.size(); ++i)
         {
             definition.append(inList[i]);
@@ -171,7 +171,7 @@ void dkTerm::setSynonyms(QStringList inList)
 
 void dkTerm::setSynonyms(QString inTxt)
 {
-    QStringList inList = inTxt.split(",", QString::SkipEmptyParts);
+    QStringList inList = inTxt.split(",", Qt::SkipEmptyParts);
     for(int i = 0; i < inList.size(); ++i)
         inList[i] = inList[i].simplified();
     synonyms = inList;

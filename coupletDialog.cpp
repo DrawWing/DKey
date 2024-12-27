@@ -277,6 +277,7 @@ void coupletDialog::accept()
     }
 
 //    QString tmp1 = lead1Text->toHtml();
+////    QString tmp1 = lead1Text->toMarkdown(QTextDocument::MarkdownDialectCommonMark);
 //    qDebug() << tmp1;
 
     // Update the couplet
@@ -399,32 +400,6 @@ void coupletDialog::mergeFormatOnWordOrSelection(const QTextCharFormat &format)
         endpoint2->mergeCurrentCharFormat(format);
     }
 }
-
-//QString coupletDialog::cleanHtml(const QString inTxt) const
-//{
-//    //remove first 4 lines
-//    QStringList inList = inTxt.split('\n');
-//    if(inList.size() < 4)
-//        return inTxt;
-//    for(int i = 0; i < 4; ++i)
-//    {
-//        inList.pop_front();
-//    }
-//    // do not separate with '\n'
-//    dkString outTxt = inList.join("");
-
-//    // remove last </body></html>
-//    outTxt.chop(14);
-
-//    // convert <p> to <br />
-//    outTxt.remove(QRegExp("<p [^>]*>"));
-//    outTxt.replace("</p>","<br />");
-//    // remove last <br />
-//    if(outTxt.right(6) == "<br />")
-//        outTxt.chop(6);
-
-//    return outTxt;
-//}
 
 void coupletDialog::showLead1ContextMenu(const QPoint &pt)
 {

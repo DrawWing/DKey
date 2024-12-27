@@ -18,6 +18,8 @@
 #include <QFile>
 #include <QTextStream>
 #include <QVector>
+#include <QRegularExpression>
+
 
 #include "dkCoupletList.h"
 #include "dkString.h"
@@ -492,9 +494,9 @@ QString dkCoupletList::getRtf() const
     outTxt.replace("&quot;","\"");
     outTxt.replace("&amp;","&");
 
-    outTxt.replace("<br />","\\line ");
-    outTxt.replace("<span style=\" font-style:italic;\">","\\i ");
-    outTxt.replace("</span>","\\i0 ");
+//    outTxt.replace("<br />","\\line ");
+//    outTxt.replace("<span style=\" font-style:italic;\">","\\i ");
+//    outTxt.replace("</span>","\\i0 ");
 
     return outTxt;
 }
@@ -723,8 +725,9 @@ QStringList dkCoupletList::findTags()
         int thePointer = thisList[i].getPointer1();
         if( thePointer != -1 )
         {
-            QString theLead = thisList[i].getLead1();
-            QRegExp tagRegExp("\\[*\\]");
+            dkString theLead = thisList[i].getLead1txt();
+            theLead = theLead.toPlainText();
+            QRegularExpression tagRegExp("\\[*\\]");
             int tagIndex = theLead.lastIndexOf(tagRegExp);
             if(tagIndex != -1)
             {
@@ -741,8 +744,9 @@ QStringList dkCoupletList::findTags()
         thePointer = thisList[i].getPointer2();
         if( thePointer != -1 )
         {
-            QString theLead = thisList[i].getLead2();
-            QRegExp tagRegExp("\\[*\\]");
+            dkString theLead = thisList[i].getLead2();
+            theLead = theLead.toPlainText();
+            QRegularExpression tagRegExp("\\[*\\]");
             int tagIndex = theLead.lastIndexOf(tagRegExp);
             if(tagIndex != -1)
             {
@@ -800,6 +804,8 @@ QList<bool> dkCoupletList::getRemaining(int inNumber) const
     int i = inNumber - 1;
     std::list< bool > stdList (endpointList.size(),false);
     outList = QList<bool>::fromStdList(stdList);
+// qt6    QList<bool> falseList(endpointList.size(), false);
+//    outList = falseList;
 
     QString theEndpoint1 = thisList[i].getEndpoint1();
     if( !theEndpoint1.isEmpty() )

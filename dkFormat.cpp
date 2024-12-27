@@ -149,6 +149,9 @@ QString dkFormat::coupletHtml(dkCouplet &theCouplet, bool withPath)
 //QString dkFormat::glossaryHtml(dkTermList & inList, bool withPath)
 QString dkFormat::glossaryHtml(bool withPath)
 {
+    if(glossary->size() == 0)
+        return QString();
+
     QString htmlTxt = "\n<h3 id=\"g0\">Glossary</h3>\n";
 
     for(int i = 0; i < glossary->size(); ++i)
@@ -171,6 +174,9 @@ QString dkFormat::glossaryHtml(bool withPath)
 
 QString dkFormat::endpointsHtml(bool withPath)
 {
+    if(endpoints->size() == 0)
+        return QString();
+
     QString htmlTxt = "\n<h3 id=\"e0\">Endpoints</h3>\n";
     for(int i = 0; i < endpoints->size(); ++i)
     {
@@ -187,6 +193,9 @@ QString dkFormat::endpointsHtml(bool withPath)
 
 QString dkFormat::figuresHtml(bool withPath)
 {
+    if(figures->size() == 0)
+        return QString();
+
     QString htmlTxt = "\n<h3 id=\"f0\">Figures</h3>\n";
     for(int i = 0; i < figures->size(); ++i)
     {
@@ -270,7 +279,7 @@ QStringList dkFormat::findFigs(QString & inTxt)
     QDir keyDir(filePath);
 
     // split text using brackets in order to restrict search for figures
-    QStringList bracetList = inTxt.split("(", QString::SkipEmptyParts, Qt::CaseInsensitive);
+    QStringList bracetList = inTxt.split("(", Qt::SkipEmptyParts, Qt::CaseInsensitive);
     for(int i = 0; i < bracetList.size(); ++i)
     {
         QString theString = bracetList.at(i);
@@ -280,10 +289,10 @@ QStringList dkFormat::findFigs(QString & inTxt)
         // if immedietly after brace ther is "fig." there can be list of images
         if(theString.startsWith(figPrefix, Qt::CaseInsensitive) && i > 0)
         {
-            QStringList closingBracetList = theString.split(")", QString::SkipEmptyParts, Qt::CaseInsensitive);
+            QStringList closingBracetList = theString.split(")", Qt::SkipEmptyParts, Qt::CaseInsensitive);
             theString = closingBracetList[0]; // take only the part before closing parenthesis
             // split the string into an alternating sequence of non-word and word tokens
-            QStringList subStrList = theString.split(QRegExp("\\b"));
+            QStringList subStrList = theString.split(QRegularExpression("\\b"));
 
             for(int j = 3; j < subStrList.size(); ++j) // start with third 0-separator, 1-fig, 2-separator
             {
@@ -305,7 +314,7 @@ QStringList dkFormat::findFigs(QString & inTxt)
         }
         else // find only one imgage file
         {
-            QStringList subStrList = theString.split(QRegExp("\\W+")); // only words no separators
+            QStringList subStrList = theString.split(QRegularExpression("\\W+")); // only words no separators
 
             for(int j = 0; j < subStrList.size(); ++j)
             {
@@ -587,7 +596,7 @@ void dkFormat::addFigLinks(QString &inHtmlTxt)
         QString htmlTxt = inHtmlList[i];
         if(!htmlTxt.contains("Fig.", Qt::CaseInsensitive))
             continue;
-        QStringList htmlList = htmlTxt.split("Fig.", QString::KeepEmptyParts, Qt::CaseInsensitive);
+        QStringList htmlList = htmlTxt.split("Fig.", Qt::KeepEmptyParts, Qt::CaseInsensitive);
         if(htmlList.size() < 2)
             continue;
         for(int j = 1; j < htmlList.size(); ++j)
@@ -596,7 +605,7 @@ void dkFormat::addFigLinks(QString &inHtmlTxt)
             {
                 QString theHtml = htmlList[j];
                 QStringList bracketList = theHtml.split(')');
-                QStringList wordList = bracketList[0].split(QRegExp("\\b")); // words and separators
+                QStringList wordList = bracketList[0].split(QRegularExpression("\\b")); // words and separators
                 for(int k = 1; k < wordList.size(); k+=2)
                 {
                     int keyIndex = figures->contains(wordList[k]);
@@ -612,7 +621,7 @@ void dkFormat::addFigLinks(QString &inHtmlTxt)
             } else // verify only one word
             {
                 QString theHtml = htmlList[j];
-                QStringList wordList = theHtml.split(QRegExp("\\b")); // words and separators
+                QStringList wordList = theHtml.split(QRegularExpression("\\b")); // words and separators
                 int keyIndex = figures->contains(wordList[1]);
                 if(keyIndex > -1) // key was found
                 {

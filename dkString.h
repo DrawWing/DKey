@@ -36,10 +36,11 @@ public:
     void removeFrontNonLetterAndDigit();
     void removeFrontDigit();
     void chopFront(int n);
-    QString getRtf() const;
+    dkString getRtf() const;
     void removeHtml();
     dkString cleanHtml() const;
     dkString toPlainText() const;
+    static const QString htmlBr;
 
     dkString & operator=( const dkString & );
     dkString & operator=( const QString & );

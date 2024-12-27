@@ -595,7 +595,7 @@ QString dkCouplet::getLead1html(QString path) const
         outTxt = QString ("%1. %2<br><b>%3</b>").arg(number).arg(lead1).arg(endpoint1);
 
     if(figList1.size() > 0)
-        outTxt += QString("<br />");
+        outTxt += dkString::htmlBr;
     for(int j = 0; j < figList1.size(); ++j)
         outTxt += imgHtml(path, figList1[j]);
 
@@ -612,7 +612,7 @@ QString dkCouplet::getLead2html(QString path) const
         outTxt = QString ("%1. %2<br><b>%3</b>").arg(number).arg(lead2).arg(endpoint2);
 
     if(figList2.size() > 0)
-        outTxt += QString("<br />");
+        outTxt += dkString::htmlBr;
     for(int j = 0; j < figList2.size(); ++j)
         outTxt += imgHtml(path, figList2[j]);
 
@@ -702,10 +702,10 @@ QString dkCouplet::getRtf() const
             outTxt += QStringLiteral(", %1").arg(from.at(i));
         outTxt += ")";
     }
-    // if the couplet label is long add space otherwise add tabulator
-    if(outTxt.size() > 5)
-        outTxt += QString(" ");
-    else
+//    // if the couplet label is long add space otherwise add tabulator
+//    if(outTxt.size() > 5)
+//        outTxt += QString(" ");
+//    else
         outTxt += QString("\\tab ");
 
     if(endpoint1.isEmpty())
@@ -735,7 +735,7 @@ QString dkCouplet::getTxt() const
     }
 
     dkString simpleTxt = lead1;
-    simpleTxt.replace("<br />", " ");
+    simpleTxt.replace(dkString::htmlBr, " ");
     simpleTxt.removeHtml();
     outTxt += QString("\t%1\t").arg(simpleTxt);
 
@@ -744,13 +744,13 @@ QString dkCouplet::getTxt() const
     else
     {
         dkString simpleTxt = endpoint1;
-        simpleTxt.replace("<br />", " ");
+        simpleTxt.replace(dkString::htmlBr, " ");
         simpleTxt.removeHtml();
         outTxt += QString("%1\n").arg(simpleTxt);
     }
 
     simpleTxt = lead2;
-    simpleTxt.replace("<br />", " ");
+    simpleTxt.replace(dkString::htmlBr, " ");
     simpleTxt.removeHtml();
     outTxt += QString("-\t%1\t").arg(simpleTxt);
 
@@ -759,7 +759,7 @@ QString dkCouplet::getTxt() const
     else
     {
         dkString simpleTxt = endpoint2;
-        simpleTxt.replace("<br />", " ");
+        simpleTxt.replace(dkString::htmlBr, " ");
         simpleTxt.removeHtml();
         outTxt += QString("%1\n").arg(simpleTxt);
     }
@@ -1043,7 +1043,7 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path)
     QDir keyDir(path);
 
     // split text using brackets in order to restrict search for figures
-    QStringList bracetList = inTxt.split("(", QString::SkipEmptyParts, Qt::CaseInsensitive);
+    QStringList bracetList = inTxt.split("(", Qt::SkipEmptyParts, Qt::CaseInsensitive);
     for(int i = 0; i < bracetList.size(); ++i)
     {
         QString theString = bracetList.at(i);
@@ -1053,10 +1053,10 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path)
         // if immedietly after brace ther is "fig." there can be list of images
         if(theString.startsWith(figPrefix, Qt::CaseInsensitive) && i > 0)
         {
-            QStringList closingBracetList = theString.split(")", QString::SkipEmptyParts, Qt::CaseInsensitive);
+            QStringList closingBracetList = theString.split(")", Qt::SkipEmptyParts, Qt::CaseInsensitive);
             theString = closingBracetList[0]; // take only the part before closing parenthesis
             // split the string into an alternating sequence of non-word and word tokens
-            QStringList subStrList = theString.split(QRegExp("\\b"));
+            QStringList subStrList = theString.split(QRegularExpression("\\b"));
 
             for(int j = 3; j < subStrList.size(); ++j) // start with third 0-separator, 1-fig, 2-separator
             {
@@ -1079,7 +1079,7 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path)
         } else // find only one imgage file
         {
             // split the string into an alternating sequence of non-word and word tokens
-            QStringList subStrList = theString.split(QRegExp("\\b"));
+            QStringList subStrList = theString.split(QRegularExpression("\\b"));
 
             int j = 1; // start with 1; 0 is empty string
             for(; j < subStrList.size(); ++j)
