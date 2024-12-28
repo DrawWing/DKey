@@ -40,10 +40,7 @@ No installation is required just download binaries and unpack them:
 
 ## User interface
 
-<figure>
-<img src="docs/README-dkey-main-window.png" alt="DKey GUI" />
-<figcaption aria-hidden="true">DKey GUI</figcaption>
-</figure>
+![](docs/README-dkey-main-window.png)
 
 The key is displayed in a table with couplets represented by rows. There
 are three columns: the first column displays couplet number, the second
@@ -54,10 +51,7 @@ Edit couplet.
 
 ## Dichotomous taxonomic key
 
-<figure>
-<img src="docs/README-dkey-taxonomy.png" alt="Taxonomic key" />
-<figcaption aria-hidden="true">Taxonomic key</figcaption>
-</figure>
+![](docs/README-dkey-taxonomy.png)
 
 Dichotomous taxonomic key consists of a series of consecutively numbered
 couplets. Each couplet consist of two parts called leads. At the end of
@@ -88,6 +82,7 @@ file extensions “.png” and “.jpg”.
 
 ## Citation
 
-If you find this software useful please cite it: Tofilski A (2018) DKey
-software for editing and browsing dichotomous keys. ZooKeys 735:
-131-140. <https://doi.org/10.3897/zookeys.735.21412>
+If you find this software useful please cite it:
+
+Tofilski A (2018) DKey software for editing and browsing dichotomous
+keys. ZooKeys 735: 131-140. <https://doi.org/10.3897/zookeys.735.21412>

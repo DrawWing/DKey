@@ -68,4 +68,7 @@ DISTFILES += \
     README.md \
     assets/DKey.ico \
     # assets/DKey.rc \
-    bin/DKey-windows-binaries.zip
+    bin/DKey-windows-binaries.zip \
+    docs/README-dkey-main-window.png \
+    docs/README-dkey-taxonomy.png \
+    docs/README-dkey48.png
