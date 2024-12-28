@@ -1045,7 +1045,7 @@ void MainWindow::editClickedRow(int row, int col)
 //        table->selectRow(row);
 //        setWindowModified(true); // use undo clean state
     }
-    --col; // to prevent error messages
+    max = col; // to prevent error messages
 }
 
 // public undo command
@@ -1357,11 +1357,11 @@ void MainWindow::createMenus()
     viewMenu->addAction(viewHtmlAct);
     viewMenu->addAction(viewEndpointListAct);
     viewMenu->addAction(viewTagsAct);
-    // viewMenu->addSeparator();
-    // viewMenu->addAction(viewIntroAct);
-    // viewMenu->addAction(viewGlossaryAct);
-    // viewMenu->addAction(viewEndpointsAct);
-    // viewMenu->addAction(viewFigTxtAct);
+    viewMenu->addSeparator();
+    viewMenu->addAction(viewIntroAct);
+    viewMenu->addAction(viewGlossaryAct);
+    viewMenu->addAction(viewEndpointsAct);
+    viewMenu->addAction(viewFigTxtAct);
     menuBar()->addMenu(viewMenu);
 
     navMenu = new QMenu(tr("&Navigation"), this);

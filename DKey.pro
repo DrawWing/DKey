@@ -18,54 +18,54 @@ QT       += core gui widgets xml
 TARGET = DKey
 TEMPLATE = app
 
-SOURCES += main.cpp\
-        mainwindow.cpp \
-    coupletDialog.cpp \
-    dkCouplet.cpp \
-    dkCoupletList.cpp \
-    dkString.cpp \
-    dkView.cpp \
-    dkTerm.cpp \
-    dkTermList.cpp \
-    termDialog.cpp \
-    termWindow.cpp \
-    dkFormat.cpp \
-    dkStringInt.cpp \
-    dkBrowser.cpp \
-    textEditor.cpp \
-    commands.cpp
+SOURCES += src/main.cpp\
+    src/mainwindow.cpp \
+    src/coupletDialog.cpp \
+    src/dkCouplet.cpp \
+    src/dkCoupletList.cpp \
+    src/dkString.cpp \
+    src/dkView.cpp \
+    src/dkTerm.cpp \
+    src/dkTermList.cpp \
+    src/termDialog.cpp \
+    src/termWindow.cpp \
+    src/dkFormat.cpp \
+    src/dkStringInt.cpp \
+    src/dkBrowser.cpp \
+    src/textEditor.cpp \
+    src/commands.cpp
 
-HEADERS  += mainwindow.h \
-    coupletDialog.h \
-    dkCouplet.h \
-    dkCoupletList.h \
-    dkString.h \
-    dkView.h \
-    dkTerm.h \
-    dkTermList.h \
-    termDialog.h \
-    termWindow.h \
-    dkFormat.h \
-    dkStringInt.h \
-    dkBrowser.h \
-    textEditor.h \
-    commands.h
+HEADERS  += src/mainwindow.h \
+    src/coupletDialog.h \
+    src/dkCouplet.h \
+    src/dkCoupletList.h \
+    src/dkString.h \
+    src/dkView.h \
+    src/dkTerm.h \
+    src/dkTermList.h \
+    src/termDialog.h \
+    src/termWindow.h \
+    src/dkFormat.h \
+    src/dkStringInt.h \
+    src/dkBrowser.h \
+    src/textEditor.h \
+    src/commands.h
 
-OTHER_FILES += \
-    DKey.rc \
-    DKey.ico
-
-RC_FILE = DKey.rc
+# RC_FILE = assets/DKey.rc
 
 DEFINES += VERSION_STRING=\\\"2.2.0\\\"
 
-RESOURCES += \
-    DKey.qrc
+RESOURCES += assets/DKey.qrc
+
+win32:RC_ICONS = assets/DKey.ico
 
 win32 {
-DESTDIR = $$PWD/../DKey-bin
+DESTDIR = $$PWD/../DKey-windows-binaries
 QMAKE_POST_LINK =  windeployqt $$shell_path($$DESTDIR/$${TARGET}.exe)
 }
 
 DISTFILES += \
+    README.md \
+    assets/DKey.ico \
+    # assets/DKey.rc \
     bin/DKey-windows-binaries.zip

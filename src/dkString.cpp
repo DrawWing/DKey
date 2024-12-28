@@ -56,7 +56,8 @@ dkString dkString::findEndPart() const
     else
     {
         // split into words separated by spaces and non-words
-        stringList = split(QRegularExpression("\\W+"),Qt::SkipEmptyParts);
+        static QRegularExpression regex("\\W+");
+        stringList = split(regex, Qt::SkipEmptyParts);
         dkString end = stringList.at(stringList.size()-1);
         return end;
     }
@@ -231,7 +232,8 @@ dkString dkString::getRtf() const
 void dkString::removeHtml()
 {
     replace(" />","\n");
-    remove(QRegularExpression("<[^>]*>"));
+    static QRegularExpression regex("<[^>]*>");
+    remove(regex);
     replace("&lt;","<");
     replace("&gt;",">");
     replace("&quot;","\"");
