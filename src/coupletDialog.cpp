@@ -124,8 +124,8 @@ void coupletDialog::createWidget()
 
     endpoint1 = new QTextEdit;
     endpoint1->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    endpoint1->setMinimumHeight(20);
-    endpoint1->setMaximumHeight(20);
+    endpoint1->setMinimumHeight(25);
+    endpoint1->setMaximumHeight(25);
     endpoint1->setBaseSize(200, 25);
     endpoint1->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     endpoint1->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -155,7 +155,6 @@ void coupletDialog::createWidget()
     QVBoxLayout *lead1Layout = new QVBoxLayout;
     lead1Layout->addWidget(lead1Text);
     lead1Layout->addLayout(grid1);
-    lead1Layout->addStretch(1);
     lead1Box->setLayout(lead1Layout);
 
     // lead2
@@ -166,8 +165,8 @@ void coupletDialog::createWidget()
 
     endpoint2 = new QTextEdit;
     endpoint2->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    endpoint2->setMinimumHeight(20);
-    endpoint2->setMaximumHeight(20);
+    endpoint2->setMinimumHeight(25);
+    endpoint2->setMaximumHeight(25);
     endpoint2->setBaseSize(200, 25);
     endpoint2->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
     endpoint2->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -197,7 +196,6 @@ void coupletDialog::createWidget()
     QVBoxLayout *lead2Layout = new QVBoxLayout;
     lead2Layout->addWidget(lead2Text);
     lead2Layout->addLayout(grid2);
-    lead2Layout->addStretch(1);
     lead2Box->setLayout(lead2Layout);
 
     // main layout
