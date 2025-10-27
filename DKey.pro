@@ -51,8 +51,6 @@ HEADERS  += src/mainwindow.h \
     src/textEditor.h \
     src/commands.h
 
-# RC_FILE = assets/DKey.rc
-
 DEFINES += VERSION_STRING=\\\"2.2.0\\\"
 
 RESOURCES += assets/DKey.qrc
@@ -67,7 +65,6 @@ QMAKE_POST_LINK =  windeployqt $$shell_path($$DESTDIR/$${TARGET}.exe)
 DISTFILES += \
     README.md \
     assets/DKey.ico \
-    # assets/DKey.rc \
     bin/DKey-windows-binaries.zip \
     docs/README-dkey-main-window.png \
     docs/README-dkey-taxonomy.png \
