@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent)
     readSettings(); //has to be after createActions
     createTable();
     setWindowTitle("[*]");
+    setWindowState(Qt::WindowMaximized);
 
     htmlWindow = new dkBrowser(this);
     htmlWindow->setFormat(&format);

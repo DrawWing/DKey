@@ -79,3 +79,4 @@ CMakeLists.txt.user*
 .RData
 .RDataTmp
 .Ruserdata
+*.Rmd

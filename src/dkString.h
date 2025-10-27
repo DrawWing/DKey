@@ -42,8 +42,11 @@ public:
     dkString toPlainText() const;
     static const QString htmlBr;
 
-    dkString & operator=( const dkString & );
+    dkString(const dkString& other);
+    dkString & operator=( const dkString & other);
     dkString & operator=( const QString & );
+    // dkString(const dkString& other) = default;  // ✅ explicit, safe
+    // dkString& operator=(const dkString& other) = default;
 };
 
 #endif // DKSTRING_H

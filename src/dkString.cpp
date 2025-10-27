@@ -332,10 +332,14 @@ dkString dkString::toPlainText() const
     return plainText;
 }
 
-dkString & dkString::operator=( const dkString & str){
-    this->QString::operator=(str);
-    return *this;
-}
+// dkString & dkString::operator=( const dkString & str){
+//     this->QString::operator=(str);
+//     return *this;
+// }
+
+dkString::dkString(const dkString& other) = default;
+
+dkString& dkString::operator=(const dkString& other) = default;
 
 dkString & dkString::operator=( const QString & str){
     this->QString::operator=(str);

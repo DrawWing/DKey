@@ -803,9 +803,10 @@ QList<bool> dkCoupletList::getRemaining(int inNumber) const
 
     int i = inNumber - 1;
     std::list< bool > stdList (endpointList.size(),false);
-    outList = QList<bool>::fromStdList(stdList);
-// qt6    QList<bool> falseList(endpointList.size(), false);
-//    outList = falseList;
+    // outList = QList<bool>::fromStdList(stdList);
+    outList = QList<bool>(stdList.begin(), stdList.end());
+    // qt6    QList<bool> falseList(endpointList.size(), false);
+    //    outList = falseList;
 
     QString theEndpoint1 = thisList[i].getEndpoint1();
     if( !theEndpoint1.isEmpty() )
