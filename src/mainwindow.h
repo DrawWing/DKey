@@ -88,6 +88,7 @@ private slots:
     void viewGlossary();
     void viewEndpoints();
     void viewFigTxt();
+    void openTerms();
     void test();
 
 private:
@@ -105,6 +106,7 @@ private:
 
     QAction *newAct;
     QAction *openAct;
+    QAction *openTermAct;
     QAction *importAct;
     QAction *appendAct;
     QAction *saveAct;
@@ -174,6 +176,7 @@ private:
 
     dkFormat format;
     QString intro;
+    dkTermList terminology;
     dkTermList glossary;
     dkTermList endpoints;
     dkTermList figTxt;

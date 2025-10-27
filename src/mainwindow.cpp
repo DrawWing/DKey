@@ -168,6 +168,71 @@ void MainWindow::viewFigTxt()
     figTxtWindow->show();
 }
 
+void MainWindow::openTerms()
+{
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open file"), filePath, tr("DKey files (*.dk.xml)"));
+    if( fileName.isEmpty() )
+        return;
+
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QDomDocument xmlDoc;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
+        return;
+    }
+
+    QString errorStr;
+    int errorLine;
+    int errorColumn;
+    if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
+        file.close();
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),
+                             QObject::tr("Parse error at line %1, column %2:\n%3")
+                                 .arg(errorLine)
+                                 .arg(errorColumn)
+                                 .arg(errorStr));
+        return;
+    }
+
+
+    file.close();
+
+    ///
+    QString elementName = "DKey";
+    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+    QDomElement dkeyElement = dkeyNode.toElement();
+    if ( dkeyElement.isNull() )
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+        return;
+    }
+    QString versionTxt = dkeyElement.attribute("version");
+    if(!isVersionOK(versionTxt))
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
+        QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    }
+
+    // load terminology
+    QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
+    glossary.fromDkXml(glossaryElement);
+    glossary.setTag("glossary");
+    format.setGlossary(&glossary);
+
+    QApplication::restoreOverrideCursor();
+
+    termWindow * glossaryWindow = new termWindow(&glossary, this);
+    glossaryWindow->setWindowTitle(tr("Glossary")+"[*]");
+    glossaryWindow->show();
+}
+
 void MainWindow::import()
 {
     if (!okToContinue())
@@ -696,8 +761,8 @@ bool MainWindow::saveFile(const QString &fileName)
 
 bool MainWindow::isVersionOK(const QString inVersion)
 {
-    if(inVersion == "1.0")
-        return true;
+    // if(inVersion == "1.0")
+    //     return true;
 
     QStringList inList = inVersion.split('.');
     if(inList.size() < 3)
@@ -1202,6 +1267,9 @@ void MainWindow::createActions()
     openAct->setShortcut(tr("Ctrl+O"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(openFile()));
 
+    openTermAct = new QAction(tr("&Open terms..."), this);
+    connect(openTermAct, SIGNAL(triggered()), this, SLOT(openTerms()));
+
     importAct = new QAction( tr("&Import..."), this);
     importAct->setShortcut(tr("Ctrl+I"));
     connect(importAct, SIGNAL(triggered()), this, SLOT(import()));
@@ -1317,6 +1385,7 @@ void MainWindow::createMenus()
     fileMenu = new QMenu(tr("&File"), this);
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
+    fileMenu->addAction(openTermAct);
     fileMenu->addAction(importAct);
     fileMenu->addAction(appendAct);
     fileMenu->addAction(saveAct);
