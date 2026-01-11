@@ -53,6 +53,7 @@ public:
     void removeCouplets(QList<int> &inList);
     void insertCouplets(QList<int> &inRows, QList<dkCouplet> &inCouplets);
     void insertEmptyCouplet(int inRow);
+    bool isVersionOK(const QString inVersion);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -102,7 +103,6 @@ private:
     void updateRecentFileActions();
     bool okToContinue();
     bool saveFile(const QString &fileName);
-    bool isVersionOK(const QString inVersion);
 
     QAction *newAct;
     QAction *openAct;

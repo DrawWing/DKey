@@ -33,10 +33,16 @@ class termWindow: public QMainWindow
 
 public:
     termWindow(dkTermList *inList, MainWindow *inParent = 0);
+    termWindow(QString &inFileName, MainWindow *inParent = 0);
 protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
+    void newTerms();
+    void openFile();
+    bool save();
+    bool saveAs();
+    bool saveFile(const QString &fileName);
     void import();
     void exportTxt();
     void insertRow();
@@ -49,7 +55,9 @@ private slots:
     void sortTable();
 
 private:
+    QAction *newAct;
     QAction *importAct;
+    QAction *saveAct;
     QAction *exportAct;
     QAction *insertRowAct;
     QAction *removeRowAct;
@@ -63,6 +71,7 @@ private:
     QMenu *editMenu;
     QToolBar *editToolBar;
 
+    bool loadFile(const QString &fileName);
     void createActions();
     void createMenus();
     void createToolBars();
@@ -71,14 +80,19 @@ private:
     void insertTableRow(int i);
     void updateTable();
     void updateTableRow(int i);
+    bool okToContinue();
+    void clear();
 
     void readSettings();
     void writeSettings();
 
     QTableWidget *table;
-    dkTermList *termList;
+    dkTermList termList;
+    dkTermList terminology; // temporary
+
     dkTermList termClipboard;
     bool isCopy;
+    QString filePath;
 
     MainWindow *parent;
 };

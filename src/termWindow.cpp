@@ -31,9 +31,84 @@ termWindow::termWindow(dkTermList *inList, MainWindow *inParent)
     setAttribute(Qt::WA_DeleteOnClose);
     readSettings();
 
-    termList = inList;
-    if(termList->size() == 0)
-        termList->insertDummyAt(0);
+    // termList = inList;
+    if(termList.size() == 0)
+        termList.insertDummyAt(0);
+
+    createActions();
+    createMenus();
+    createToolBars();
+    createTable();
+    fillTable();
+}
+
+
+termWindow::termWindow(QString &fileName, MainWindow *inParent)
+    : QMainWindow(inParent)
+{
+    filePath = fileName;
+
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    QDomDocument xmlDoc;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
+        return;
+    }
+
+    QString errorStr;
+    int errorLine;
+    int errorColumn;
+    if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
+        file.close();
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),
+                             QObject::tr("Parse error at line %1, column %2:\n%3")
+                                 .arg(errorLine)
+                                 .arg(errorColumn)
+                                 .arg(errorStr));
+        return;
+    }
+
+    file.close();
+
+    ///
+    QString elementName = "DKey";
+    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+    QDomElement dkeyElement = dkeyNode.toElement();
+    if ( dkeyElement.isNull() )
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+        return;
+    }
+    // QString versionTxt = dkeyElement.attribute("version");
+    // if(!isVersionOK(versionTxt))
+    // {
+    //     QApplication::restoreOverrideCursor();
+    //     QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
+    //     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    // }
+
+    // load terminology
+    QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
+    terminology.fromDkXml(glossaryElement);
+    termList = terminology;  // remove terminology ????????????
+    termList.setTag("glossary");
+    // format.setGlossary(&termList);
+
+    QApplication::restoreOverrideCursor();
+
+    ////
+    parent = inParent;
+    setAttribute(Qt::WA_DeleteOnClose);
+    readSettings();
+
+    // termList = inList;
+    if(termList.size() == 0)
+        termList.insertDummyAt(0);
 
     createActions();
     createMenus();
@@ -44,18 +119,25 @@ termWindow::termWindow(dkTermList *inList, MainWindow *inParent)
 
 void termWindow::createActions()
 {
+    newAct = new QAction(QIcon(":/images/new.png"), tr("&New terms"), this);
+    connect(newAct, SIGNAL(triggered()), this, SLOT(newTerms()));
+
     importAct = new QAction( tr("&Import..."), this);
     importAct->setShortcut(tr("Ctrl+I"));
     connect(importAct, SIGNAL(triggered()), this, SLOT(import()));
+
+    saveAct = new QAction( tr("&Save"), this);
+    saveAct->setShortcut(tr("Ctrl+S"));
+    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
     exportAct = new QAction( tr("&Export..."), this);
     exportAct->setShortcut(tr("Ctrl+E"));
     connect(exportAct, SIGNAL(triggered()), this, SLOT(exportTxt()));
 
-    insertRowAct = new QAction(QIcon(":/images/insert.png"), tr("&Insert couplet below"), this);
+    insertRowAct = new QAction(QIcon(":/images/insert.png"), tr("&Insert row below"), this);
     connect(insertRowAct, SIGNAL(triggered()), this, SLOT(insertRow()));
 
-    removeRowAct = new QAction(QIcon(":/images/remove.png"), tr("&Remove couplet"), this);
+    removeRowAct = new QAction(QIcon(":/images/remove.png"), tr("&Remove row"), this);
     connect(removeRowAct, SIGNAL(triggered()), this, SLOT(removeRow()));
 
     cutAct = new QAction(QIcon(":/images/cut.png"), tr("Cu&t"), this);
@@ -70,7 +152,7 @@ void termWindow::createActions()
     pasteAct->setShortcut(tr("Ctrl+V"));
     connect(pasteAct, SIGNAL(triggered()), this, SLOT(pasteRows()));
 
-    editRowAct = new QAction(QIcon(":/images/edit.png"), tr("&Edit couplet"), this);
+    editRowAct = new QAction(QIcon(":/images/edit.png"), tr("&Edit"), this);
     connect(editRowAct, SIGNAL(triggered()), this, SLOT(editRow()));
 
     sortTableAct = new QAction(tr("&Sort"), this);
@@ -81,6 +163,8 @@ void termWindow::createActions()
 void termWindow::createMenus()
 {
     fileMenu = new QMenu(tr("&File"), this);
+    fileMenu->addAction(newAct);
+    fileMenu->addAction(saveAct);
     fileMenu->addAction(importAct);
     fileMenu->addAction(exportAct);
 
@@ -142,7 +226,7 @@ void termWindow::fillTable()
     while(table->rowCount() > 0)
         table->removeRow(0);
 
-    for(int i = 0; i < termList->size(); ++i)
+    for(int i = 0; i < termList.size(); ++i)
         insertTableRow(i);
 }
 
@@ -150,7 +234,7 @@ void termWindow::insertTableRow(int i)
 {
     table->insertRow(i);
 
-    dkTerm theTerm = termList->at(i);
+    dkTerm theTerm = termList.at(i);
 
 //    int theNumber = theTerm.getNumber();
     QString theNumberStr = QString::number(i+1);
@@ -163,7 +247,7 @@ void termWindow::insertTableRow(int i)
 
 void termWindow::updateTable()
 {
-    for(int i = 0; i < termList->size(); ++i)
+    for(int i = 0; i < termList.size(); ++i)
         updateTableRow(i);
 }
 
@@ -181,7 +265,7 @@ void termWindow::insertRow()
     if(selectedList.size() != 1)
     {
         QMessageBox::warning
-                (this, tr("Insert couplet below"), tr("Please select one row."));
+                (this, tr("Insert row below"), tr("Please select one row."));
         return;
     }
 
@@ -190,12 +274,12 @@ void termWindow::insertRow()
     if(selectedCount != 1)
     {
         QMessageBox::warning
-                (this, tr("Insert couplet below"), tr("Please select one row."));
+                (this, tr("Insert row below"), tr("Please select one row."));
         return;
     }
 
     int theRow = selectedRange.bottomRow();
-    termList->insertDummyAt(theRow + 1);
+    termList.insertDummyAt(theRow + 1);
     insertTableRow(theRow + 1);
     setWindowModified(true);
 }
@@ -206,7 +290,7 @@ void termWindow::removeRow()
     if(selectedList.size() == 0)
     {
         QMessageBox::warning
-                (this, tr("Remove couplet"), tr("Please select at least one row."));
+                (this, tr("Remove row"), tr("Please select at least one row."));
         return;
     }
 
@@ -226,7 +310,7 @@ void termWindow::removeRow()
     {
         int theRow = toRemove.takeLast();
         table->removeRow(theRow);
-        termList->removeAt(theRow);
+        termList.removeAt(theRow);
     }
 
     setWindowModified(true);
@@ -251,7 +335,7 @@ void termWindow::copyRows()
         int topRow = selectedRange.topRow();
 
         for(int j = 0; j < selectedCount; ++j)
-            termClipboard.push_back(termList->at(topRow+j));
+            termClipboard.push_back(termList.at(topRow+j));
     }
 }
 
@@ -276,7 +360,7 @@ void termWindow::cutRows()
 
         for(int j = 0; j < selectedCount; ++j)
         {
-            termClipboard.push_back(termList->at(topRow+j));
+            termClipboard.push_back(termList.at(topRow+j));
             toRemove.push_back(topRow+j);
         }
     }
@@ -286,7 +370,7 @@ void termWindow::cutRows()
     {
         int theRow = toRemove.takeLast();
         table->removeRow(theRow);
-        termList->removeAt(theRow);
+        termList.removeAt(theRow);
     }
 
     setWindowModified(true);
@@ -310,17 +394,17 @@ void termWindow::pasteRows()
 
 //    if(isCopy)
 //    {
-//        int startNumber = termList->getMaxNumber();
+//        int startNumber = termList.getMaxNumber();
 //        termClipboard.reNumber(startNumber+1);
 //    }
 
     for(int i = 0; i < termClipboard.size(); ++i)
     {
-        termList->insertAt(bottomRow+1+i, termClipboard.at(i));
+        termList.insertAt(bottomRow+1+i, termClipboard.at(i));
         insertTableRow(bottomRow+1+i);
     }
     if(!isCopy)
-        termClipboard.clear(); // couplets can be pasted only in one place
+        termClipboard.clear(); // rows can be pasted only in one place
 
     setWindowModified(true);
 }
@@ -331,7 +415,7 @@ void termWindow::editRow()
     if(selectedList.size() != 1)
     {
         QMessageBox::warning
-                (this, tr("Edit couplet"), tr("Please select one row."));
+                (this, tr("Edit row"), tr("Please select one row."));
         return;
     }
     QTableWidgetSelectionRange selectedRange = selectedList.at(0);
@@ -339,7 +423,7 @@ void termWindow::editRow()
     if(selectedCount != 1)
     {
         QMessageBox::warning
-                (this, tr("Edit couplet"), tr("Please select one row."));
+                (this, tr("Edit row"), tr("Please select one row."));
         return;
     }
 
@@ -350,11 +434,11 @@ void termWindow::editRow()
 // col is only for compatibility with cellDoubleClicked(row, col)
 void termWindow::editClickedRow(int row, int col)
 {
-    dkTerm theTerm = termList->at(row);
+    dkTerm theTerm = termList.at(row);
 
     termDialog dialog(& theTerm, this);
     if (dialog.exec()) {
-        termList->setTerm(theTerm, row);
+        termList.setTerm(theTerm, row);
         updateTableRow(row);
         table->selectRow(row);
         setWindowModified(true);
@@ -364,11 +448,11 @@ void termWindow::editClickedRow(int row, int col)
 
 void termWindow::sortTable()
 {
-    if(termList->size() == 0)
+    if(termList.size() == 0)
         return;
 
     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    termList->sort();
+    termList.sort();
     updateTable();
     setWindowModified(true);
     QApplication::restoreOverrideCursor();
@@ -376,12 +460,41 @@ void termWindow::sortTable()
 
 void termWindow::closeEvent(QCloseEvent *event)
 {
-    if(isWindowModified())
-        parent->setWindowModified(true);
+    // if(isWindowModified())
+    //     parent->setWindowModified(true);
     writeSettings();
     hide();
     event->ignore();
     //    event->accept();
+}
+
+bool termWindow::okToContinue()
+{
+    if (isWindowModified()) {
+        int r = QMessageBox::warning(this, tr("Save changes?"),
+                                     tr("The list has been modified.\n""Do you want to save changes?"),
+                                     QMessageBox::Yes | QMessageBox::Default,
+                                     QMessageBox::No,
+                                     QMessageBox::Cancel | QMessageBox::Escape);
+        if (r == QMessageBox::Yes) {
+            return save();
+        } else if (r == QMessageBox::No) {
+            setWindowModified(false);
+            return true;
+        } else if (r == QMessageBox::Cancel) {
+            return false;
+        }
+    }
+    return true;
+}
+
+void termWindow::clear()
+{
+    while(table->rowCount() > 0)
+        table->removeRow(0);
+
+    termList.clear();
+    // htmlWindow->hide();
 }
 
 void termWindow::readSettings()
@@ -402,6 +515,200 @@ void termWindow::writeSettings()
     QSettings settings(companyName, windowName);
     settings.setValue("pos", pos());
     settings.setValue("size", size());
+}
+
+void termWindow::newTerms()
+{
+    if (!okToContinue())
+        return;
+
+    clear();
+
+    termList.insertDummyAt(0);
+    insertTableRow(0);
+    setWindowModified(true);
+
+    // remove file name to prevent save as previous file
+    // only file path is left
+    QFileInfo fileInfo(filePath);
+    filePath = fileInfo.absolutePath();
+}
+
+void termWindow::openFile()
+{
+    if (!okToContinue())
+        return;
+
+    QString fileName = QFileDialog::getOpenFileName(this,
+                                                    tr("Open file"), filePath, tr("DKey files (*.dk.xml)"));
+    if( fileName.isEmpty() )
+        return;
+
+    loadFile(fileName);
+}
+
+// used by openFile and open recent files
+bool termWindow::loadFile(const QString & fileName)
+{
+
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    // clear();
+    while(table->rowCount() > 0)
+        table->removeRow(0);
+
+    filePath = fileName;
+
+    /// move to function used by append and load
+    QDomDocument xmlDoc;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
+        return false;
+    }
+
+    QString errorStr;
+    int errorLine;
+    int errorColumn;
+    if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
+        file.close();
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),
+                             QObject::tr("Parse error at line %1, column %2:\n%3")
+                                 .arg(errorLine)
+                                 .arg(errorColumn)
+                                 .arg(errorStr));
+        return false;
+    }
+
+
+    file.close();
+
+    ///
+    QString elementName = "DKey";
+    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+    QDomElement dkeyElement = dkeyNode.toElement();
+    if ( dkeyElement.isNull() )
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+        return false;
+    }
+    QString versionTxt = dkeyElement.attribute("version");
+    if(!parent->isVersionOK(versionTxt))
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
+        QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    }
+
+
+    elementName = "key";
+    QDomElement keyElement = dkeyNode.namedItem(elementName).toElement();
+    if ( keyElement.isNull() )
+    {
+        QApplication::restoreOverrideCursor();
+        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+        return false;
+    }
+
+    QApplication::restoreOverrideCursor();
+
+    QFileInfo fileInfo(filePath);
+    QString path = fileInfo.absolutePath();
+    // format.setFilePath(path);
+
+    fillTable();
+
+    // updateRecentFiles(fileName);
+    // updateRecentFileActions();
+    setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
+
+    // load glossary
+    QDomElement glossaryElement = dkeyNode.namedItem("term_list").toElement();
+    termList.fromDkXml(glossaryElement);
+    termList.setTag("glossary");
+    // format.setGlossary(&glossary);
+
+    return true;
+}
+
+bool termWindow::save()
+{
+    if(!isWindowModified())
+        return true;
+    QFileInfo fileInfo(filePath);
+    if (fileInfo.completeSuffix() == "dk.xml")
+        return saveFile(filePath);
+    else
+        return saveAs();
+}
+
+bool termWindow::saveAs()
+{
+    if(termList.size() == 0)
+        return false;
+
+    QFileInfo fileInfo(filePath);
+    QString newFileName = fileInfo.absolutePath()+"/"+fileInfo.baseName();
+
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save As"),
+                                                    newFileName, tr("DKey files (*.dk.xml)"));
+    if (fileName.isEmpty())
+        return false;
+
+    bool wasSaved = saveFile(fileName);
+    // if(wasSaved)
+    // {
+    //     updateRecentFiles(fileName);
+    //     updateRecentFileActions();
+
+    //     QFileInfo fileInfo(filePath);
+    //     QString path = fileInfo.absolutePath();
+    //     coupletList.setFilePath(path);
+    // }
+    return wasSaved;
+}
+
+bool termWindow::saveFile(const QString &fileName)
+{
+    QFile file(fileName);
+    if (!file.open(QFile::WriteOnly | QFile::Text)) {
+        QMessageBox::warning(this, tr("DKey"),
+                             tr("Cannot write file %1:\n%2.")
+                                 .arg(fileName)
+                                 .arg(file.errorString()));
+        return false;
+    }
+
+    QTextStream out(&file);
+    out.setCodec("UTF-8");
+    // qt6   out.setEncoding(QStringConverter::Utf8);
+
+    ///
+    QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    QString appVersion = "2.0.0";
+    outTxt += QStringLiteral("<DKey version=\"%1\">\n").arg(appVersion);
+    outTxt += termList.getDkXml();
+    outTxt += "</DKey>\n";
+    ///
+
+    //    QString outTxt = coupletList.getDkXml();
+    out << outTxt;
+
+    if(out.status() == QTextStream::WriteFailed)
+        return false;
+
+    filePath = fileName;
+
+    setWindowModified(false);
+
+    QFileInfo fileInfo(filePath);
+    setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
+
+    //    statusBar()->showMessage(tr("File saved"), 2000);
+    return true;
 }
 
 void termWindow::import()
@@ -436,9 +743,9 @@ void termWindow::import()
 
     if(outTxtList.size() == 0)
         return;
-    termList->importTxt(outTxtList);
+    termList.importTxt(outTxtList);
 
-    if(termList->size() == 0)
+    if(termList.size() == 0)
         return;
 
     fillTable();
@@ -447,7 +754,7 @@ void termWindow::import()
 
 void termWindow::exportTxt()
 {
-    if(termList->size() == 0)
+    if(termList.size() == 0)
         return;
 
     QFileInfo fileInfo(parent->getFilePath());
@@ -472,7 +779,7 @@ void termWindow::exportTxt()
     outStream.setCodec("UTF-8");
 // qt6   outStream.setEncoding(QStringConverter::Utf8);
 
-    QString outTxt = termList->exportTxt();
+    QString outTxt = termList.exportTxt();
     outStream << outTxt;
 
     if(outStream.status() == QTextStream::WriteFailed)

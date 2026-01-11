@@ -175,62 +175,66 @@ void MainWindow::openTerms()
     if( fileName.isEmpty() )
         return;
 
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    QDomDocument xmlDoc;
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        QApplication::restoreOverrideCursor();
-        QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
-        return;
-    }
-
-    QString errorStr;
-    int errorLine;
-    int errorColumn;
-    if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
-        file.close();
-        QApplication::restoreOverrideCursor();
-        QMessageBox::warning(this, QObject::tr("DOM Parser"),
-                             QObject::tr("Parse error at line %1, column %2:\n%3")
-                                 .arg(errorLine)
-                                 .arg(errorColumn)
-                                 .arg(errorStr));
-        return;
-    }
-
-
-    file.close();
-
-    ///
-    QString elementName = "DKey";
-    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
-    QDomElement dkeyElement = dkeyNode.toElement();
-    if ( dkeyElement.isNull() )
-    {
-        QApplication::restoreOverrideCursor();
-        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
-        return;
-    }
-    QString versionTxt = dkeyElement.attribute("version");
-    if(!isVersionOK(versionTxt))
-    {
-        QApplication::restoreOverrideCursor();
-        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
-        QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    }
-
-    // load terminology
-    QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
-    glossary.fromDkXml(glossaryElement);
-    glossary.setTag("glossary");
-    format.setGlossary(&glossary);
-
-    QApplication::restoreOverrideCursor();
-
-    termWindow * glossaryWindow = new termWindow(&glossary, this);
+    termWindow * glossaryWindow = new termWindow(fileName, this);
     glossaryWindow->setWindowTitle(tr("Glossary")+"[*]");
     glossaryWindow->show();
+
+    // QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    // QDomDocument xmlDoc;
+    // QFile file(fileName);
+    // if (!file.open(QIODevice::ReadOnly))
+    // {
+    //     QApplication::restoreOverrideCursor();
+    //     QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
+    //     return;
+    // }
+
+    // QString errorStr;
+    // int errorLine;
+    // int errorColumn;
+    // if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
+    //     file.close();
+    //     QApplication::restoreOverrideCursor();
+    //     QMessageBox::warning(this, QObject::tr("DOM Parser"),
+    //                          QObject::tr("Parse error at line %1, column %2:\n%3")
+    //                              .arg(errorLine)
+    //                              .arg(errorColumn)
+    //                              .arg(errorStr));
+    //     return;
+    // }
+
+
+    // file.close();
+
+    // ///
+    // QString elementName = "DKey";
+    // QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+    // QDomElement dkeyElement = dkeyNode.toElement();
+    // if ( dkeyElement.isNull() )
+    // {
+    //     QApplication::restoreOverrideCursor();
+    //     QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+    //     return;
+    // }
+    // QString versionTxt = dkeyElement.attribute("version");
+    // if(!isVersionOK(versionTxt))
+    // {
+    //     QApplication::restoreOverrideCursor();
+    //     QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
+    //     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    // }
+
+    // // load terminology
+    // QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
+    // glossary.fromDkXml(glossaryElement);
+    // glossary.setTag("glossary");
+    // format.setGlossary(&glossary);
+
+    // QApplication::restoreOverrideCursor();
+
+    // termWindow * glossaryWindow = new termWindow(&glossary, this);
+    // glossaryWindow->setWindowTitle(tr("Glossary")+"[*]");
+    // glossaryWindow->show();
 }
 
 void MainWindow::import()
