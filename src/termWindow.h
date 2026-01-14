@@ -56,6 +56,7 @@ private slots:
 
 private:
     QAction *newAct;
+    QAction *openAct;
     QAction *importAct;
     QAction *saveAct;
     QAction *exportAct;
@@ -69,6 +70,7 @@ private:
 
     QMenu *fileMenu;
     QMenu *editMenu;
+    QToolBar *fileToolBar;
     QToolBar *editToolBar;
 
     bool loadFile(const QString &fileName);

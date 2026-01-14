@@ -122,6 +122,10 @@ void termWindow::createActions()
     newAct = new QAction(QIcon(":/images/new.png"), tr("&New terms"), this);
     connect(newAct, SIGNAL(triggered()), this, SLOT(newTerms()));
 
+    openAct = new QAction(QIcon(":/images/open.png"), tr("&Open..."), this);
+    openAct->setShortcut(tr("Ctrl+O"));
+    connect(openAct, SIGNAL(triggered()), this, SLOT(openFile()));
+
     importAct = new QAction( tr("&Import..."), this);
     importAct->setShortcut(tr("Ctrl+I"));
     connect(importAct, SIGNAL(triggered()), this, SLOT(import()));
@@ -164,6 +168,7 @@ void termWindow::createMenus()
 {
     fileMenu = new QMenu(tr("&File"), this);
     fileMenu->addAction(newAct);
+    fileMenu->addAction(openAct);
     fileMenu->addAction(saveAct);
     fileMenu->addAction(importAct);
     fileMenu->addAction(exportAct);
@@ -183,6 +188,10 @@ void termWindow::createMenus()
 
 void termWindow::createToolBars()
 {
+    fileToolBar = addToolBar(tr("&File"));
+    fileToolBar->addAction(newAct);
+    fileToolBar->addAction(openAct);
+
     editToolBar = addToolBar(tr("&Edit"));
     editToolBar->addAction(cutAct);
     editToolBar->addAction(copyAct);
@@ -603,23 +612,11 @@ bool termWindow::loadFile(const QString & fileName)
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     }
 
-
-    elementName = "key";
-    QDomElement keyElement = dkeyNode.namedItem(elementName).toElement();
-    if ( keyElement.isNull() )
-    {
-        QApplication::restoreOverrideCursor();
-        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
-        return false;
-    }
-
     QApplication::restoreOverrideCursor();
 
     QFileInfo fileInfo(filePath);
     QString path = fileInfo.absolutePath();
     // format.setFilePath(path);
-
-    fillTable();
 
     // updateRecentFiles(fileName);
     // updateRecentFileActions();
@@ -630,6 +627,8 @@ bool termWindow::loadFile(const QString & fileName)
     termList.fromDkXml(glossaryElement);
     termList.setTag("glossary");
     // format.setGlossary(&glossary);
+
+    fillTable();
 
     return true;
 }
