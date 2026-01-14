@@ -32,8 +32,7 @@ class termWindow: public QMainWindow
     Q_OBJECT
 
 public:
-    termWindow(dkTermList *inList, MainWindow *inParent = 0);
-    termWindow(QString &inFileName, MainWindow *inParent = 0);
+    termWindow(MainWindow *inParent = 0);
 protected:
     void closeEvent(QCloseEvent *event);
 

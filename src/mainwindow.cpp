@@ -140,101 +140,11 @@ void MainWindow::viewTags()
     QApplication::restoreOverrideCursor();
 }
 
-void MainWindow::viewIntro()
+void MainWindow::viewTerms()
 {
-    dkEditor *introWindow = new dkEditor(&intro, this);
-    introWindow->setWindowTitle(tr("Introduction")+"[*]");
-    introWindow->show();
-}
-
-void MainWindow::viewGlossary()
-{
-    termWindow * glossaryWindow = new termWindow(&glossary, this);
-    glossaryWindow->setWindowTitle(tr("Glossary")+"[*]");
-    glossaryWindow->show();
-}
-
-void MainWindow::viewEndpoints()
-{
-    termWindow * endpointsWindow = new termWindow(&endpoints, this);
-    endpointsWindow->setWindowTitle(tr("Endpoints")+"[*]");
-    endpointsWindow->show();
-}
-
-void MainWindow::viewFigTxt()
-{
-    termWindow * figTxtWindow = new termWindow(&figTxt, this);
-    figTxtWindow->setWindowTitle(tr("Figure legends")+"[*]");
-    figTxtWindow->show();
-}
-
-void MainWindow::openTerms()
-{
-    QString fileName = QFileDialog::getOpenFileName(this,
-                                                    tr("Open file"), filePath, tr("DKey files (*.dk.xml)"));
-    if( fileName.isEmpty() )
-        return;
-
-    termWindow * glossaryWindow = new termWindow(fileName, this);
-    glossaryWindow->setWindowTitle(tr("Glossary")+"[*]");
-    glossaryWindow->show();
-
-    // QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    // QDomDocument xmlDoc;
-    // QFile file(fileName);
-    // if (!file.open(QIODevice::ReadOnly))
-    // {
-    //     QApplication::restoreOverrideCursor();
-    //     QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
-    //     return;
-    // }
-
-    // QString errorStr;
-    // int errorLine;
-    // int errorColumn;
-    // if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
-    //     file.close();
-    //     QApplication::restoreOverrideCursor();
-    //     QMessageBox::warning(this, QObject::tr("DOM Parser"),
-    //                          QObject::tr("Parse error at line %1, column %2:\n%3")
-    //                              .arg(errorLine)
-    //                              .arg(errorColumn)
-    //                              .arg(errorStr));
-    //     return;
-    // }
-
-
-    // file.close();
-
-    // ///
-    // QString elementName = "DKey";
-    // QDomNode dkeyNode = xmlDoc.namedItem(elementName);
-    // QDomElement dkeyElement = dkeyNode.toElement();
-    // if ( dkeyElement.isNull() )
-    // {
-    //     QApplication::restoreOverrideCursor();
-    //     QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
-    //     return;
-    // }
-    // QString versionTxt = dkeyElement.attribute("version");
-    // if(!isVersionOK(versionTxt))
-    // {
-    //     QApplication::restoreOverrideCursor();
-    //     QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
-    //     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    // }
-
-    // // load terminology
-    // QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
-    // glossary.fromDkXml(glossaryElement);
-    // glossary.setTag("glossary");
-    // format.setGlossary(&glossary);
-
-    // QApplication::restoreOverrideCursor();
-
-    // termWindow * glossaryWindow = new termWindow(&glossary, this);
-    // glossaryWindow->setWindowTitle(tr("Glossary")+"[*]");
-    // glossaryWindow->show();
+    termWindow *theTermWindow = new termWindow(this);
+    theTermWindow->setWindowTitle("[*]");
+    theTermWindow->show();
 }
 
 void MainWindow::import()
@@ -1271,9 +1181,6 @@ void MainWindow::createActions()
     openAct->setShortcut(tr("Ctrl+O"));
     connect(openAct, SIGNAL(triggered()), this, SLOT(openFile()));
 
-    openTermAct = new QAction(tr("&Open terms..."), this);
-    connect(openTermAct, SIGNAL(triggered()), this, SLOT(openTerms()));
-
     importAct = new QAction( tr("&Import..."), this);
     importAct->setShortcut(tr("Ctrl+I"));
     connect(importAct, SIGNAL(triggered()), this, SLOT(import()));
@@ -1350,17 +1257,8 @@ void MainWindow::createActions()
     viewTagsAct = new QAction(tr("&Tags"), this);
     connect(viewTagsAct, SIGNAL(triggered()), this, SLOT(viewTags()));
 
-    viewIntroAct = new QAction(tr("&Introduction"), this);
-    connect(viewIntroAct, SIGNAL(triggered()), this, SLOT(viewIntro()));
-
-    viewGlossaryAct = new QAction(tr("&Glossary"), this);
-    connect(viewGlossaryAct, SIGNAL(triggered()), this, SLOT(viewGlossary()));
-
-    viewEndpointsAct = new QAction(tr("&Endpoints"), this);
-    connect(viewEndpointsAct, SIGNAL(triggered()), this, SLOT(viewEndpoints()));
-
-    viewFigTxtAct = new QAction(tr("&Figure Legends"), this);
-    connect(viewFigTxtAct, SIGNAL(triggered()), this, SLOT(viewFigTxt()));
+    viewTermAct = new QAction(tr("&Terms"), this);
+    connect(viewTermAct, SIGNAL(triggered()), this, SLOT(viewTerms()));
 
     goToNumberAct = new QAction(tr("&Go to &number"), this);
     goToNumberAct->setShortcut(tr("Ctrl+N"));
@@ -1389,7 +1287,6 @@ void MainWindow::createMenus()
     fileMenu = new QMenu(tr("&File"), this);
     fileMenu->addAction(newAct);
     fileMenu->addAction(openAct);
-    fileMenu->addAction(openTermAct);
     fileMenu->addAction(importAct);
     fileMenu->addAction(appendAct);
     fileMenu->addAction(saveAct);
@@ -1432,10 +1329,7 @@ void MainWindow::createMenus()
     viewMenu->addAction(viewEndpointListAct);
     viewMenu->addAction(viewTagsAct);
     viewMenu->addSeparator();
-    viewMenu->addAction(viewIntroAct);
-    viewMenu->addAction(viewGlossaryAct);
-    viewMenu->addAction(viewEndpointsAct);
-    viewMenu->addAction(viewFigTxtAct);
+    viewMenu->addAction(viewTermAct);
     menuBar()->addMenu(viewMenu);
 
     navMenu = new QMenu(tr("&Navigation"), this);

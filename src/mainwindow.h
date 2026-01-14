@@ -85,11 +85,7 @@ private slots:
     void viewHtml();
     void viewEndpointList();
     void viewTags();
-    void viewIntro();
-    void viewGlossary();
-    void viewEndpoints();
-    void viewFigTxt();
-    void openTerms();
+    void viewTerms();
     void test();
 
 private:
@@ -106,7 +102,6 @@ private:
 
     QAction *newAct;
     QAction *openAct;
-    QAction *openTermAct;
     QAction *importAct;
     QAction *appendAct;
     QAction *saveAct;
@@ -132,10 +127,7 @@ private:
     QAction *viewHtmlAct;
     QAction *viewEndpointListAct;
     QAction *viewTagsAct;
-    QAction *viewIntroAct;
-    QAction *viewGlossaryAct;
-    QAction *viewEndpointsAct;
-    QAction *viewFigTxtAct;
+    QAction *viewTermAct;
     QAction *aboutAct;
 
     QMenu *fileMenu;

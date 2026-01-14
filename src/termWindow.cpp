@@ -24,16 +24,12 @@
 #include "termWindow.h"
 #include "termDialog.h"
 
-termWindow::termWindow(dkTermList *inList, MainWindow *inParent)
+termWindow::termWindow(MainWindow *inParent)
     : QMainWindow(inParent)
 {
     parent = inParent;
     setAttribute(Qt::WA_DeleteOnClose);
     readSettings();
-
-    // termList = inList;
-    if(termList.size() == 0)
-        termList.insertDummyAt(0);
 
     createActions();
     createMenus();
@@ -42,80 +38,97 @@ termWindow::termWindow(dkTermList *inList, MainWindow *inParent)
     fillTable();
 }
 
+// termWindow::termWindow(dkTermList *inList, MainWindow *inParent)
+//     : QMainWindow(inParent)
+// {
+//     parent = inParent;
+//     setAttribute(Qt::WA_DeleteOnClose);
+//     readSettings();
 
-termWindow::termWindow(QString &fileName, MainWindow *inParent)
-    : QMainWindow(inParent)
-{
-    filePath = fileName;
+//     // termList = inList;
+//     if(termList.size() == 0)
+//         termList.insertDummyAt(0);
 
-    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    QDomDocument xmlDoc;
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        QApplication::restoreOverrideCursor();
-        QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
-        return;
-    }
+//     createActions();
+//     createMenus();
+//     createToolBars();
+//     createTable();
+//     fillTable();
+// }
 
-    QString errorStr;
-    int errorLine;
-    int errorColumn;
-    if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
-        file.close();
-        QApplication::restoreOverrideCursor();
-        QMessageBox::warning(this, QObject::tr("DOM Parser"),
-                             QObject::tr("Parse error at line %1, column %2:\n%3")
-                                 .arg(errorLine)
-                                 .arg(errorColumn)
-                                 .arg(errorStr));
-        return;
-    }
+// termWindow::termWindow(QString &fileName, MainWindow *inParent)
+//     : QMainWindow(inParent)
+// {
+//     filePath = fileName;
 
-    file.close();
+//     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+//     QDomDocument xmlDoc;
+//     QFile file(fileName);
+//     if (!file.open(QIODevice::ReadOnly))
+//     {
+//         QApplication::restoreOverrideCursor();
+//         QMessageBox::warning(this, tr("Warning"), tr("Cannot open %1.").arg(file.fileName()));
+//         return;
+//     }
 
-    ///
-    QString elementName = "DKey";
-    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
-    QDomElement dkeyElement = dkeyNode.toElement();
-    if ( dkeyElement.isNull() )
-    {
-        QApplication::restoreOverrideCursor();
-        QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
-        return;
-    }
-    // QString versionTxt = dkeyElement.attribute("version");
-    // if(!isVersionOK(versionTxt))
-    // {
-    //     QApplication::restoreOverrideCursor();
-    //     QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
-    //     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
-    // }
+//     QString errorStr;
+//     int errorLine;
+//     int errorColumn;
+//     if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
+//         file.close();
+//         QApplication::restoreOverrideCursor();
+//         QMessageBox::warning(this, QObject::tr("DOM Parser"),
+//                              QObject::tr("Parse error at line %1, column %2:\n%3")
+//                                  .arg(errorLine)
+//                                  .arg(errorColumn)
+//                                  .arg(errorStr));
+//         return;
+//     }
 
-    // load terminology
-    QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
-    terminology.fromDkXml(glossaryElement);
-    termList = terminology;  // remove terminology ????????????
-    termList.setTag("glossary");
-    // format.setGlossary(&termList);
+//     file.close();
 
-    QApplication::restoreOverrideCursor();
+//     ///
+//     QString elementName = "DKey";
+//     QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+//     QDomElement dkeyElement = dkeyNode.toElement();
+//     if ( dkeyElement.isNull() )
+//     {
+//         QApplication::restoreOverrideCursor();
+//         QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("No <%1> element found in the XML file!").arg(elementName));
+//         return;
+//     }
+//     // QString versionTxt = dkeyElement.attribute("version");
+//     // if(!isVersionOK(versionTxt))
+//     // {
+//     //     QApplication::restoreOverrideCursor();
+//     //     QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
+//     //     QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+//     // }
 
-    ////
-    parent = inParent;
-    setAttribute(Qt::WA_DeleteOnClose);
-    readSettings();
+//     // load terminology
+//     QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
+//     terminology.fromDkXml(glossaryElement);
+//     termList = terminology;  // remove terminology ????????????
+//     termList.setTag("glossary");
+//     // format.setGlossary(&termList);
 
-    // termList = inList;
-    if(termList.size() == 0)
-        termList.insertDummyAt(0);
+//     QApplication::restoreOverrideCursor();
 
-    createActions();
-    createMenus();
-    createToolBars();
-    createTable();
-    fillTable();
-}
+//     ////
+//     parent = inParent;
+//     setAttribute(Qt::WA_DeleteOnClose);
+//     readSettings();
+
+//     // termList = inList;
+//     if(termList.size() == 0)
+//         termList.insertDummyAt(0);
+
+//     createActions();
+//     createMenus();
+//     createToolBars();
+//     createTable();
+//     fillTable();
+// }
 
 void termWindow::createActions()
 {
