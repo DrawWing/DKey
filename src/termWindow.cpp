@@ -130,7 +130,7 @@ void termWindow::createActions()
     importAct->setShortcut(tr("Ctrl+I"));
     connect(importAct, SIGNAL(triggered()), this, SLOT(import()));
 
-    saveAct = new QAction( tr("&Save"), this);
+    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save..."), this);
     saveAct->setShortcut(tr("Ctrl+S"));
     connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
 
@@ -191,6 +191,7 @@ void termWindow::createToolBars()
     fileToolBar = addToolBar(tr("&File"));
     fileToolBar->addAction(newAct);
     fileToolBar->addAction(openAct);
+    fileToolBar->addAction(saveAct);
 
     editToolBar = addToolBar(tr("&Edit"));
     editToolBar->addAction(cutAct);
@@ -623,9 +624,10 @@ bool termWindow::loadFile(const QString & fileName)
     setWindowTitle(QString("%1[*]").arg(fileInfo.fileName()));
 
     // load glossary
-    QDomElement glossaryElement = dkeyNode.namedItem("term_list").toElement();
-    termList.fromDkXml(glossaryElement);
-    termList.setTag("glossary");
+    QDomElement termsElement = dkeyNode.namedItem("term_list").toElement();
+    termList.fromDkXml(termsElement);
+    QString tagTxt = termsElement.attribute("tag");
+    termList.setTag(tagTxt);
     // format.setGlossary(&glossary);
 
     fillTable();

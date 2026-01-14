@@ -104,14 +104,14 @@ QString dkTermList::getDkXml() const
     if(thisList.size() == 0)
         return outTxt;
 
-    outTxt += QStringLiteral("<%1>\n").arg(tag);
+    outTxt += QStringLiteral("<term_list tag=\"%1\">\n").arg(tag);
     for(int i = 0; i < thisList.size(); ++i)
     {
         dkTerm theTerm = thisList[i];
         QString theTxt = theTerm.getDkXml();
         outTxt.append(theTxt);
     }
-    outTxt += QStringLiteral("</%1>\n").arg(tag);
+    outTxt += QStringLiteral("</term_list>\n");
 
     return outTxt;
 }
