@@ -35,6 +35,7 @@ public:
     int size() const;
     void clear();
     void fromDkXml(const QDomElement &inElement);
+    void fromDkXml(const QString & fileName);
     void importTxt(QStringList & inTxtList);
     QString exportTxt();
     QString getTag() const;

@@ -17,6 +17,7 @@
 
 #include "dkTermList.h"
 #include <QRegularExpression>
+#include <QFile>
 
 dkTermList::dkTermList()
 {
@@ -57,6 +58,62 @@ void dkTermList::fromDkXml(const QDomElement &inElement)
     clear();
 
     QDomNodeList inElemList = inElement.childNodes();
+    for(int i = 0; i < inElemList.size(); ++i){
+        QDomNode theNode = inElemList.at(i);
+        QDomElement theElement = theNode.toElement();
+        if(theElement.isNull())
+            continue;
+        if(theElement.tagName() == "term")
+        {
+            dkTerm newTerm;
+            newTerm.fromDkXml(theElement);
+            thisList.push_back(newTerm);
+        }
+    }
+}
+void dkTermList::fromDkXml(const QString & fileName)
+{
+    clear();
+
+    QDomDocument xmlDoc;
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly))
+    {
+        error = QObject::tr("Cannot open %1.").arg(file.fileName());
+        return;
+    }
+
+    QString errorStr;
+    int errorLine;
+    int errorColumn;
+    if (!xmlDoc.setContent(&file, false, &errorStr, &errorLine, &errorColumn)) {
+        file.close();
+        error = QObject::tr("Parse error at line %1, column %2:\n%3")
+                                 .arg(errorLine)
+                                 .arg(errorColumn)
+                                 .arg(errorStr);
+        return;
+    }
+    file.close();
+
+    QString elementName = "DKey";
+    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
+    QDomElement dkeyElement = dkeyNode.toElement();
+    if ( dkeyElement.isNull() )
+    {
+        error = QObject::tr("No <%1> element found in the XML file!").arg(elementName);
+        return;
+    }
+
+    QDomElement termsElement = dkeyNode.namedItem("term_list").toElement();
+    QString tagTxt = termsElement.attribute("tag");
+    if(tagTxt.isEmpty())
+    {
+        error = "No tag attribute in term_list";
+        return;
+    }
+    tag = tagTxt;
+    QDomNodeList inElemList = termsElement.childNodes();
     for(int i = 0; i < inElemList.size(); ++i){
         QDomNode theNode = inElemList.at(i);
         QDomElement theElement = theNode.toElement();

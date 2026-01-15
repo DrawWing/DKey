@@ -27,6 +27,7 @@
 #include <QInputDialog>
 //#include <QElapsedTimer>
 //#include <QDebug>
+#include <QTextDocument>
 
 #include "mainwindow.h"
 #include "coupletDialog.h"
@@ -43,7 +44,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     undoStack = new QUndoStack(this);
 
-    filePath = "";
     createActions();
     createMenus();
     createToolBars();
@@ -88,7 +88,7 @@ void MainWindow::viewHtml()
     coupletList.findFrom();
     htmlTxt += coupletList.getHtmlImg();
     htmlTxt += format.glossaryHtml(true);
-//    htmlTxt = glossary.addLinks(htmlTxt);
+    htmlTxt = glossary.addLinks(htmlTxt);
 
     htmlWindow->setHtml(htmlTxt);
     htmlWindow->setWindowTitle(tr("Hypertext viewer"));
@@ -165,8 +165,7 @@ void MainWindow::import()
     if (!inFile.open(QIODevice::ReadOnly | QFile::Text)) {
         QMessageBox::warning(this, appName,
                              tr("Cannot open file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(inFile.errorString()));
+                             .arg(fileName, inFile.errorString()));
         return;
     }
 
@@ -572,21 +571,27 @@ bool MainWindow::loadFile(const QString & fileName)
         intro = introElement.text();
 
     // load glossary
-    QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
-    glossary.fromDkXml(glossaryElement);
-    glossary.setTag("glossary");
+    // QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
+    // glossary.fromDkXml(glossaryElement);
+    // glossary.setTag("glossary");
+    QString glossaryFileName = path + "/glossary.dk.xml";
+    glossary.fromDkXml(glossaryFileName);
     format.setGlossary(&glossary);
 
     // load endpoints
-    QDomElement endpointsElement = dkeyNode.namedItem("endpoints").toElement();
-    endpoints.fromDkXml(endpointsElement);
-    endpoints.setTag("endpoints");
+    // QDomElement endpointsElement = dkeyNode.namedItem("endpoints").toElement();
+    // endpoints.fromDkXml(endpointsElement);
+    // endpoints.setTag("endpoints");
+    QString endpointsFileName = path + "/endpoints.dk.xml";
+    endpoints.fromDkXml(endpointsFileName);
     format.setEndpoints(&endpoints);
 
     // load figures
     QDomElement figElement = dkeyNode.namedItem("figures").toElement();
-    figTxt.fromDkXml(figElement);
-    figTxt.setTag("figures");
+    // figTxt.fromDkXml(figElement);
+    // figTxt.setTag("figures");
+    QString termsFileName = path + "/figures.dk.xml";
+    figTxt.fromDkXml(termsFileName);
     format.setFigures(&figTxt);
     return true;
 }
@@ -634,8 +639,7 @@ bool MainWindow::saveFile(const QString &fileName)
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("DKey"),
                              tr("Cannot write file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
+                             .arg(fileName, file.errorString()));
         return false;
     }
 
@@ -647,7 +651,13 @@ bool MainWindow::saveFile(const QString &fileName)
     QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     outTxt += QStringLiteral("<DKey version=\"%1\">\n").arg(appVersion);
     outTxt += "<introduction>";
-    outTxt += intro.toHtmlEscaped();
+    // outTxt += intro.toHtmlEscaped();
+
+    QTextDocument doc;
+    doc.setHtml(intro);
+    QString md = doc.toMarkdown();
+    outTxt += md.toHtmlEscaped();
+
     outTxt += "</introduction>\n";
     outTxt += coupletList.getDkXml();
     outTxt += glossary.getDkXml();
@@ -714,8 +724,7 @@ void MainWindow::exportKey()
         QMessageBox::warning
                 (this, appName,
                  tr("Cannot write file %1:\n%2.")
-                 .arg(fileName)
-                 .arg(outFile.errorString())
+                 .arg(fileName, outFile.errorString())
                  );
         return;
     }
@@ -998,34 +1007,37 @@ void MainWindow::editRow()
 // col is only for compatibility with cellDoubleClicked(row, col)
 void MainWindow::editClickedRow(int row, int col)
 {
+    Q_UNUSED(col);
     dkCouplet theCouplet = coupletList.at(row);
-    int max = coupletList.getMaxNumber();
-    if(theCouplet.getPointer1() > max || theCouplet.getPointer2() > max)
-    {
-        if(theCouplet.getPointer1() > max )
-            theCouplet.setPointer1(1);
-        if(theCouplet.getPointer2() > max )
-            theCouplet.setPointer2(1);
-        QMessageBox::warning
-                (this, tr("Edit couplet"), tr("Incorect pointer was changed to 1. Please correct it."));
+
+    int maxN = coupletList.getMaxNumber();
+    int p1 = theCouplet.getPointer1();
+    int p2 = theCouplet.getPointer2();
+    bool corrected = false;
+    if (p1 > maxN) {
+        theCouplet.setPointer1(1);
+        corrected = true;
+    }
+    if (p2 > maxN) {
+        theCouplet.setPointer2(1);
+        corrected = true;
+    }
+    if (corrected) {
+        QMessageBox::warning(
+            this,
+            tr("Edit couplet"),
+            tr("Incorrect pointer was changed to 1. Please correct it.")
+            );
     }
 
     coupletDialog dialog(& theCouplet, coupletList.getMaxNumber(), this);
     if (dialog.exec())
     {
-        //
         dkCouplet oldCouplet = coupletList.at(row);
         QUndoCommand *editCommand = new EditCommand(this, theCouplet,
                                                     oldCouplet, row);
         undoStack->push(editCommand);
-        //
-
-//        coupletList.setCouplet(theCouplet, row);
-//        updateTableRow(row);
-//        table->selectRow(row);
-//        setWindowModified(true); // use undo clean state
     }
-    max = col; // to prevent error messages
 }
 
 // public undo command
@@ -1325,7 +1337,7 @@ void MainWindow::createMenus()
 
     viewMenu = new QMenu(tr("&View"), this);
     viewMenu->addAction(viewBrowserAct);
-    viewMenu->addAction(viewHtmlAct);
+    // viewMenu->addAction(viewHtmlAct);
     viewMenu->addAction(viewEndpointListAct);
     viewMenu->addAction(viewTagsAct);
     viewMenu->addSeparator();
@@ -1373,7 +1385,7 @@ void MainWindow::about()
                          "<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. </p>"
                          "<p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.</p>"
                          ));
-    QMessageBox::about(this, "About",aboutTxt.arg(appName).arg(appVersion));
+    QMessageBox::about(this, "About",aboutTxt.arg(appName, appVersion));
 }
 
 void MainWindow::readSettings()
@@ -1382,7 +1394,7 @@ void MainWindow::readSettings()
     QSettings settings(companyName, appName);
     recentFiles = settings.value("recentFiles").toStringList();
     updateRecentFileActions();
-    filePath = settings.value("filePath").toString();
+    filePath = settings.value("filePath", QString()).toString();
 
     QPoint pos = settings.value("pos", QPoint(200, 200)).toPoint();
     QSize size = settings.value("size", QSize(400, 400)).toSize();
