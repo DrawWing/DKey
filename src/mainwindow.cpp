@@ -186,8 +186,7 @@ void MainWindow::import()
     if (!inFile.open(QIODevice::ReadOnly | QFile::Text)) {
         QMessageBox::warning(this, appName,
                              tr("Cannot open file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(inFile.errorString()));
+                             .arg(fileName, inFile.errorString()));
         return;
     }
 
@@ -655,8 +654,7 @@ bool MainWindow::saveFile(const QString &fileName)
     if (!file.open(QFile::WriteOnly | QFile::Text)) {
         QMessageBox::warning(this, tr("DKey"),
                              tr("Cannot write file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file.errorString()));
+                             .arg(fileName, file.errorString()));
         return false;
     }
 
@@ -735,8 +733,7 @@ void MainWindow::exportKey()
         QMessageBox::warning
                 (this, appName,
                  tr("Cannot write file %1:\n%2.")
-                 .arg(fileName)
-                 .arg(outFile.errorString())
+                 .arg(fileName, outFile.errorString())
                  );
         return;
     }
@@ -1019,34 +1016,37 @@ void MainWindow::editRow()
 // col is only for compatibility with cellDoubleClicked(row, col)
 void MainWindow::editClickedRow(int row, int col)
 {
+    Q_UNUSED(col);
     dkCouplet theCouplet = coupletList.at(row);
-    int max = coupletList.getMaxNumber();
-    if(theCouplet.getPointer1() > max || theCouplet.getPointer2() > max)
-    {
-        if(theCouplet.getPointer1() > max )
-            theCouplet.setPointer1(1);
-        if(theCouplet.getPointer2() > max )
-            theCouplet.setPointer2(1);
-        QMessageBox::warning
-                (this, tr("Edit couplet"), tr("Incorect pointer was changed to 1. Please correct it."));
+
+    int maxN = coupletList.getMaxNumber();
+    int p1 = theCouplet.getPointer1();
+    int p2 = theCouplet.getPointer2();
+    bool corrected = false;
+    if (p1 > maxN) {
+        theCouplet.setPointer1(1);
+        corrected = true;
+    }
+    if (p2 > maxN) {
+        theCouplet.setPointer2(1);
+        corrected = true;
+    }
+    if (corrected) {
+        QMessageBox::warning(
+            this,
+            tr("Edit couplet"),
+            tr("Incorrect pointer was changed to 1. Please correct it.")
+            );
     }
 
     coupletDialog dialog(& theCouplet, coupletList.getMaxNumber(), this);
     if (dialog.exec())
     {
-        //
         dkCouplet oldCouplet = coupletList.at(row);
         QUndoCommand *editCommand = new EditCommand(this, theCouplet,
                                                     oldCouplet, row);
         undoStack->push(editCommand);
-        //
-
-//        coupletList.setCouplet(theCouplet, row);
-//        updateTableRow(row);
-//        table->selectRow(row);
-//        setWindowModified(true); // use undo clean state
     }
-    max = col; // to prevent error messages
 }
 
 // public undo command
@@ -1406,7 +1406,7 @@ void MainWindow::about()
                          "<p>This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details. </p>"
                          "<p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.</p>"
                          ));
-    QMessageBox::about(this, "About",aboutTxt.arg(appName).arg(appVersion));
+    QMessageBox::about(this, "About",aboutTxt.arg(appName, appVersion));
 }
 
 void MainWindow::readSettings()
