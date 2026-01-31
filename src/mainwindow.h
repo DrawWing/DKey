@@ -101,7 +101,7 @@ private:
     void updateRecentFileActions();
     bool okToContinue();
     bool saveFile(const QString &fileName);
-    bool isVersionOK(const QString inVersion);
+    // bool isVersionOK(const QString inVersion);
 
     QAction *newAct;
     QAction *openAct;
@@ -173,7 +173,7 @@ private:
     bool isCopy;
 
     dkFormat format;
-    QString intro;
+    dkString intro;
     dkTermList glossary;
     dkTermList endpoints;
     dkTermList figTxt;

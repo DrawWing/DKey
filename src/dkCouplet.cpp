@@ -16,6 +16,7 @@
  */
 
 #include <QImageReader>
+#include <QTextDocument>
 
 #include "dkCouplet.h"
 #include "dkString.h"
@@ -251,7 +252,7 @@ void dkCouplet::fromDkXml(const QDomElement &inElement)
     readXmlLead(leadElem, false);
 }
 
-void dkCouplet::readXmlLead(const QDomElement &inElement, bool first)
+void dkCouplet::readXmlLead(const QDomElement &inElement, bool first, int ver)
 {
     QDomNodeList inElemList = inElement.childNodes();
     for(int i = 0; i < inElemList.size(); ++i){
@@ -261,10 +262,13 @@ void dkCouplet::readXmlLead(const QDomElement &inElement, bool first)
             continue;
         if(anElement.tagName() == "text")
         {
+            dkString inTxt = anElement.text();
+            if(ver > 2)
+                inTxt = inTxt.md2html();
             if(first)
-                lead1 = anElement.text();
+                lead1 = inTxt;
             else
-                lead2 = anElement.text();
+                lead2 = inTxt;
         }
         else if(anElement.tagName() == "pointer")
         {
@@ -288,14 +292,17 @@ void dkCouplet::readXmlLead(const QDomElement &inElement, bool first)
         }
         else if(anElement.tagName() == "endpoint")
         {
+            dkString inTxt = anElement.text();
+            if(ver > 2)
+                inTxt = inTxt.md2html();
             if(first)
             {
-                endpoint1 = anElement.text();
+                endpoint1 = inTxt;
                 pointer1 = -1;
             }
             else
             {
-                endpoint2 = anElement.text();
+                endpoint2 = inTxt;
                 pointer2 = -1;
             }
         }
@@ -674,17 +681,31 @@ QString dkCouplet::getDkTxt() const
 
 QString dkCouplet::getDkXml() const
 {
+    // QTextDocument doc;
+    // doc.setHtml(lead1);
+    // QString mdLead1 = doc.toMarkdown();
+    // doc.setHtml(lead2);
+    // QString mdLead2 = doc.toMarkdown();
+    // doc.setHtml(endpoint1);
+    // QString mdEndpoint1 = doc.toMarkdown();
+    // doc.setHtml(endpoint2);
+    // QString mdEndpoint2 = doc.toMarkdown();
+
     QString outTxt = QStringLiteral("<couplet number=\"%1\">\n").arg(number);
 
     if(endpoint1.isEmpty())
-        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead>\n").arg(lead1.toHtmlEscaped()).arg(pointer1);
+        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead>\n").arg(lead1.html2md())
+                      .arg(pointer1);
     else
-        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead>\n").arg(lead1.toHtmlEscaped()).arg(endpoint1.toHtmlEscaped());
+        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead>\n").arg(lead1.html2md())
+                      .arg(endpoint1.html2md());
 
     if(endpoint2.isEmpty())
-        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead>\n").arg(lead2.toHtmlEscaped()).arg(pointer2);
+        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead>\n").arg(lead2.html2md())
+                      .arg(pointer2);
     else
-        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead>\n").arg(lead2.toHtmlEscaped()).arg(endpoint2.toHtmlEscaped());
+        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead>\n").arg(lead2.html2md())
+                      .arg(endpoint2.html2md());
 
     outTxt += "</couplet>\n";
     return outTxt;

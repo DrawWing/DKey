@@ -355,30 +355,10 @@ void dkCoupletList::fromDkTxt(const QString & fileName)
     findMaxNumber();
 }
 
-void dkCoupletList::fromDkXml(const QDomElement &inElement)
-//void dkCoupletList::fromDkXml(const QDomDocument xmlDoc)
+void dkCoupletList::fromDkXml(const QDomElement &inElement, int ver)
 {
     clear();
 
-//    QString elementName = "DKey";
-//    QDomNode dkeyNode = xmlDoc.namedItem(elementName);
-//    QDomElement dkeyElement = dkeyNode.toElement();
-//    if ( dkeyElement.isNull() )
-//    {
-//        error = QObject::tr("No <%1> element found in the XML file!").arg(elementName);
-//        return;
-//    }
-////    QString versionTxt = docElement.attribute("version");
-////    double version = versionTxt.toDouble();
-
-//    elementName = "key";
-//    QDomNode keyNode = xmlDoc.namedItem(elementName);
-//    QDomElement keyElement = dkeyNode.namedItem(elementName).toElement();
-//    if ( keyElement.isNull() )
-//    {
-//        error = QObject::tr("No <%1> element found in the XML file!").arg(elementName);
-//        return;
-//    }
     QDomNodeList keyChildList = inElement.childNodes();
     for(int i = 0; i < keyChildList.size(); ++i){
         QDomNode coupletNode = keyChildList.at(i);
@@ -459,8 +439,6 @@ QString dkCoupletList::getDkTxt() const
 
 QString dkCoupletList::getDkXml() const
 {
-//    QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
-//    outTxt += "<DKey version=\"1.0\">\n"; //add version from qapplication
     QString outTxt = "<key>\n";
     for(int i = 0; i < thisList.size(); ++i)
     {
@@ -469,7 +447,6 @@ QString dkCoupletList::getDkXml() const
         outTxt.append(theTxt);
     }
     outTxt += "</key>\n";
-//    outTxt += "</DKey>\n";
 
     return outTxt;
 }

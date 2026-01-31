@@ -23,6 +23,68 @@
 
 const QString dkString::htmlBr = "<br />";
 
+static void processNode(const QDomNode &node, QString &outTxt)
+{
+    if (node.isText()) {
+        outTxt += node.nodeValue();
+        return;
+    }
+    if (node.isElement()) {
+        QDomElement elem = node.toElement();
+        QString tag = elem.tagName().toLower();
+        if (tag == "br") {
+            outTxt += "  \n"; // use double space for markdown line break
+        } else if (tag == "span") {
+            QString style = elem.attribute("style");
+            QString text;
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNode(child, text);
+                child = child.nextSibling();
+            }
+            // parse style
+            bool isBold = style.contains("font-weight:600");
+            bool isItalic = style.contains("font-style:italic");
+            bool isUnderline = style.contains("text-decoration: underline");
+            QString prefix, suffix;
+            if (isBold && isItalic) {
+                prefix = "***";
+                suffix = "***";
+            } else if (isBold) {
+                prefix = "**";
+                suffix = "**";
+            } else if (isItalic) {
+                prefix = "*";
+                suffix = "*";
+            }
+            if (isUnderline) {
+                text = "<u>" + text + "</u>";
+            }
+            outTxt += prefix + text + suffix;
+        } else if (tag == "a") {
+            QString href = elem.attribute("href");
+            href.replace("&amp;", "&");
+            href.replace("&lt;", "<");
+            href.replace("&gt;", ">");
+            href.replace("&quot;", "\"");
+            QString text;
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNode(child, text);
+                child = child.nextSibling();
+            }
+            outTxt += "[" + text + "](" + href + ")"; // markdown link format
+        } else {
+            // other tags, just process children
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNode(child, outTxt);
+                child = child.nextSibling();
+            }
+        }
+    }
+}
+
 dkString::dkString()
     : QString()
 {
@@ -330,6 +392,83 @@ dkString dkString::toPlainText() const
 {
     dkString plainText = QTextDocumentFragment::fromHtml( *this ).toPlainText();
     return plainText;
+}
+
+dkString dkString::html2md() const
+{
+    QString inTxt = *this;
+    // Decode HTML entities for <br>
+    inTxt.replace("&lt;br&gt;", "<br>");
+    inTxt.replace("&lt;br /&gt;", "<br />");
+    inTxt.replace("&lt;br/&gt;", "<br/>");
+    // Ensure <br> is self-closing for XML parsing
+    inTxt.replace("<br>", "<br />");
+    QString wrapped = "<root>" + inTxt + "</root>";
+    QDomDocument xml;
+    if (!xml.setContent(wrapped)) {
+        return *this; // if not valid HTML, return as is
+    }
+    QDomElement rootElement = xml.firstChildElement("root");
+    if (rootElement.isNull()) {
+        return *this;
+    }
+    QString outTxt;
+    QDomNode child = rootElement.firstChild();
+    while (!child.isNull()) {
+        processNode(child, outTxt);
+        child = child.nextSibling();
+    }
+    // Escape special characters for XML compatibility
+    outTxt.replace("&", "&amp;");
+    outTxt.replace("<", "&lt;");
+    outTxt.replace(">", "&gt;");
+    outTxt.replace("\"", "&quot;");
+    return outTxt;
+}
+
+dkString dkString::md2html() const
+{
+    QString outTxt = *this;
+
+    // Convert links [text](url) to <a href="url">text</a>, escaping & in url
+    QRegularExpression linkRegex("\\[([^\\]]+)\\]\\(([^\\)]+)\\)");
+    QRegularExpressionMatchIterator it = linkRegex.globalMatch(outTxt);
+    int offset = 0;
+    QString newTxt;
+    while (it.hasNext()) {
+        QRegularExpressionMatch match = it.next();
+        QString text = match.captured(1);
+        QString url = match.captured(2);
+        url.replace("&", "&amp;");
+        url.replace("<", "&lt;");
+        url.replace(">", "&gt;");
+        url.replace("\"", "&quot;");
+        QString replacement = "<a href=\"" + url + "\">" + text + "</a>";
+        newTxt += outTxt.mid(offset, match.capturedStart() - offset) + replacement;
+        offset = match.capturedEnd();
+    }
+    newTxt += outTxt.mid(offset);
+    outTxt = newTxt;
+
+    // Convert bold italic ***text*** to <b><i>text</i></b>
+    QRegularExpression boldItalicRegex("\\*\\*\\*([^\\*]+)\\*\\*\\*");
+    outTxt.replace(boldItalicRegex, "<b><i>\\1</i></b>");
+
+    // Convert bold **text** to <b>text</b>
+    QRegularExpression boldRegex("\\*\\*([^\\*]+)\\*\\*");
+    outTxt.replace(boldRegex, "<b>\\1</b>");
+
+    // Convert italic *text* to <i>text</i>
+    QRegularExpression italicRegex("\\*([^\\*]+)\\*");
+    outTxt.replace(italicRegex, "<i>\\1</i>");
+
+    // Underline is already <u>text</u>, leave as is
+
+    // Convert line breaks   \n to <br />
+    QRegularExpression brRegex("  \\R");
+    outTxt.replace(brRegex, htmlBr);
+
+    return outTxt;
 }
 
 // dkString & dkString::operator=( const dkString & str){

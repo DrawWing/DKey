@@ -51,7 +51,7 @@ HEADERS  += src/mainwindow.h \
     src/textEditor.h \
     src/commands.h
 
-DEFINES += VERSION_STRING=\\\"2.2.0\\\"
+DEFINES += VERSION_STRING=\\\"3.0.0\\\"
 
 RESOURCES += assets/DKey.qrc
 

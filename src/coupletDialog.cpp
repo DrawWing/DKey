@@ -274,10 +274,6 @@ void coupletDialog::accept()
             return;
     }
 
-//    QString tmp1 = lead1Text->toHtml();
-////    QString tmp1 = lead1Text->toMarkdown(QTextDocument::MarkdownDialectCommonMark);
-//    qDebug() << tmp1;
-
     // Update the couplet
     dkString htmlTxt = lead1Text->toHtml();
     htmlTxt = htmlTxt.cleanHtml();

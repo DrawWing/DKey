@@ -40,6 +40,8 @@ public:
     void removeHtml();
     dkString cleanHtml() const;
     dkString toPlainText() const;
+    dkString html2md() const;
+    dkString md2html() const;
     static const QString htmlBr;
 
     dkString(const dkString& other);

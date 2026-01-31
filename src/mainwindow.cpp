@@ -27,6 +27,7 @@
 #include <QInputDialog>
 //#include <QElapsedTimer>
 //#include <QDebug>
+#include <QTextDocument>
 
 #include "mainwindow.h"
 #include "coupletDialog.h"
@@ -531,7 +532,6 @@ bool MainWindow::loadFile(const QString & fileName)
         return false;
     }
 
-
     file.close();
 
     ///
@@ -545,13 +545,16 @@ bool MainWindow::loadFile(const QString & fileName)
         return false;
     }
     QString versionTxt = dkeyElement.attribute("version");
-    if(!isVersionOK(versionTxt))
+    QStringList inVerList = versionTxt.split('.');
+    int inVerMajor = inVerList[0].toInt();
+    QStringList theVerList = appVersion.split('.');
+    int theVerMajor = theVerList[0].toInt();
+    if(inVerMajor > theVerMajor)
     {
         QApplication::restoreOverrideCursor();
         QMessageBox::warning(this, QObject::tr("DOM Parser"),QObject::tr("The file was saved in newer version of DKey.\nPlease download the most recent version."));
         QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
     }
-
 
     elementName = "key";
     QDomElement keyElement = dkeyNode.namedItem(elementName).toElement();
@@ -562,7 +565,7 @@ bool MainWindow::loadFile(const QString & fileName)
         return false;
     }
 
-    coupletList.fromDkXml(keyElement);
+    coupletList.fromDkXml(keyElement, theVerMajor);
 
     QApplication::restoreOverrideCursor();
 
@@ -589,7 +592,10 @@ bool MainWindow::loadFile(const QString & fileName)
     // load introduction
     QDomElement introElement = dkeyNode.namedItem("introduction").toElement();
     if(!introElement.isNull())
+    {
         intro = introElement.text();
+        intro = intro.md2html();
+    }
 
     // load glossary
     QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
@@ -666,7 +672,21 @@ bool MainWindow::saveFile(const QString &fileName)
     QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     outTxt += QStringLiteral("<DKey version=\"%1\">\n").arg(appVersion);
     outTxt += "<introduction>";
-    outTxt += intro.toHtmlEscaped();
+    // outTxt += intro.toHtmlEscaped();
+
+
+    dkString i = intro;   
+    outTxt += i.html2md();
+
+    // QTextDocument doc;
+    // QTextOption opt = doc.defaultTextOption();
+    // opt.setWrapMode(QTextOption::NoWrap);
+    // doc.setDefaultTextOption(opt);
+    // doc.setTextWidth(-1);
+    // doc.setHtml(intro);
+    // QString md = doc.toMarkdown();
+    // outTxt += md.toHtmlEscaped();
+
     outTxt += "</introduction>\n";
     outTxt += coupletList.getDkXml();
     outTxt += glossary.getDkXml();
@@ -692,25 +712,25 @@ bool MainWindow::saveFile(const QString &fileName)
     return true;
 }
 
-bool MainWindow::isVersionOK(const QString inVersion)
-{
-    if(inVersion == "1.0")
-        return true;
+// bool MainWindow::isVersionOK(const QString inVersion)
+// {
+//     if(inVersion == "1.0")
+//         return true;
 
-    QStringList inList = inVersion.split('.');
-    if(inList.size() < 3)
-        return false;
+//     QStringList inList = inVersion.split('.');
+//     if(inList.size() < 3)
+//         return false;
 
-    QStringList versionList = appVersion.split('.');
-    if(inList[0] < versionList[0])
-        return true;
-    if(inList[1] < versionList[1])
-        return true;
-    if(inList[2] <= versionList[2])
-        return true;
+//     QStringList versionList = appVersion.split('.');
+//     if(inList[0] < versionList[0])
+//         return true;
+//     if(inList[1] < versionList[1])
+//         return true;
+//     if(inList[2] <= versionList[2])
+//         return true;
 
-    return false;
-}
+//     return false;
+// }
 
 void MainWindow::exportKey()
 {
