@@ -35,7 +35,7 @@ public:
     bool isEmpty() const;
     void fromDkTxt(const QStringList &inList);
     void readDkTxtLine(const QString &inTxt, bool first);
-    void fromDkXml(const QDomElement &inElement);
+    void fromDkXml(const QDomElement &inElement, int ver = 1);
     void readXmlLead(const QDomElement &inElement, bool first, int ver =1);
 
     void import1number(const QStringList &inTxt);

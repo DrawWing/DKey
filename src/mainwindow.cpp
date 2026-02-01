@@ -594,7 +594,8 @@ bool MainWindow::loadFile(const QString & fileName)
     if(!introElement.isNull())
     {
         intro = introElement.text();
-        intro = intro.md2html();
+        if(theVerMajor > 2)
+            intro = intro.md2html();
     }
 
     // load glossary
@@ -674,18 +675,7 @@ bool MainWindow::saveFile(const QString &fileName)
     outTxt += "<introduction>";
     // outTxt += intro.toHtmlEscaped();
 
-
-    dkString i = intro;   
-    outTxt += i.html2md();
-
-    // QTextDocument doc;
-    // QTextOption opt = doc.defaultTextOption();
-    // opt.setWrapMode(QTextOption::NoWrap);
-    // doc.setDefaultTextOption(opt);
-    // doc.setTextWidth(-1);
-    // doc.setHtml(intro);
-    // QString md = doc.toMarkdown();
-    // outTxt += md.toHtmlEscaped();
+    outTxt += intro.html2md();
 
     outTxt += "</introduction>\n";
     outTxt += coupletList.getDkXml();

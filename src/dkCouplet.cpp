@@ -220,7 +220,7 @@ void dkCouplet::readDkTxtLine(const QString &inTxt, bool first)
     }
 }
 
-void dkCouplet::fromDkXml(const QDomElement &inElement)
+void dkCouplet::fromDkXml(const QDomElement &inElement, int ver)
 {
     clear();
 
@@ -240,7 +240,7 @@ void dkCouplet::fromDkXml(const QDomElement &inElement)
         error += QObject::tr("Error in reading first lead of couplet: %1. \n").arg(number);
         return;
     }
-    readXmlLead(leadElem, true);
+    readXmlLead(leadElem, true, ver);
 
     leadNode = leadNode.nextSibling();
     leadElem = leadNode.toElement();
@@ -249,7 +249,7 @@ void dkCouplet::fromDkXml(const QDomElement &inElement)
         error += QObject::tr("Error in reading second lead of couplet: %1. \n").arg(number);
         return;
     }
-    readXmlLead(leadElem, false);
+    readXmlLead(leadElem, false, ver);
 }
 
 void dkCouplet::readXmlLead(const QDomElement &inElement, bool first, int ver)
@@ -681,16 +681,6 @@ QString dkCouplet::getDkTxt() const
 
 QString dkCouplet::getDkXml() const
 {
-    // QTextDocument doc;
-    // doc.setHtml(lead1);
-    // QString mdLead1 = doc.toMarkdown();
-    // doc.setHtml(lead2);
-    // QString mdLead2 = doc.toMarkdown();
-    // doc.setHtml(endpoint1);
-    // QString mdEndpoint1 = doc.toMarkdown();
-    // doc.setHtml(endpoint2);
-    // QString mdEndpoint2 = doc.toMarkdown();
-
     QString outTxt = QStringLiteral("<couplet number=\"%1\">\n").arg(number);
 
     if(endpoint1.isEmpty())

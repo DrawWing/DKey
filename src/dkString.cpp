@@ -394,6 +394,15 @@ dkString dkString::toPlainText() const
     return plainText;
 }
 
+// QTextDocument doc;
+// QTextOption opt = doc.defaultTextOption();
+// opt.setWrapMode(QTextOption::NoWrap);
+// doc.setDefaultTextOption(opt);
+// doc.setTextWidth(-1);
+// doc.setHtml(intro);
+// QString md = doc.toMarkdown();
+// outTxt += md.toHtmlEscaped();
+// toMarkdown is not working properly because of line breaks added
 dkString dkString::html2md() const
 {
     QString inTxt = *this;

@@ -368,7 +368,7 @@ void dkCoupletList::fromDkXml(const QDomElement &inElement, int ver)
         if(coupletElement.tagName() == "couplet")
         {
             dkCouplet newCouplet;
-            newCouplet.fromDkXml(coupletElement);
+            newCouplet.fromDkXml(coupletElement, ver);
 
             QString coupletError = newCouplet.getError();
             if(coupletError.isEmpty())
