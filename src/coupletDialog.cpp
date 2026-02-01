@@ -278,11 +278,9 @@ void coupletDialog::accept()
     dkString htmlTxt = lead1Text->toHtml();
     htmlTxt = htmlTxt.cleanHtml();
     thisCouplet->setLead1(htmlTxt);
-//    thisCouplet->setLead1(cleanHtml(lead1Text->toHtml()));
     htmlTxt = lead2Text->toHtml();
     htmlTxt = htmlTxt.cleanHtml();
     thisCouplet->setLead2(htmlTxt);
-//    thisCouplet->setLead2(cleanHtml(lead2Text->toHtml()));
 
     if(radioRef1->isChecked())
     {
@@ -293,7 +291,6 @@ void coupletDialog::accept()
         htmlTxt = endpoint1->toHtml();
         htmlTxt = htmlTxt.cleanHtml();
         thisCouplet->setEndpoint1(htmlTxt);
-//        thisCouplet->setEndpoint1(cleanHtml(endpoint1->toHtml()));
     }
 
     if(radioRef2->isChecked())
@@ -305,7 +302,6 @@ void coupletDialog::accept()
         htmlTxt = endpoint2->toHtml();
         htmlTxt = htmlTxt.cleanHtml();
         thisCouplet->setEndpoint2(htmlTxt);
-//        thisCouplet->setEndpoint2(cleanHtml(endpoint2->toHtml()));
     }
 
     QDialog::accept();

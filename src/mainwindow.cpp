@@ -446,7 +446,6 @@ void MainWindow::findImgErrors()
     QStringList figList = coupletList.findFigs();
     error = coupletList.getError();
 
-    ///
     QFileInfo fileInfo(filePath);
     QString path = fileInfo.absolutePath();
     QDir inDir( path );
@@ -457,7 +456,6 @@ void MainWindow::findImgErrors()
         if(!figList.contains(fileName))
             error += QStringLiteral("Image %1 not referenced in the key.\n").arg(fileName);
     }
-    ///
 
     if(error.isEmpty())
         error = tr("No image errors was found.");
@@ -672,9 +670,9 @@ bool MainWindow::saveFile(const QString &fileName)
     ///
     QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     outTxt += QStringLiteral("<DKey version=\"%1\">\n").arg(appVersion);
-    outTxt += "<introduction>\n";
+    outTxt += "<introduction>";
     outTxt += intro.html2md();
-    outTxt += "\n</introduction>\n";
+    outTxt += "</introduction>\n";
     outTxt += coupletList.getDkXml();
     outTxt += glossary.getDkXml();
     outTxt += endpoints.getDkXml();

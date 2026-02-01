@@ -309,33 +309,8 @@ dkString dkString::cleanHtml() const
     QDomDocument xml;
     xml.setContent(inTxt);
 
-//    QDomNodeList pNodeList = xml.elementsByTagName("p");
-//    int n = pNodeList.size();
-//    if(pNodeList.size() == 0)
-//        return QString();
-//    QDomNode theNode = pNodeList.at(0);
-//    QString outTxt = theNode.firstChild().nodeValue();
-//    QDomElement pElement = theNode.toElement();
-//    pElement.removeAttribute("style");
-//    QDomDocument pDoc;
-//    // Create new document for html export
-//    QDomNode importedNode = pDoc.importNode(theNode, true);
-//    pDoc.appendChild(importedNode);
-//    QString toTxt = pDoc.toString(-1);
-//    QDomElement theElement = theNode.toElement();
-//    QString tmp = theElement.text();
-//    return outTxt;
-
     QDomElement htmlElement = xml.firstChildElement("html");
     QDomElement bodyElement = htmlElement.firstChildElement("body");
-//    QDomElement pElement = bodyElement.firstChildElement("p");
-//    if(pElement.isNull())
-//        return QString();
-    //    pElement.removeAttribute("style");
-    //    QDomDocument pDoc;    // Create new document for html export
-    //    QDomNode importedNode = pDoc.importNode(pElement, true);
-    //    pDoc.appendChild(importedNode);
-
     QDomDocument pDoc;    // Create new document for html export
     QDomNodeList pList = bodyElement.elementsByTagName("p");
     for(int i = 0; i < pList.size(); ++i)
@@ -349,7 +324,6 @@ dkString dkString::cleanHtml() const
         pDoc.appendChild(importedNode);
     }
 
-
     QString outTxt = pDoc.toString(-1);
     outTxt = outTxt.remove("<p>");
     outTxt = outTxt.replace("</p>", htmlBr);
@@ -358,35 +332,6 @@ dkString dkString::cleanHtml() const
 
     return outTxt;
 }
-
-//dkString dkString::cleanHtml() const
-//{
-//    dkString outTxt;
-//    unsigned n = 4;
-//    //remove first n lines
-//    // number of lines to remove changed from 4 in Qt5 to 6 in Qt6
-//    QStringList inList = split('\n');
-//    if(inList.size() < n)
-//        return outTxt;
-//    for(unsigned i = 0; i < n; ++i)
-//    {
-//        inList.pop_front();
-//    }
-//    // do not separate with '\n'
-//    outTxt = inList.join("");
-
-//    // remove last </body></html>
-//    outTxt.chop(14);
-
-//    // convert <p> to  />
-//    outTxt.remove(QRegularExpression("<p [^>]*>"));
-//    outTxt.replace("</p>"," />");
-//    // remove last  />
-//    if(outTxt.right(6) == " />")
-//        outTxt.chop(6);
-
-//    return outTxt;
-//}
 
 dkString dkString::toPlainText() const
 {
@@ -482,11 +427,6 @@ dkString dkString::md2html() const
 
     return outTxt;
 }
-
-// dkString & dkString::operator=( const dkString & str){
-//     this->QString::operator=(str);
-//     return *this;
-// }
 
 dkString::dkString(const dkString& other) = default;
 
