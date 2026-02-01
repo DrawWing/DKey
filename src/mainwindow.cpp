@@ -455,7 +455,7 @@ void MainWindow::findImgErrors()
         QFileInfo localFileInfo = localFileInfoList.at(i);
         QString fileName = localFileInfo.fileName();
         if(!figList.contains(fileName))
-            error += QString("Image %1 not referenced in the key.\n").arg(fileName);
+            error += QStringLiteral("Image %1 not referenced in the key.\n").arg(fileName);
     }
     ///
 

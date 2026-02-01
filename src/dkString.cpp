@@ -58,7 +58,7 @@ static void processNode(const QDomNode &node, QString &outTxt)
                 suffix = "*";
             }
             if (isUnderline) {
-                text = "<u>" + text + "</u>";
+                text = QString("<u>%1</u>").arg(text);
             }
             outTxt += prefix + text + suffix;
         } else if (tag == "a") {
@@ -73,7 +73,7 @@ static void processNode(const QDomNode &node, QString &outTxt)
                 processNode(child, text);
                 child = child.nextSibling();
             }
-            outTxt += "[" + text + "](" + href + ")"; // markdown link format
+            outTxt += QStringLiteral("[%1](%2)").arg(text, href); // markdown link format
         } else {
             // other tags, just process children
             QDomNode child = elem.firstChild();
@@ -455,7 +455,7 @@ dkString dkString::md2html() const
         url.replace("<", "&lt;");
         url.replace(">", "&gt;");
         url.replace("\"", "&quot;");
-        QString replacement = "<a href=\"" + url + "\">" + text + "</a>";
+        QString replacement = QString("<a href=\"%1\">%2</a>").arg(url, text);
         newTxt += outTxt.mid(offset, match.capturedStart() - offset) + replacement;
         offset = match.capturedEnd();
     }

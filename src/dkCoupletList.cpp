@@ -900,7 +900,7 @@ QString dkCoupletList::newick(int currNumber)
     int thePointer1 = theCouplet.getPointer1();
     if(thePointer1 == -1)
     {
-        outTxt += QStringLiteral("\"%1 - %2\"").arg(theCouplet.getEndpoint1()).arg(numberTxt);
+        outTxt += QStringLiteral("\"%1 - %2\"").arg(theCouplet.getEndpoint1(), numberTxt);
     }
     else
     {
@@ -923,7 +923,7 @@ QString dkCoupletList::newick(int currNumber)
     int thePointer2 = theCouplet.getPointer2();
     if(thePointer2 == -1)
     {
-        outTxt += QStringLiteral("\"%1 - %2\"").arg(theCouplet.getEndpoint2()).arg(numberTxt);
+        outTxt += QStringLiteral("\"%1 - %2\"").arg(theCouplet.getEndpoint2(), numberTxt);
     }
     else
     {

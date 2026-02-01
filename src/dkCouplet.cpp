@@ -708,26 +708,26 @@ QString dkCouplet::getRtf() const
     // number of previous couplet
     if(from.size() > 0)
     {
-        outTxt += QString("(%1").arg(from.at(0));
+        outTxt += QStringLiteral("(%1").arg(from.at(0));
         for(int i = 1; i < from.size(); ++i)
             outTxt += QStringLiteral(", %1").arg(from.at(i));
         outTxt += ")";
     }
 //    // if the couplet label is long add space otherwise add tabulator
 //    if(outTxt.size() > 5)
-//        outTxt += QString(" ");
+//        outTxt += QStringLiteral(" ");
 //    else
-        outTxt += QString("\\tab ");
+        outTxt += QStringLiteral("\\tab ");
 
     if(endpoint1.isEmpty())
-        outTxt += QString("%1\\tab %2\\par\n").arg(lead1.getRtf()).arg(pointer1);
+        outTxt += QStringLiteral("%1\\tab %2\\par\n").arg(lead1.getRtf()).arg(pointer1);
     else
-        outTxt += QString("%1\\tab %2\\par\n").arg(lead1.getRtf()).arg(endpoint1.getRtf());
+        outTxt += QStringLiteral("%1\\tab %2\\par\n").arg(lead1.getRtf()).arg(endpoint1.getRtf());
 
     if(endpoint2.isEmpty())
-        outTxt += QString("-\\tab %1\\tab %2\\par\n").arg(lead2.getRtf()).arg(pointer2);
+        outTxt += QStringLiteral("-\\tab %1\\tab %2\\par\n").arg(lead2.getRtf()).arg(pointer2);
     else
-        outTxt += QString("-\\tab %1\\tab %2\\par\n").arg(lead2.getRtf()).arg(endpoint2.getRtf());
+        outTxt += QStringLiteral("-\\tab %1\\tab %2\\par\n").arg(lead2.getRtf()).arg(endpoint2.getRtf());
 
     return outTxt;
 }
@@ -739,7 +739,7 @@ QString dkCouplet::getTxt() const
     // number of previous couplet
     if(from.size() > 0)
     {
-        outTxt += QString("(%1").arg(from.at(0));
+        outTxt += QStringLiteral("(%1").arg(from.at(0));
         for(int i = 1; i < from.size(); ++i)
             outTxt += QStringLiteral(", %1").arg(from.at(i));
         outTxt += ")";
@@ -748,40 +748,40 @@ QString dkCouplet::getTxt() const
     dkString simpleTxt = lead1;
     simpleTxt.replace(dkString::htmlBr, " ");
     simpleTxt.removeHtml();
-    outTxt += QString("\t%1\t").arg(simpleTxt);
+    outTxt += QStringLiteral("\t%1\t").arg(simpleTxt);
 
     if(endpoint1.isEmpty())
-        outTxt += QString("%1\n").arg(pointer1);
+        outTxt += QStringLiteral("%1\n").arg(pointer1);
     else
     {
         dkString simpleTxt = endpoint1;
         simpleTxt.replace(dkString::htmlBr, " ");
         simpleTxt.removeHtml();
-        outTxt += QString("%1\n").arg(simpleTxt);
+        outTxt += QStringLiteral("%1\n").arg(simpleTxt);
     }
 
     simpleTxt = lead2;
     simpleTxt.replace(dkString::htmlBr, " ");
     simpleTxt.removeHtml();
-    outTxt += QString("-\t%1\t").arg(simpleTxt);
+    outTxt += QStringLiteral("-\t%1\t").arg(simpleTxt);
 
     if(endpoint2.isEmpty())
-        outTxt += QString("%1\n").arg(pointer2);
+        outTxt += QStringLiteral("%1\n").arg(pointer2);
     else
     {
         dkString simpleTxt = endpoint2;
         simpleTxt.replace(dkString::htmlBr, " ");
         simpleTxt.removeHtml();
-        outTxt += QString("%1\n").arg(simpleTxt);
+        outTxt += QStringLiteral("%1\n").arg(simpleTxt);
     }
 
 //    if(endpoint2.isEmpty())
-//        outTxt += QString("-\t%1\t%2\n").arg(lead2).arg(pointer2);
+//        outTxt += QStringLiteral("-\t%1\t%2\n").arg(lead2).arg(pointer2);
 //    else
 //    {
 //        dkString simpleTxt = endpoint2;
 //        simpleTxt.removeHtml();
-//        outTxt += QString("-\t%1\t%2\n").arg(lead2).arg(simpleTxt);
+//        outTxt += QStringLiteral("-\t%1\t%2\n").arg(lead2).arg(simpleTxt);
 //    }
 
     return outTxt;
@@ -858,27 +858,27 @@ QString dkCouplet::getHtmlTab() const
 
     htmlTxt += "<tr>";
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"3%\">";
-    htmlTxt += QString("<div id=\"k%1\">%1%2</div>").arg(number).arg(previousTxt());
+    htmlTxt += QStringLiteral("<div id=\"k%1\">%1%2</div>").arg(number).arg(previousTxt());
     htmlTxt += "</td>";
 
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"97%\">";
     if(endpoint1.isEmpty())
-        htmlTxt += QString("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead1).arg(pointer1);
+        htmlTxt += QStringLiteral("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead1, pointer1);
     else
-        htmlTxt += QString("%1 <div style=\"float:right\">%2</div>").arg(lead1).arg(endpoint1);
+        htmlTxt += QStringLiteral("%1 <div style=\"float:right\">%2</div>").arg(lead1, endpoint1);
     htmlTxt += "</td>";
     htmlTxt += "</tr>\n";
 
     htmlTxt += "<tr>";
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"3%\">";
-    htmlTxt += QString("-");
+    htmlTxt += QStringLiteral("-");
     htmlTxt += "</td>";
 
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"97%\">";
     if(endpoint2.isEmpty())
-        htmlTxt += QString("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead2).arg(pointer2);
+        htmlTxt += QStringLiteral("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead2, pointer2);
     else
-        htmlTxt += QString("%1 <div style=\"float:right\">%2</div>").arg(lead2).arg(endpoint2);
+        htmlTxt += QStringLiteral("%1 <div style=\"float:right\">%2</div>").arg(lead2, endpoint2);
     htmlTxt += "</td>";
     htmlTxt += "</tr>\n";
 
@@ -1078,7 +1078,7 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path)
                 QString fileName = figExist(keyDir, subString);
                 if(fileName.isEmpty())
                 {
-                    error += QString("Image %1 from couplet number %2 was not found.\n").arg(subString).arg(number);
+                    error += QStringLiteral("Image %1 from couplet number %2 was not found.\n").arg(subString).arg(number);
                 } else
                 {
                     if(!outList.contains(fileName))
@@ -1110,7 +1110,7 @@ QStringList dkCouplet::findFigs(QString & inTxt, QString & path)
                 QString fileName = figExist(keyDir, subString);
                 if(fileName.isEmpty())
                 {
-                    error += QString("Image %1 from couplet number %2 was not found.\n").arg(subString).arg(number);
+                    error += QStringLiteral("Image %1 from couplet number %2 was not found.\n").arg(subString).arg(number);
                 } else
                 {
                     if(!outList.contains(fileName))
