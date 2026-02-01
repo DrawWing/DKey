@@ -684,17 +684,17 @@ QString dkCouplet::getDkXml() const
     QString outTxt = QStringLiteral("<couplet number=\"%1\">\n").arg(number);
 
     if(endpoint1.isEmpty())
-        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead>\n").arg(lead1.html2md())
+        outTxt += QStringLiteral("<lead>\n<text>\n%1\n</text>\n<pointer>%2</pointer>\n</lead>\n").arg(lead1.html2md())
                       .arg(pointer1);
     else
-        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead>\n").arg(lead1.html2md())
+        outTxt += QStringLiteral("<lead>\n<text>\n%1\n</text>\n<endpoint>%2</endpoint>\n</lead>\n").arg(lead1.html2md())
                       .arg(endpoint1.html2md());
 
     if(endpoint2.isEmpty())
-        outTxt += QStringLiteral("<lead> <text>%1</text> <pointer>%2</pointer> </lead>\n").arg(lead2.html2md())
+        outTxt += QStringLiteral("<lead>\n<text>\n%1\n</text>\n<pointer>%2</pointer>\n</lead>\n").arg(lead2.html2md())
                       .arg(pointer2);
     else
-        outTxt += QStringLiteral("<lead> <text>%1</text> <endpoint>%2</endpoint> </lead>\n").arg(lead2.html2md())
+        outTxt += QStringLiteral("<lead>\n<text>\n%1\n</text>\n<endpoint>%2</endpoint>\n</lead>\n").arg(lead2.html2md())
                       .arg(endpoint2.html2md());
 
     outTxt += "</couplet>\n";

@@ -672,9 +672,9 @@ bool MainWindow::saveFile(const QString &fileName)
     ///
     QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     outTxt += QStringLiteral("<DKey version=\"%1\">\n").arg(appVersion);
-    outTxt += "<introduction>";
+    outTxt += "<introduction>\n";
     outTxt += intro.html2md();
-    outTxt += "</introduction>\n";
+    outTxt += "\n</introduction>\n";
     outTxt += coupletList.getDkXml();
     outTxt += glossary.getDkXml();
     outTxt += endpoints.getDkXml();

@@ -157,7 +157,7 @@ QString dkTerm::getDkXml() const
 {
     QString outTxt = QStringLiteral("<term>\n");
     outTxt += QStringLiteral("<synonyms>%1</synonyms>\n").arg(getSynonyms1());
-    outTxt += QStringLiteral("<definition>%1</definition>\n").arg(definition.html2md());
+    outTxt += QStringLiteral("<definition>\n%1\n</definition>\n").arg(definition.html2md());
     outTxt += "</term>\n";
     return outTxt;
 }
