@@ -34,7 +34,7 @@ public:
     void setTag(const QString &inTxt);
     int size() const;
     void clear();
-    void fromDkXml(const QDomElement &inElement);
+    void fromDkXml(const QDomElement &inElement, int ver = 1);
     void importTxt(QStringList & inTxtList);
     QString exportTxt();
     QString getTag() const;

@@ -52,7 +52,7 @@ void dkTermList::clear()
     error.clear();
 }
 
-void dkTermList::fromDkXml(const QDomElement &inElement)
+void dkTermList::fromDkXml(const QDomElement &inElement, int ver)
 {
     clear();
 
@@ -65,7 +65,7 @@ void dkTermList::fromDkXml(const QDomElement &inElement)
         if(theElement.tagName() == "term")
         {
             dkTerm newTerm;
-            newTerm.fromDkXml(theElement);
+            newTerm.fromDkXml(theElement, ver);
             thisList.push_back(newTerm);
         }
     }

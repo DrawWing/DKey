@@ -412,6 +412,9 @@ dkString dkString::html2md() const
     inTxt.replace("&lt;br/&gt;", "<br/>");
     // Ensure <br> is self-closing for XML parsing
     inTxt.replace("<br>", "<br />");
+    // Escape unescaped & for XML validity
+    QRegularExpression ampRe("&(?!(amp|lt|gt|quot|#\\d+;|#x[0-9a-fA-F]+;))");
+    inTxt.replace(ampRe, "&amp;");
     QString wrapped = "<root>" + inTxt + "</root>";
     QDomDocument xml;
     if (!xml.setContent(wrapped)) {

@@ -30,7 +30,7 @@ public:
     dkTerm();
     dkTerm(const QString &inTxt);
     void clear();
-    void fromDkXml(const QDomElement &inElement);
+    void fromDkXml(const QDomElement &inElement, int ver = 1);
     void readXmlSynonyms(const QDomElement &inElement);
 
 //    int getNumber() const;

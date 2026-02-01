@@ -56,7 +56,7 @@ void dkTerm::clear()
     error.clear();
 }
 
-void dkTerm::fromDkXml(const QDomElement &inElement)
+void dkTerm::fromDkXml(const QDomElement &inElement, int ver)
 {
     clear();
 
@@ -82,7 +82,10 @@ void dkTerm::fromDkXml(const QDomElement &inElement)
         }
         else if(anElement.tagName() == "definition")
         {
-            definition = anElement.text();
+            dkString inTxt = anElement.text();
+            if(ver > 2)
+                inTxt = inTxt.md2html();
+            definition = inTxt;
         }
     }
 }
@@ -154,7 +157,7 @@ QString dkTerm::getDkXml() const
 {
     QString outTxt = QStringLiteral("<term>\n");
     outTxt += QStringLiteral("<synonyms>%1</synonyms>\n").arg(getSynonyms1());
-    outTxt += QStringLiteral("<definition>%1</definition>\n").arg(definition.toHtmlEscaped());
+    outTxt += QStringLiteral("<definition>%1</definition>\n").arg(definition.html2md());
     outTxt += "</term>\n";
     return outTxt;
 }

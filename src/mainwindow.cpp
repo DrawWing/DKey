@@ -600,19 +600,19 @@ bool MainWindow::loadFile(const QString & fileName)
 
     // load glossary
     QDomElement glossaryElement = dkeyNode.namedItem("glossary").toElement();
-    glossary.fromDkXml(glossaryElement);
+    glossary.fromDkXml(glossaryElement, theVerMajor);
     glossary.setTag("glossary");
     format.setGlossary(&glossary);
 
     // load endpoints
     QDomElement endpointsElement = dkeyNode.namedItem("endpoints").toElement();
-    endpoints.fromDkXml(endpointsElement);
+    endpoints.fromDkXml(endpointsElement, theVerMajor);
     endpoints.setTag("endpoints");
     format.setEndpoints(&endpoints);
 
     // load figures
     QDomElement figElement = dkeyNode.namedItem("figures").toElement();
-    figTxt.fromDkXml(figElement);
+    figTxt.fromDkXml(figElement, theVerMajor);
     figTxt.setTag("figures");
     format.setFigures(&figTxt);
     return true;
@@ -673,10 +673,7 @@ bool MainWindow::saveFile(const QString &fileName)
     QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     outTxt += QStringLiteral("<DKey version=\"%1\">\n").arg(appVersion);
     outTxt += "<introduction>";
-    // outTxt += intro.toHtmlEscaped();
-
     outTxt += intro.html2md();
-
     outTxt += "</introduction>\n";
     outTxt += coupletList.getDkXml();
     outTxt += glossary.getDkXml();
