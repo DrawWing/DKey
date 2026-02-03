@@ -671,7 +671,7 @@ bool MainWindow::saveFile(const QString &fileName)
     QString outTxt = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     outTxt += QStringLiteral("<DKey version=\"%1\">\n").arg(appVersion);
     outTxt += "<introduction>";
-    outTxt += intro.html2md();
+    outTxt += intro.html2mdXml();
     outTxt += "</introduction>\n";
     outTxt += coupletList.getDkXml();
     outTxt += glossary.getDkXml();
@@ -724,10 +724,10 @@ void MainWindow::exportKey()
 
     QFileInfo fileInfo(filePath);
     QString outName = fileInfo.path()+"/"+fileInfo.baseName()+".html";
-    QString selectedFilter = tr("HTML with images (*.html)");
+    QString selectedFilter = tr("HTML two columns (*.html)");
     QString fileName = QFileDialog::getSaveFileName
             (this, tr("Export the key as"), outName,
-             tr("Text (*.txt);;Formated text RTF (*.rtf);;HTML with tabulators (*.html);;HTML table (*.html);;HTML with images (*.html);;Newick tree (*.nwk)"),
+             tr("Text (*.txt);;Markdown (*.rmd);;Formated text RTF (*.rtf);;HTML list (*.html);;HTML table (*.html);;HTML two columns (*.html);;Newick tree (*.nwk)"),
              &selectedFilter
              );
     if (fileName.isEmpty())
@@ -749,11 +749,14 @@ void MainWindow::exportKey()
         htmlTxt = coupletList.getRtf();
     else if(selectedFilter == "Text (*.txt)")
         htmlTxt = coupletList.getTxt();
-    else if(selectedFilter == "HTML with tabulators (*.html)")
-        htmlTxt = coupletList.getHtmlTabulator();
+    else if(selectedFilter == "Markdown (*.rmd)")
+        htmlTxt = exportMd();
+    else if(selectedFilter == "HTML list (*.html)")
+        htmlTxt = exportHtml();
+        // htmlTxt = coupletList.getHtmlTabulator();
     else if(selectedFilter == "HTML table (*.html)")
         htmlTxt = coupletList.getHtmlTab();
-    else if(selectedFilter == "HTML with images (*.html)")
+    else if(selectedFilter == "HTML two columns (*.html)")
         htmlTxt = exportHtmlImg(false);
     else if(selectedFilter == "Newick tree (*.nwk)")
         htmlTxt = coupletList.newick();
@@ -769,23 +772,62 @@ void MainWindow::exportKey()
 
 QString MainWindow::exportHtmlImg(bool withPath)
 {
-//    QElapsedTimer timer;
-//    timer.start();
+    //    QElapsedTimer timer;
+    //    timer.start();
 
     QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
     htmlTxt += intro;
     htmlTxt += format.keyHtml(coupletList, withPath);
-//    qDebug() << timer.elapsed() << "key";
+    //    qDebug() << timer.elapsed() << "key";
 
     htmlTxt += format.glossaryHtml(withPath);
     htmlTxt += format.endpointsHtml(withPath);
     htmlTxt += format.figuresHtml(withPath);
-//    qDebug() << timer.elapsed() << "glossary";
+    //    qDebug() << timer.elapsed() << "glossary";
 
     htmlTxt = format.addLinks(htmlTxt);
-//    qDebug() << timer.elapsed() << "linking";
+    //    qDebug() << timer.elapsed() << "linking";
 
     return htmlTxt;
+}
+
+// list of couplet for export to markdown
+QString MainWindow::exportHtml()
+{
+    // QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
+    QString htmlTxt = "<h2 id=\"i0\">Introduction</h2>\n";
+    htmlTxt += intro;
+    htmlTxt += "<br />\n\n";
+    htmlTxt += format.keyHtmlLst(coupletList);
+    htmlTxt += format.glossaryHtml(false);
+    htmlTxt += format.endpointsHtml(false);
+    htmlTxt += format.figuresHtml(false);
+    htmlTxt = format.addLinks(htmlTxt);
+    return htmlTxt;
+}
+
+QString MainWindow::exportMd()
+{
+    QFileInfo fileInfo(filePath);
+    QString yamlName = fileInfo.path()+"/"+fileInfo.baseName()+".yaml";
+    // QString yamlName = fileInfo.path()+"/tachinidae.yaml";
+
+    // QFile file("C:/my_programs/R/Tachnidae/test.yaml");
+    QFile file(yamlName);
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    dkString mdTxt = QTextStream(&file).readAll();
+
+    dkString htmlTxt = exportHtml();
+    mdTxt += htmlTxt.html2md();
+
+
+    // QString htmlTxt = intro.html2mdXml();
+    // htmlTxt += format.keyMd(coupletList, withPath);
+    // // htmlTxt += format.glossaryHtml(withPath);
+    // // htmlTxt += format.endpointsHtml(withPath);
+    // // htmlTxt += format.figuresHtml(withPath);
+    // // htmlTxt = format.addLinks(htmlTxt);
+    return mdTxt;
 }
 
 void MainWindow::insertRow()

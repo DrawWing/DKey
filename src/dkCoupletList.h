@@ -40,7 +40,7 @@ public:
     void parse1numberKey(QStringList & inTxtList);
     void parse2numberKey(QStringList & inTxtList);
     void parseIndentedKey(QStringList & inTxtList);
-    void fromDkTxt(const QString & fileName);
+    // void fromDkTxt(const QString & fileName);
     void fromDkXml(const QDomElement &inElement, int ver = 1);
 
     QList< dkCouplet > getList() const;

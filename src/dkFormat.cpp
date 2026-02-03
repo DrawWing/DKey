@@ -65,49 +65,33 @@ QString dkFormat::keyHtml(dkCoupletList & inList, bool withPath)
     {
         dkCouplet theCouplet = inList.at(i);
         htmlTxt += coupletHtml(theCouplet, withPath);
-//        theCouplet.findFigs(filePath);
-////        htmlTxt += theCouplet.getHtmlImg(filePath, withPath);
-//        QString lead1 = theCouplet.getLead1();
-//        QString lead2 = theCouplet.getLead2();
-//        QString endpoint1 = theCouplet.getEndpoint1();
-//        QString endpoint2 = theCouplet.getEndpoint2();
-//        int pointer1 = theCouplet.getPointer1();
-//        int pointer2 = theCouplet.getPointer2();
-
-//        htmlTxt += QStringLiteral("<br /><div id=\"k%1\">%1%2</div>").arg(theCouplet.getNumber()).arg(theCouplet.previousTxt());
-//        htmlTxt += "<table border=\"1\" cellpadding=\"10\" cellspacing=\"0\" style=\"border-collapse: collapse\" bordercolor=\"#111111\" width=\"100%\">";
-//        htmlTxt += "<tr>";
-//        htmlTxt += "<td align=\"left\" valign=\"top\" width=\"50%\">\n";
-//        if(endpoint1.isEmpty())
-//            htmlTxt += QStringLiteral("%1<br><a href=\"#k%2\">%2</a><br />\n").arg(lead1).arg(pointer1);
-//        else
-//            htmlTxt += QStringLiteral("%1<br><b>%2</b><br />\n").arg(lead1).arg(endpoint1);
-
-//        htmlTxt += imagesHtml(lead1, withPath);
-////        QStringList figList = findFigs(lead1);
-////        for(int j = 0; j < figList.size(); ++j)
-////            htmlTxt += imgHtml(figList[j], withPath);
-
-//        htmlTxt += "</td>";
-
-//        htmlTxt += "<td align=\"left\" valign=\"top\" width=\"50%\">\n";
-//        if(endpoint2.isEmpty())
-//            htmlTxt += QStringLiteral("%1<br><a href=\"#k%2\">%2</a><br />\n").arg(lead2).arg(pointer2);
-//        else
-//            htmlTxt += QStringLiteral("%1<br><b>%2</b><br />\n").arg(lead2).arg(endpoint2);
-
-//        htmlTxt += imagesHtml(lead2, withPath);
-////        figList = findFigs(lead2);
-////        for(int j = 0; j < figList.size(); ++j)
-////            htmlTxt += imgHtml(figList[j], withPath);
-
-//        htmlTxt += "</td>";
-
-//        htmlTxt += "</tr>\n";
-//        htmlTxt += "</table>\n";
     }
     return htmlTxt;
 }
+
+QString dkFormat::keyHtmlLst(dkCoupletList & inList)
+{
+    QString htmlTxt = "<h2 id=\"k0\">Taxonomic key</h2>\n";
+
+    for(int i = 0; i < inList.size(); ++i)
+    {
+        dkCouplet theCouplet = inList.at(i);
+        htmlTxt += coupletHtmlLst(theCouplet);
+    }
+    return htmlTxt;
+}
+
+// QString dkFormat::keyMd(dkCoupletList & inList, bool withPath)
+// {
+//     QString mdTxt = "\n## Taxonomic key  \n";
+
+//     for(int i = 0; i < inList.size(); ++i)
+//     {
+//         dkCouplet theCouplet = inList.at(i);
+//         mdTxt += coupletMd(theCouplet, withPath);
+//     }
+//     return mdTxt;
+// }
 
 QString dkFormat::coupletHtml(dkCouplet &theCouplet, bool withPath)
 {
@@ -146,13 +130,78 @@ QString dkFormat::coupletHtml(dkCouplet &theCouplet, bool withPath)
     return htmlTxt;
 }
 
+QString dkFormat::coupletHtmlLst(dkCouplet &theCouplet)
+{
+    QString lead1 = theCouplet.getLead1();
+    lead1.replace("<br />", " ");
+    addFigLinks(lead1);
+    QString lead2 = theCouplet.getLead2();
+    lead2.replace("<br />", " ");
+    addFigLinks(lead2);
+    QString endpoint1 = theCouplet.getEndpoint1();
+    QString endpoint2 = theCouplet.getEndpoint2();
+    int pointer1 = theCouplet.getPointer1();
+    int pointer2 = theCouplet.getPointer2();
+
+    QString htmlTxt;
+    htmlTxt += QStringLiteral("<p id=\"k%1\">%1%2 ").arg(theCouplet.getNumber()).arg(theCouplet.previousTxt());
+    if(endpoint1.isEmpty())
+        htmlTxt += QStringLiteral("%1 - <b><a href=\"#k%2\">%2</a></b><br />\n").arg(lead1).arg(pointer1);
+    else
+        htmlTxt += QStringLiteral("%1 - <b>%2</b><br />\n").arg(lead1).arg(endpoint1);
+
+    if(endpoint2.isEmpty())
+        htmlTxt += QStringLiteral("- %1 - <b><a href=\"#k%2\">%2</a></b>").arg(lead2).arg(pointer2);
+    else
+        htmlTxt += QStringLiteral("- %1 - <b>%2</b>").arg(lead2).arg(endpoint2);
+
+    htmlTxt += "</p>\n";
+    return htmlTxt;
+}
+
+// it is not finished because previous text is for html
+// is is probably easier to make it in html and convert to markdown
+// QString dkFormat::coupletMd(dkCouplet &theCouplet, bool withPath)
+// {
+//     QString lead1 = theCouplet.getLead1();
+//     addFigLinks(lead1);
+//     QString lead2 = theCouplet.getLead2();
+//     addFigLinks(lead2);
+//     QString endpoint1 = theCouplet.getEndpoint1();
+//     QString endpoint2 = theCouplet.getEndpoint2();
+//     int pointer1 = theCouplet.getPointer1();
+//     int pointer2 = theCouplet.getPointer2();
+
+//     dkString htmlTxt;
+//     htmlTxt += QStringLiteral("%1 %2 ").arg(theCouplet.getNumber()).arg(theCouplet.previousTxt());
+//     if(endpoint1.isEmpty())
+//         htmlTxt += QStringLiteral("%1 - <a href=\"#k%2\">%2</a>").arg(lead1).arg(pointer1);
+//     else
+//         htmlTxt += QStringLiteral("%1 - <b>%2</b>").arg(lead1).arg(endpoint1);
+//     htmlTxt.replace("<br />", " ");
+//     dkString mdTxt = QStringLiteral("<a id=\"k%1\"></a>%1 %2 ").arg(theCouplet.getNumber());
+//     mdTxt += htmlTxt.html2mdXml();
+//     mdTxt += "  \n";
+
+//     htmlTxt = "";
+//     if(endpoint2.isEmpty())
+//         htmlTxt += QStringLiteral("- %1 - <a href=\"#k%2\">%2</a>").arg(lead2).arg(pointer2);
+//     else
+//         htmlTxt += QStringLiteral("- %1 - <b>%2</b>").arg(lead2).arg(endpoint2);
+//     htmlTxt.replace("<br />", " ");
+//     mdTxt += htmlTxt.html2mdXml();
+//     mdTxt += "  \n";
+
+//     return mdTxt;
+// }
+
 //QString dkFormat::glossaryHtml(dkTermList & inList, bool withPath)
 QString dkFormat::glossaryHtml(bool withPath)
 {
     if(glossary->size() == 0)
         return QString();
 
-    QString htmlTxt = "\n<h3 id=\"g0\">Glossary</h3>\n";
+    QString htmlTxt = "\n<h2 id=\"g0\">Glossary</h2>\n";
 
     for(int i = 0; i < glossary->size(); ++i)
 //        for(int i = 0; i < inList.size(); ++i)
@@ -161,9 +210,11 @@ QString dkFormat::glossaryHtml(bool withPath)
         dkTerm theTerm = glossary->at(i);
         QString theTxt = theTerm.getDefinition();
 
-        htmlTxt += QStringLiteral("<p id=\"g%1\" class=\"glossary\">%1. %2</p>\n").arg(i+1).arg(theTxt);
+        htmlTxt += QStringLiteral("<p id=\"g%1\" class=\"glossary\">%1. %2\n").arg(i+1).arg(theTxt);
 
         htmlTxt += imagesHtml(theTxt, withPath);
+        htmlTxt += "</p>";
+
 //        QStringList figList = findFigs(theTxt);
 //        for(int j = 0; j < figList.size(); ++j)
 //            htmlTxt += imgHtml(figList[j], withPath);
@@ -177,15 +228,16 @@ QString dkFormat::endpointsHtml(bool withPath)
     if(endpoints->size() == 0)
         return QString();
 
-    QString htmlTxt = "\n<h3 id=\"e0\">Endpoints</h3>\n";
+    QString htmlTxt = "\n<h2 id=\"e0\">Endpoints</h2>\n";
     for(int i = 0; i < endpoints->size(); ++i)
     {
         dkTerm theTerm = endpoints->at(i);
         QString theTxt = theTerm.getDefinition();
 
-        htmlTxt += QStringLiteral("<p id=\"e%1\" class=\"glossary\">%1. %2</p>\n").arg(i+1).arg(theTxt);
+        htmlTxt += QStringLiteral("<p id=\"e%1\" class=\"glossary\">%1.  %2\n").arg(i+1).arg(theTxt);
 
         htmlTxt += imagesHtml(theTxt, withPath);
+        htmlTxt += "</p>";
     }
 
     return htmlTxt;
@@ -196,15 +248,16 @@ QString dkFormat::figuresHtml(bool withPath)
     if(figures->size() == 0)
         return QString();
 
-    QString htmlTxt = "\n<h3 id=\"f0\">Figures</h3>\n";
+    QString htmlTxt = "\n<h2 id=\"f0\">Figures</h2>\n";
     for(int i = 0; i < figures->size(); ++i)
     {
         dkTerm theTerm = figures->at(i);
         QString theTxt = theTerm.getDefinition();
 
-        htmlTxt += QStringLiteral("<p id=\"f%1\" class=\"glossary\">%1. %2</p>\n").arg(i+1).arg(theTxt);
+        htmlTxt += QStringLiteral("<p id=\"f%1\" class=\"glossary\">%1. %2\n").arg(i+1).arg(theTxt);
 
         htmlTxt += imagesHtml(theTxt, withPath);
+        htmlTxt += "</p>";
     }
 
     return htmlTxt;
@@ -228,8 +281,13 @@ QString dkFormat::imagesHtml(QString &inTxt, bool withPath)
 {
     QString outTxt;
     QStringList figList = findFigs(inTxt);
+    if(figList.size() == 0)
+        return outTxt;
+
+    outTxt += "\n<br />";
     for(int j = 0; j < figList.size(); ++j)
         outTxt += imgHtml(figList[j], withPath);
+    // outTxt += "<br /><br />\n";
     return outTxt;
 }
 

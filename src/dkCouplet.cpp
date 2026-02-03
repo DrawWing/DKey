@@ -684,18 +684,18 @@ QString dkCouplet::getDkXml() const
     QString outTxt = QStringLiteral("<couplet number=\"%1\">\n").arg(number);
 
     if(endpoint1.isEmpty())
-        outTxt += QStringLiteral("<lead>\n<text>%1</text>\n<pointer>%2</pointer>\n</lead>\n").arg(lead1.html2md())
+        outTxt += QStringLiteral("<lead>\n<text>%1</text>\n<pointer>%2</pointer>\n</lead>\n").arg(lead1.html2mdXml())
                       .arg(pointer1);
     else
-        outTxt += QStringLiteral("<lead>\n<text>%1</text>\n<endpoint>%2</endpoint>\n</lead>\n").arg(lead1.html2md())
-                      .arg(endpoint1.html2md());
+        outTxt += QStringLiteral("<lead>\n<text>%1</text>\n<endpoint>%2</endpoint>\n</lead>\n").arg(lead1.html2mdXml())
+                      .arg(endpoint1.html2mdXml());
 
     if(endpoint2.isEmpty())
-        outTxt += QStringLiteral("<lead>\n<text>%1</text>\n<pointer>%2</pointer>\n</lead>\n").arg(lead2.html2md())
+        outTxt += QStringLiteral("<lead>\n<text>%1</text>\n<pointer>%2</pointer>\n</lead>\n").arg(lead2.html2mdXml())
                       .arg(pointer2);
     else
-        outTxt += QStringLiteral("<lead>\n<text>%1</text>\n<endpoint>%2</endpoint>\n</lead>\n").arg(lead2.html2md())
-                      .arg(endpoint2.html2md());
+        outTxt += QStringLiteral("<lead>\n<text>%1</text>\n<endpoint>%2</endpoint>\n</lead>\n").arg(lead2.html2mdXml())
+                      .arg(endpoint2.html2mdXml());
 
     outTxt += "</couplet>\n";
     return outTxt;
@@ -863,7 +863,7 @@ QString dkCouplet::getHtmlTab() const
 
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"97%\">";
     if(endpoint1.isEmpty())
-        htmlTxt += QStringLiteral("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead1, pointer1);
+        htmlTxt += QStringLiteral("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead1).arg(pointer1);
     else
         htmlTxt += QStringLiteral("%1 <div style=\"float:right\">%2</div>").arg(lead1, endpoint1);
     htmlTxt += "</td>";
@@ -876,7 +876,7 @@ QString dkCouplet::getHtmlTab() const
 
     htmlTxt += "<td align=\"left\" valign=\"top\" width=\"97%\">";
     if(endpoint2.isEmpty())
-        htmlTxt += QStringLiteral("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead2, pointer2);
+        htmlTxt += QStringLiteral("%1 <div style=\"float:right\"><a href=\"#k%2\">%2</a></div>").arg(lead2).arg(pointer2);
     else
         htmlTxt += QStringLiteral("%1 <div style=\"float:right\">%2</div>").arg(lead2, endpoint2);
     htmlTxt += "</td>";

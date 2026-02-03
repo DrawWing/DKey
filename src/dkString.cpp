@@ -23,7 +23,69 @@
 
 const QString dkString::htmlBr = "<br />";
 
-static void processNode(const QDomNode &node, QString &outTxt)
+// static void processNode(const QDomNode &node, QString &outTxt)
+// {
+//     if (node.isText()) {
+//         outTxt += node.nodeValue();
+//         return;
+//     }
+//     if (node.isElement()) {
+//         QDomElement elem = node.toElement();
+//         QString tag = elem.tagName().toLower();
+//         if (tag == "br") {
+//             outTxt += "  \n";
+//         } else if (tag == "span") {
+//             QString style = elem.attribute("style");
+//             QString text;
+//             QDomNode child = elem.firstChild();
+//             while (!child.isNull()) {
+//                 processNode(child, text);
+//                 child = child.nextSibling();
+//             }
+//             // parse style
+//             bool isBold = style.contains("font-weight:600");
+//             bool isItalic = style.contains("font-style:italic");
+//             bool isUnderline = style.contains("text-decoration: underline");
+//             QString prefix, suffix;
+//             if (isBold && isItalic) {
+//                 prefix = "***";
+//                 suffix = "***";
+//             } else if (isBold) {
+//                 prefix = "**";
+//                 suffix = "**";
+//             } else if (isItalic) {
+//                 prefix = "*";
+//                 suffix = "*";
+//             }
+//             if (isUnderline) {
+//                 text = QString("<u>%1</u>").arg(text);
+//             }
+//             outTxt += prefix + text + suffix;
+//         } else if (tag == "a") {
+//             QString href = elem.attribute("href");
+//             href.replace("&amp;", "&");
+//             href.replace("&lt;", "<");
+//             href.replace("&gt;", ">");
+//             href.replace("&quot;", "\"");
+//             QString text;
+//             QDomNode child = elem.firstChild();
+//             while (!child.isNull()) {
+//                 processNode(child, text);
+//                 child = child.nextSibling();
+//             }
+//             outTxt += QString("[%1](%2)").arg(text, href);
+//         } else {
+//             // other tags, just process children
+//             QDomNode child = elem.firstChild();
+//             while (!child.isNull()) {
+//                 processNode(child, outTxt);
+//                 child = child.nextSibling();
+//             }
+//         }
+//     }
+// }
+
+static void processNodeMd(const QDomNode &node, QString &outTxt)
 {
     if (node.isText()) {
         outTxt += node.nodeValue();
@@ -33,13 +95,13 @@ static void processNode(const QDomNode &node, QString &outTxt)
         QDomElement elem = node.toElement();
         QString tag = elem.tagName().toLower();
         if (tag == "br") {
-            outTxt += "  \n"; // use double space for markdown line break
+            outTxt += "  \n";
         } else if (tag == "span") {
             QString style = elem.attribute("style");
             QString text;
             QDomNode child = elem.firstChild();
             while (!child.isNull()) {
-                processNode(child, text);
+                processNodeMd(child, text);
                 child = child.nextSibling();
             }
             // parse style
@@ -63,22 +125,97 @@ static void processNode(const QDomNode &node, QString &outTxt)
             outTxt += prefix + text + suffix;
         } else if (tag == "a") {
             QString href = elem.attribute("href");
-            href.replace("&amp;", "&");
-            href.replace("&lt;", "<");
-            href.replace("&gt;", ">");
-            href.replace("&quot;", "\"");
+            QString id = elem.attribute("id");
             QString text;
             QDomNode child = elem.firstChild();
             while (!child.isNull()) {
-                processNode(child, text);
+                processNodeMd(child, text);
                 child = child.nextSibling();
             }
-            outTxt += QStringLiteral("[%1](%2)").arg(text, href); // markdown link format
+            if (!href.isEmpty()) {
+                outTxt += QString("[%1](%2)").arg(text, href);
+            } else if (!id.isEmpty()) {
+                // For <a id=, output as HTML since MD doesn't have anchors
+                outTxt += QString("<a id=\"%1\">%2</a>").arg(id, text);
+            } else {
+                outTxt += text;
+            }
+        } else if (tag == "b") {
+            QString text;
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNodeMd(child, text);
+                child = child.nextSibling();
+            }
+            outTxt += QString("**%1**").arg(text);
+        } else if (tag == "i") {
+            QString text;
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNodeMd(child, text);
+                child = child.nextSibling();
+            }
+            outTxt += QString("*%1*").arg(text);
+        } else if (tag == "u") {
+            QString text;
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNodeMd(child, text);
+                child = child.nextSibling();
+            }
+            outTxt += QString("<u>%1</u>").arg(text);
+        } else if (tag == "h1") {
+            QString text;
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNodeMd(child, text);
+                child = child.nextSibling();
+            }
+            outTxt += QString("# %1  \n").arg(text);
+        } else if (tag == "h2") {
+            QString text;
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNodeMd(child, text);
+                child = child.nextSibling();
+            }
+            outTxt += QString("## %1  \n").arg(text);
+        } else if (tag == "h3") {
+            QString text;
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNodeMd(child, text);
+                child = child.nextSibling();
+            }
+            outTxt += QString("### %1  \n").arg(text);
+        } else if (tag == "img") {
+            // Preserve HTML img tag since Markdown doesn't support width/height
+            QString imgTag = "<img";
+            QDomNamedNodeMap attrs = elem.attributes();
+            for (int i = 0; i < attrs.count(); ++i) {
+                QDomAttr attr = attrs.item(i).toAttr();
+                imgTag += QString(" %1=\"%2\"").arg(attr.name(), attr.value());
+            }
+            imgTag += " />";
+            outTxt += imgTag;
+        } else if (tag == "p") {
+            QString id = elem.attribute("id");
+            QString text;
+            QDomNode child = elem.firstChild();
+            while (!child.isNull()) {
+                processNodeMd(child, text);
+                child = child.nextSibling();
+            }
+            if (!id.isEmpty()) {
+                outTxt += QString("<a id=\"%1\"></a>").arg(id);
+            }
+            outTxt += text;
+            outTxt += "  \n  \n";
         } else {
             // other tags, just process children
             QDomNode child = elem.firstChild();
             while (!child.isNull()) {
-                processNode(child, outTxt);
+                processNodeMd(child, outTxt);
                 child = child.nextSibling();
             }
         }
@@ -348,7 +485,7 @@ dkString dkString::toPlainText() const
 // QString md = doc.toMarkdown();
 // outTxt += md.toHtmlEscaped();
 // toMarkdown is not working properly because of line breaks added
-dkString dkString::html2md() const
+dkString dkString::html2mdXml() const
 {
     QString inTxt = *this;
     // Decode HTML entities for <br>
@@ -372,7 +509,8 @@ dkString dkString::html2md() const
     QString outTxt;
     QDomNode child = rootElement.firstChild();
     while (!child.isNull()) {
-        processNode(child, outTxt);
+        // processNode(child, outTxt);
+        processNodeMd(child, outTxt);
         child = child.nextSibling();
     }
     // Escape special characters for XML compatibility
@@ -380,6 +518,45 @@ dkString dkString::html2md() const
     outTxt.replace("<", "&lt;");
     outTxt.replace(">", "&gt;");
     outTxt.replace("\"", "&quot;");
+    return outTxt;
+}
+
+dkString dkString::html2md() const
+{
+    QString inTxt = *this;
+    // Decode HTML entities for <br>
+    inTxt.replace("&lt;br&gt;", "<br>");
+    inTxt.replace("&lt;br /&gt;", "<br />");
+    inTxt.replace("&lt;br/&gt;", "<br/>");
+    // Ensure <br> is self-closing for XML parsing
+    inTxt.replace("<br>", "<br />");
+    // Escape unescaped & for XML validity
+    QRegularExpression ampRe("&(?!(amp|lt|gt|quot|#\\d+;|#x[0-9a-fA-F]+;))");
+    inTxt.replace(ampRe, "&amp;");
+    // Ensure <img> is self-closing for XML parsing
+    QRegularExpression imgRe("<img([^>]*)>");
+    inTxt.replace(imgRe, "<img\\1 />");
+    QString wrapped = "<root>" + inTxt + "</root>";
+    QDomDocument xml;
+    if (!xml.setContent(wrapped)) {
+        return *this; // if not valid HTML, return as is
+    }
+    QDomElement rootElement = xml.firstChildElement("root");
+    if (rootElement.isNull()) {
+        return *this;
+    }
+    QString outTxt;
+    QDomNode child = rootElement.firstChild();
+    while (!child.isNull()) {
+        processNodeMd(child, outTxt);
+        child = child.nextSibling();
+    }
+    // Escape leading hyphens on lines to prevent Markdown list interpretation
+    QRegularExpression lineStartHyphen("^-", QRegularExpression::MultilineOption);
+    outTxt.replace(lineStartHyphen, "\\-");
+    // Remove plain \n characters that are not preceded by two spaces (from <br>, <p>, <h>)
+    QRegularExpression plainNewline("(?<!  )\\n");
+    outTxt.replace(plainNewline, "");
     return outTxt;
 }
 

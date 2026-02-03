@@ -294,66 +294,66 @@ void dkCoupletList::parseIndentedKey(QStringList &inTxtList)
     }
 }
 
-void dkCoupletList::fromDkTxt(const QString & fileName)
-{
-    clear();
+// void dkCoupletList::fromDkTxt(const QString & fileName)
+// {
+//     clear();
 
-    QFile inFile(fileName);
-    if (!inFile.open(QIODevice::ReadOnly | QIODevice::Text))
-        return;
+//     QFile inFile(fileName);
+//     if (!inFile.open(QIODevice::ReadOnly | QIODevice::Text))
+//         return;
 
-    QTextStream inStream(&inFile);
+//     QTextStream inStream(&inFile);
 
-    // read intro and first couplet
-    while (!inStream.atEnd()) {
+//     // read intro and first couplet
+//     while (!inStream.atEnd()) {
 
-        dkString line = inStream.readLine();
+//         dkString line = inStream.readLine();
 
-        if(line.startsWithDigit())
-        {
-            // read first couplet
-            QStringList coupletTxt;
-            coupletTxt.push_back(line);
-            line = inStream.readLine();
-            coupletTxt.push_back(line);
-            dkCouplet newCouplet;
-            newCouplet.fromDkTxt(coupletTxt);
-            QString coupletError = newCouplet.getError();
-            if(coupletError.isEmpty())
-                thisList.push_back(newCouplet);
-            else
-            {
-                error = coupletError;
-                return;
-            }
+//         if(line.startsWithDigit())
+//         {
+//             // read first couplet
+//             QStringList coupletTxt;
+//             coupletTxt.push_back(line);
+//             line = inStream.readLine();
+//             coupletTxt.push_back(line);
+//             dkCouplet newCouplet;
+//             newCouplet.fromDkTxt(coupletTxt);
+//             QString coupletError = newCouplet.getError();
+//             if(coupletError.isEmpty())
+//                 thisList.push_back(newCouplet);
+//             else
+//             {
+//                 error = coupletError;
+//                 return;
+//             }
 
-            break;
-        }
-        else
-            intro.append(line);
-    }
+//             break;
+//         }
+//         else
+//             intro.append(line);
+//     }
 
-    // read the rest
-    while (!inStream.atEnd()) {
-        QStringList coupletTxt;
-        QString line = inStream.readLine();
-        coupletTxt.push_back(line);
-        line = inStream.readLine();
-        coupletTxt.push_back(line);
-        dkCouplet newCouplet;
-        newCouplet.fromDkTxt(coupletTxt);
-        QString coupletError = newCouplet.getError();
-        if(coupletError.isEmpty())
-            thisList.push_back(newCouplet);
-        else
-        {
-            error = coupletError;
-            return;
-        }
-    }
+//     // read the rest
+//     while (!inStream.atEnd()) {
+//         QStringList coupletTxt;
+//         QString line = inStream.readLine();
+//         coupletTxt.push_back(line);
+//         line = inStream.readLine();
+//         coupletTxt.push_back(line);
+//         dkCouplet newCouplet;
+//         newCouplet.fromDkTxt(coupletTxt);
+//         QString coupletError = newCouplet.getError();
+//         if(coupletError.isEmpty())
+//             thisList.push_back(newCouplet);
+//         else
+//         {
+//             error = coupletError;
+//             return;
+//         }
+//     }
 
-    findMaxNumber();
-}
+//     findMaxNumber();
+// }
 
 void dkCoupletList::fromDkXml(const QDomElement &inElement, int ver)
 {
@@ -470,10 +470,6 @@ QString dkCoupletList::getRtf() const
     outTxt.replace("&gt;",">");
     outTxt.replace("&quot;","\"");
     outTxt.replace("&amp;","&");
-
-//    outTxt.replace("<br />","\\line ");
-//    outTxt.replace("<span style=\" font-style:italic;\">","\\i ");
-//    outTxt.replace("</span>","\\i0 ");
 
     return outTxt;
 }

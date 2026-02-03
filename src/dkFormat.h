@@ -36,7 +36,11 @@ public:
     void setEndpoints(dkTermList * inList);
     void setFigures(dkTermList * inList);
     QString keyHtml(dkCoupletList & inList, bool withPath = true);
+    QString keyHtmlLst(dkCoupletList & inList);
+    // QString keyMd(dkCoupletList & inList, bool withPath = true);
     QString coupletHtml(dkCouplet &theCouplet, bool withPath = true);
+    QString coupletHtmlLst(dkCouplet &theCouplet);
+    // QString coupletMd(dkCouplet &theCouplet, bool withPath = true);
     QString glossaryHtml(bool withPath = true);
     QString endpointsHtml(bool withPath = true);
     QString figuresHtml(bool withPath = true);

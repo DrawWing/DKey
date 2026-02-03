@@ -164,6 +164,8 @@ private:
     void updateTable();
     void updateTableRow(int i);
     QString exportHtmlImg(bool withPath);
+    QString exportHtml();
+    QString exportMd();
     void clear();
     bool isKeyOK();
     void addWarnings();
