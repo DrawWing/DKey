@@ -38,7 +38,7 @@ void dkFormat::setFilePath(const QString & inTxt)
     if(inTxt.isEmpty())
         return;
     filePath = inTxt;
-    if(filePath[filePath.size()-1] != '/')
+    if(!filePath.isEmpty() && !filePath.endsWith('/'))
         filePath += "/";
 }
 
@@ -59,7 +59,7 @@ void dkFormat::setFigures(dkTermList * inList)
 
 QString dkFormat::keyHtml(dkCoupletList & inList, bool withPath)
 {
-    QString htmlTxt = "\n<h3 id=\"k0\">Taxonomic key</h3>\n";
+    QString htmlTxt = "<h2 id=\"k0\">Taxonomic key</h2>\n";
 
     for(int i = 0; i < inList.size(); ++i)
     {
@@ -79,6 +79,53 @@ QString dkFormat::keyHtmlLst(dkCoupletList & inList)
         htmlTxt += coupletHtmlLst(theCouplet);
     }
     return htmlTxt;
+}
+
+QString dkFormat::keyMd(dkCoupletList & inList)
+{
+    QString mdTxt = "## Taxonomic key\n\n";
+    bool withPath = false;
+
+    for(int i = 0; i < inList.size(); ++i)
+    {
+        dkCouplet theCouplet = inList.at(i);
+        
+        QString lead1 = theCouplet.getLead1();
+        addFigLinks(lead1);
+        QString lead2 = theCouplet.getLead2();
+        addFigLinks(lead2);
+        QString endpoint1 = theCouplet.getEndpoint1();
+        QString endpoint2 = theCouplet.getEndpoint2();
+        int pointer1 = theCouplet.getPointer1();
+        int pointer2 = theCouplet.getPointer2();
+
+        // Add couplet number and previous info
+        mdTxt += QStringLiteral("%1%2\n\n").arg(theCouplet.getNumber()).arg(theCouplet.previousTxt());
+        
+        // Create two-column layout using HTML in Markdown
+        mdTxt += "<div style=\"display: flex; gap: 20px;\">\n\n";
+        
+        // Left column
+        mdTxt += "<div style=\"flex: 1;\">\n";
+        if(endpoint1.isEmpty())
+            mdTxt += QStringLiteral("%1 (%2)\n").arg(lead1).arg(pointer1);
+        else
+            mdTxt += QStringLiteral("%1 (%2)\n").arg(lead1).arg(endpoint1);
+        mdTxt += imagesHtml(lead1, withPath);
+        mdTxt += "</div>\n\n";
+        
+        // Right column
+        mdTxt += "<div style=\"flex: 1;\">\n";
+        if(endpoint2.isEmpty())
+            mdTxt += QStringLiteral("%1 (%2)\n").arg(lead2).arg(pointer2);
+        else
+            mdTxt += QStringLiteral("%1 (%2)\n").arg(lead2).arg(endpoint2);
+        mdTxt += imagesHtml(lead2, withPath);
+        mdTxt += "</div>\n\n";
+        
+        mdTxt += "</div>\n\n";
+    }
+    return mdTxt;
 }
 
 // QString dkFormat::keyMd(dkCoupletList & inList, bool withPath)
@@ -201,7 +248,7 @@ QString dkFormat::glossaryHtml(bool withPath)
     if(glossary->size() == 0)
         return QString();
 
-    QString htmlTxt = "\n<h2 id=\"g0\">Glossary</h2>\n";
+    QString htmlTxt = "<h2 id=\"g0\">Glossary</h2>\n";
 
     for(int i = 0; i < glossary->size(); ++i)
 //        for(int i = 0; i < inList.size(); ++i)
@@ -228,7 +275,7 @@ QString dkFormat::endpointsHtml(bool withPath)
     if(endpoints->size() == 0)
         return QString();
 
-    QString htmlTxt = "\n<h2 id=\"e0\">Endpoints</h2>\n";
+    QString htmlTxt = "<h2 id=\"e0\">Endpoints</h2>\n";
     for(int i = 0; i < endpoints->size(); ++i)
     {
         dkTerm theTerm = endpoints->at(i);
@@ -248,7 +295,7 @@ QString dkFormat::figuresHtml(bool withPath)
     if(figures->size() == 0)
         return QString();
 
-    QString htmlTxt = "\n<h2 id=\"f0\">Figures</h2>\n";
+    QString htmlTxt = "<h2 id=\"f0\">Figures</h2>\n";
     for(int i = 0; i < figures->size(); ++i)
     {
         dkTerm theTerm = figures->at(i);
@@ -287,7 +334,6 @@ QString dkFormat::imagesHtml(QString &inTxt, bool withPath)
     outTxt += "\n<br />";
     for(int j = 0; j < figList.size(); ++j)
         outTxt += imgHtml(figList[j], withPath);
-    // outTxt += "<br /><br />\n";
     return outTxt;
 }
 
@@ -348,7 +394,8 @@ QStringList dkFormat::findFigs(QString & inTxt)
         if(theString.startsWith(figPrefix, Qt::CaseInsensitive) && i > 0)
         {
             QStringList closingBracetList = theString.split(")", Qt::SkipEmptyParts, Qt::CaseInsensitive);
-            theString = closingBracetList[0]; // take only the part before closing parenthesis
+            if(!closingBracetList.isEmpty())
+                theString = closingBracetList[0]; // take only the part before closing parenthesis
             // split the string into an alternating sequence of non-word and word tokens
             QStringList subStrList = theString.split(QRegularExpression("\\b"));
 
@@ -663,6 +710,8 @@ void dkFormat::addFigLinks(QString &inHtmlTxt)
             {
                 QString theHtml = htmlList[j];
                 QStringList bracketList = theHtml.split(')');
+                if(bracketList.isEmpty())
+                    continue;
                 QStringList wordList = bracketList[0].split(QRegularExpression("\\b")); // words and separators
                 for(int k = 1; k < wordList.size(); k+=2)
                 {

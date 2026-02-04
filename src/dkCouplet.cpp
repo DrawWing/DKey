@@ -204,7 +204,7 @@ void dkCouplet::readDkTxtLine(const QString &inTxt, bool first)
     else
         lead2 = lead;
 
-    QString end = inList[inList.size()-1];
+    QString end = inList.last();
     int endNumber = end.toInt(&ok);
     if(ok)
         if(first)

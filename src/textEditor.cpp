@@ -194,7 +194,7 @@ void dkEditor::closeEvent(QCloseEvent *event)
 void dkEditor::clickedLink(QUrl inUrl)
 {
     QString fragment =  inUrl.fragment();
-    if(fragment[0]=='g')
+    if(!fragment.isEmpty() && fragment[0]=='g')
     {
         QString nrStr = fragment.mid(1);
         bool ok;

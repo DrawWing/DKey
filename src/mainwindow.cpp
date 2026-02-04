@@ -78,6 +78,7 @@ void MainWindow::viewBrowser()
     view->showMaximized();
 }
 
+// unused???
 void MainWindow::viewHtml()
 {
     if(coupletList.size() == 0)
@@ -727,7 +728,7 @@ void MainWindow::exportKey()
     QString selectedFilter = tr("HTML two columns (*.html)");
     QString fileName = QFileDialog::getSaveFileName
             (this, tr("Export the key as"), outName,
-             tr("Text (*.txt);;Markdown (*.rmd);;Formated text RTF (*.rtf);;HTML list (*.html);;HTML table (*.html);;HTML two columns (*.html);;Newick tree (*.nwk)"),
+             tr("HTML two columns (*.html);;HTML list (*.html);;HTML table (*.html);;Markdown (*.rmd);;Text (*.txt);;Formated text RTF (*.rtf);;Newick tree (*.nwk)"),
              &selectedFilter
              );
     if (fileName.isEmpty())
@@ -745,19 +746,19 @@ void MainWindow::exportKey()
 
     QString htmlTxt;
     coupletList.findFrom();
-    if(selectedFilter == "Formated text RTF (*.rtf)")
-        htmlTxt = coupletList.getRtf();
-    else if(selectedFilter == "Text (*.txt)")
-        htmlTxt = coupletList.getTxt();
-    else if(selectedFilter == "Markdown (*.rmd)")
-        htmlTxt = exportMd();
+    if(selectedFilter == "HTML two columns (*.html)")
+        htmlTxt = exportHtmlCol(false);
     else if(selectedFilter == "HTML list (*.html)")
         htmlTxt = exportHtml();
-        // htmlTxt = coupletList.getHtmlTabulator();
     else if(selectedFilter == "HTML table (*.html)")
         htmlTxt = coupletList.getHtmlTab();
-    else if(selectedFilter == "HTML two columns (*.html)")
-        htmlTxt = exportHtmlImg(false);
+    else if(selectedFilter == "Markdown (*.rmd)")
+        // htmlTxt = exportMdCol();
+        htmlTxt = exportMd();
+    else if(selectedFilter == "Text (*.txt)")
+        htmlTxt = coupletList.getTxt();
+    else if(selectedFilter == "Formated text RTF (*.rtf)")
+        htmlTxt = coupletList.getRtf();
     else if(selectedFilter == "Newick tree (*.nwk)")
         htmlTxt = coupletList.newick();
 
@@ -770,12 +771,34 @@ void MainWindow::exportKey()
     //    statusBar()->showMessage(tr("File saved"), 2000);
 }
 
-QString MainWindow::exportHtmlImg(bool withPath)
+
+QString MainWindow::exportHtmlHead()
+{
+    QFileInfo fileInfo(filePath);
+    QString yamlName = fileInfo.path()+"/"+fileInfo.baseName()+".yaml";
+    QFile file(yamlName);
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+        return QString();
+    QTextStream stream(&file);
+    QString titleTxt;
+    while (!stream.atEnd()) {
+        QString line = stream.readLine();
+        if (line.startsWith("title:")) {
+            titleTxt = line.mid(7).trimmed().remove('"');
+        }
+    }
+    file.close();
+    QString htmlTxt = "<h1 id=\"title\">" + titleTxt + "</h2>\n";
+    return htmlTxt;
+}
+
+QString MainWindow::exportHtmlCol(bool withPath)
 {
     //    QElapsedTimer timer;
     //    timer.start();
 
-    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
+    QString htmlTxt = exportHtmlHead();
+    htmlTxt += "<h2 id=\"i0\">Introduction</h2>\n";
     htmlTxt += intro;
     htmlTxt += format.keyHtml(coupletList, withPath);
     //    qDebug() << timer.elapsed() << "key";
@@ -791,13 +814,19 @@ QString MainWindow::exportHtmlImg(bool withPath)
     return htmlTxt;
 }
 
-// list of couplet for export to markdown
-QString MainWindow::exportHtml()
+// to be completed
+QString MainWindow::exportMdCol()
 {
-    // QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
+    QString htmlTxt = format.keyMd(coupletList);
+    return htmlTxt;
+}
+
+// list of couplet for export to markdown
+QString MainWindow::exportHtmlHeadless()
+{
     QString htmlTxt = "<h2 id=\"i0\">Introduction</h2>\n";
     htmlTxt += intro;
-    htmlTxt += "<br />\n\n";
+    htmlTxt += "<br />\n";
     htmlTxt += format.keyHtmlLst(coupletList);
     htmlTxt += format.glossaryHtml(false);
     htmlTxt += format.endpointsHtml(false);
@@ -806,27 +835,23 @@ QString MainWindow::exportHtml()
     return htmlTxt;
 }
 
+QString MainWindow::exportHtml()
+{
+    QString htmlTxt = exportHtmlHead();
+    htmlTxt += exportHtmlHeadless();
+    return htmlTxt;
+}
+
 QString MainWindow::exportMd()
 {
     QFileInfo fileInfo(filePath);
     QString yamlName = fileInfo.path()+"/"+fileInfo.baseName()+".yaml";
-    // QString yamlName = fileInfo.path()+"/tachinidae.yaml";
-
-    // QFile file("C:/my_programs/R/Tachnidae/test.yaml");
     QFile file(yamlName);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     dkString mdTxt = QTextStream(&file).readAll();
 
-    dkString htmlTxt = exportHtml();
+    dkString htmlTxt = exportHtmlHeadless();
     mdTxt += htmlTxt.html2md();
-
-
-    // QString htmlTxt = intro.html2mdXml();
-    // htmlTxt += format.keyMd(coupletList, withPath);
-    // // htmlTxt += format.glossaryHtml(withPath);
-    // // htmlTxt += format.endpointsHtml(withPath);
-    // // htmlTxt += format.figuresHtml(withPath);
-    // // htmlTxt = format.addLinks(htmlTxt);
     return mdTxt;
 }
 

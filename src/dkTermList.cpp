@@ -382,7 +382,7 @@ void dkTermList::linkKey(QStringList &keyList, int keyIndex, QStringList &inList
         if(isLink)
             continue;
 
-        if(!(inList[i][0].isLetter() || inList[i][0].isDigit())) // is first character not letter or digit
+        if(inList[i].isEmpty() || !(inList[i][0].isLetter() || inList[i][0].isDigit())) // is first character not letter or digit
             continue; // separator
 
         if(i > 0)

@@ -308,7 +308,7 @@ void dkView::goToNumber(int inNumber)
 void dkView::clickedCouplet(QUrl inUrl)
 {
     QString fragment =  inUrl.fragment();
-    if(fragment[0]=='g')
+    if(!fragment.isEmpty() && fragment[0]=='g')
     {
         QString nrStr = fragment.mid(1);
         bool ok;
@@ -316,7 +316,7 @@ void dkView::clickedCouplet(QUrl inUrl)
         if(ok)
             goToGlossary(nr-1);
     }
-    else if(fragment[0]=='k')
+    else if(!fragment.isEmpty() && fragment[0]=='k')
     {
         QString nrStr = fragment.mid(1);
         bool ok;

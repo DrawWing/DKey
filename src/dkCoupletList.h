@@ -54,7 +54,7 @@ public:
     QString getRtf() const;
     QString getTxt() const;
     QString getHtml() const;
-    QString getHtmlTabulator() const;
+    // QString getHtmlTabulator() const;
     QString getHtmlTab() const;
     QString getHtmlImg(bool withPath = true);
     QStringList getFigList() const;

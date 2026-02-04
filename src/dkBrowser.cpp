@@ -93,7 +93,7 @@ void dkBrowser::writeSettings()
 void dkBrowser::clickedLink(QUrl inUrl)
 {
     QString fragment =  inUrl.fragment();
-    if(fragment[0]=='g')
+    if(!fragment.isEmpty() && fragment[0]=='g')
     {
         QString nrStr = fragment.mid(1);
         bool ok;

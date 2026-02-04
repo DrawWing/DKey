@@ -88,7 +88,7 @@ void dkCoupletList::setCouplet(const dkCouplet &inCouplet, int i)
 void dkCoupletList::setFilePath(const QString & inTxt)
 {
     filePath = inTxt;
-    if(filePath[filePath.size()-1] != '/')
+    if(!filePath.isEmpty() && !filePath.endsWith('/'))
         filePath += "/";
 
 }
@@ -501,21 +501,21 @@ QString dkCoupletList::getHtml() const
     return htmlTxt;
 }
 
-QString dkCoupletList::getHtmlTabulator() const
-{
-    QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
-    htmlTxt += "<pre>\n";
+// QString dkCoupletList::getHtmlTabulator() const
+// {
+//     QString htmlTxt = "<head><meta charset=\"UTF-8\"/></head>\n";
+//     htmlTxt += "<pre>\n";
 
-    for(int i = 0; i < thisList.size(); ++i)
-    {
-        dkCouplet theCouplet = thisList[i];
-        QString theHtml = theCouplet.getHtmlTabulator();
-        htmlTxt.append(theHtml);
-    }
+//     for(int i = 0; i < thisList.size(); ++i)
+//     {
+//         dkCouplet theCouplet = thisList[i];
+//         QString theHtml = theCouplet.getHtmlTabulator();
+//         htmlTxt.append(theHtml);
+//     }
 
-    htmlTxt += "</pre>\n";
-    return htmlTxt;
-}
+//     htmlTxt += "</pre>\n";
+//     return htmlTxt;
+// }
 
 QString dkCoupletList::getHtmlTab() const
 {

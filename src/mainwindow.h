@@ -163,8 +163,11 @@ private:
     void insertTableRow(int i);
     void updateTable();
     void updateTableRow(int i);
-    QString exportHtmlImg(bool withPath);
+    QString exportHtmlHead();
+    QString exportHtmlCol(bool withPath);
+    QString exportMdCol();
     QString exportHtml();
+    QString exportHtmlHeadless();
     QString exportMd();
     void clear();
     bool isKeyOK();
