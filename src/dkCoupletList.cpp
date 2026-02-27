@@ -159,6 +159,11 @@ void dkCoupletList::importTxt(QStringList & inTxtList)
 {
     clear();
 
+    for(int i = 0; i < inTxtList.size(); ++i)
+    {
+        inTxtList[i] = inTxtList[i].toHtmlEscaped();
+    }
+
     findIntro(inTxtList);
 
     QList<int> numbers = findStartNumbers(inTxtList);

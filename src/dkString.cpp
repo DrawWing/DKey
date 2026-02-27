@@ -564,6 +564,34 @@ dkString dkString::md2html() const
 {
     QString outTxt = *this;
 
+    // Protect existing HTML tags so escaping doesn't break them
+    QRegularExpression tagRegex("<[^>]+>");
+    QRegularExpressionMatchIterator tagIt = tagRegex.globalMatch(outTxt);
+    QStringList tags;
+    int tagOffset = 0;
+    QString protectedTxt;
+    while (tagIt.hasNext()) {
+        QRegularExpressionMatch match = tagIt.next();
+        tags << match.captured(0);
+        QString placeholder = QString("\x1EHT%1\x1E").arg(tags.size() - 1);
+        protectedTxt += outTxt.mid(tagOffset, match.capturedStart() - tagOffset) + placeholder;
+        tagOffset = match.capturedEnd();
+    }
+    protectedTxt += outTxt.mid(tagOffset);
+    outTxt = protectedTxt;
+
+    // Escape special characters in plain text
+    QRegularExpression ampRe("&(?!(amp|lt|gt|quot|#\\d+;|#x[0-9a-fA-F]+;))");
+    outTxt.replace(ampRe, "&amp;");
+    outTxt.replace("<", "&lt;");
+    outTxt.replace(">", "&gt;");
+    outTxt.replace("\"", "&quot;");
+
+    // Restore protected HTML tags
+    for (int i = 0; i < tags.size(); ++i) {
+        outTxt.replace(QString("\x1EHT%1\x1E").arg(i), tags.at(i));
+    }
+
     // Convert links [text](url) to <a href="url">text</a>, escaping & in url
     QRegularExpression linkRegex("\\[([^\\]]+)\\]\\(([^\\)]+)\\)");
     QRegularExpressionMatchIterator it = linkRegex.globalMatch(outTxt);
