@@ -128,6 +128,57 @@ QString dkFormat::keyMd(dkCoupletList & inList)
     return mdTxt;
 }
 
+QString dkFormat::keyMdCol(dkCoupletList & inList)
+{
+    QString mdTxt = "## Taxonomic key\n";
+    bool withPath = false;
+
+    for(int i = 0; i < inList.size(); ++i)
+    {
+        dkCouplet theCouplet = inList.at(i);
+
+        QString lead1 = theCouplet.getLead1();
+        addFigLinks(lead1);
+        QString lead2 = theCouplet.getLead2();
+        addFigLinks(lead2);
+        QString endpoint1 = theCouplet.getEndpoint1();
+        QString endpoint2 = theCouplet.getEndpoint2();
+        int pointer1 = theCouplet.getPointer1();
+        int pointer2 = theCouplet.getPointer2();
+
+        QString images1 = imagesHtml(lead1, withPath).trimmed();
+        QString images2 = imagesHtml(lead2, withPath).trimmed();
+
+        // Keep exactly one blank line before each couplet.
+        mdTxt += "\n";
+        mdTxt += QStringLiteral("[%1%2]{#k%1}\n").arg(theCouplet.getNumber()).arg(theCouplet.previousTxt());
+        mdTxt += "\n";
+        mdTxt += "::: columns\n";
+
+        mdTxt += "::: {.column width=\"50%\"}\n";
+        if(endpoint1.isEmpty())
+            mdTxt += QStringLiteral("%1 - %2\n").arg(lead1).arg(QStringLiteral("[%1](#k%1)").arg(pointer1));
+        else
+            mdTxt += QStringLiteral("%1 - **%2**\n").arg(lead1).arg(endpoint1);
+        if(!images1.isEmpty())
+            mdTxt += images1 + "\n";
+        mdTxt += ":::\n";
+
+        mdTxt += "::: {.column width=\"50%\"}\n";
+        if(endpoint2.isEmpty())
+            mdTxt += QStringLiteral("%1 - %2\n").arg(lead2).arg(QStringLiteral("[%1](#k%1)").arg(pointer2));
+        else
+            mdTxt += QStringLiteral("%1 - **%2**\n").arg(lead2).arg(endpoint2);
+        if(!images2.isEmpty())
+            mdTxt += images2 + "\n";
+        mdTxt += ":::\n";
+
+        mdTxt += ":::\n";
+    }
+
+    return mdTxt;
+}
+
 // QString dkFormat::keyMd(dkCoupletList & inList, bool withPath)
 // {
 //     QString mdTxt = "\n## Taxonomic key  \n";

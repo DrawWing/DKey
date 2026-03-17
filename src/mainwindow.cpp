@@ -753,8 +753,8 @@ void MainWindow::exportKey()
     else if(selectedFilter == "HTML table (*.html)")
         htmlTxt = coupletList.getHtmlTab();
     else if(selectedFilter == "Markdown (*.rmd)")
-        // htmlTxt = exportMdCol();
-        htmlTxt = exportMd();
+        htmlTxt = exportMdCol();
+        // htmlTxt = exportMd();
     else if(selectedFilter == "Text (*.txt)")
         htmlTxt = coupletList.getTxt();
     else if(selectedFilter == "Formated text RTF (*.rtf)")
@@ -817,7 +817,7 @@ QString MainWindow::exportHtmlCol(bool withPath)
 // to be completed
 QString MainWindow::exportMdCol()
 {
-    QString htmlTxt = format.keyMd(coupletList);
+    QString htmlTxt = format.keyMdCol(coupletList);
     return htmlTxt;
 }
 
