@@ -725,10 +725,10 @@ void MainWindow::exportKey()
 
     QFileInfo fileInfo(filePath);
     QString outName = fileInfo.path()+"/"+fileInfo.baseName()+".html";
-    QString selectedFilter = tr("HTML two columns (*.html)");
+    QString selectedFilter = tr("HTML in columns (*.html)");
     QString fileName = QFileDialog::getSaveFileName
             (this, tr("Export the key as"), outName,
-             tr("HTML two columns (*.html);;HTML list (*.html);;HTML table (*.html);;Markdown (*.rmd);;Text (*.txt);;Formated text RTF (*.rtf);;Newick tree (*.nwk)"),
+             tr("HTML in columns (*.html);;HTML list (*.html);;HTML table (*.html);;Markdown in columns (*.rmd);;Markdown list (*.rmd);;Text (*.txt);;Formated text RTF (*.rtf);;Newick tree (*.nwk)"),
              &selectedFilter
              );
     if (fileName.isEmpty())
@@ -746,15 +746,16 @@ void MainWindow::exportKey()
 
     QString htmlTxt;
     coupletList.findFrom();
-    if(selectedFilter == "HTML two columns (*.html)")
+    if(selectedFilter == "HTML in columns (*.html)")
         htmlTxt = exportHtmlCol(false);
     else if(selectedFilter == "HTML list (*.html)")
         htmlTxt = exportHtml();
     else if(selectedFilter == "HTML table (*.html)")
         htmlTxt = coupletList.getHtmlTab();
-    else if(selectedFilter == "Markdown (*.rmd)")
+    else if(selectedFilter == "Markdown in columns (*.rmd)")
         htmlTxt = exportMdCol();
-        // htmlTxt = exportMd();
+    else if(selectedFilter == "Markdown list (*.rmd)")
+        htmlTxt = exportMd();
     else if(selectedFilter == "Text (*.txt)")
         htmlTxt = coupletList.getTxt();
     else if(selectedFilter == "Formated text RTF (*.rtf)")
@@ -798,8 +799,13 @@ QString MainWindow::exportHtmlCol(bool withPath)
     //    timer.start();
 
     QString htmlTxt = exportHtmlHead();
-    htmlTxt += "<h2 id=\"i0\">Introduction</h2>\n";
-    htmlTxt += intro;
+    if(!intro.isEmpty())
+    {
+        htmlTxt += "<h2 id=\"i0\">Introduction</h2>\n";
+        htmlTxt += intro;
+    }
+    // htmlTxt += "<h2 id=\"i0\">Introduction</h2>\n";
+    // htmlTxt += intro;
     htmlTxt += format.keyHtml(coupletList, withPath);
     //    qDebug() << timer.elapsed() << "key";
 
@@ -814,18 +820,45 @@ QString MainWindow::exportHtmlCol(bool withPath)
     return htmlTxt;
 }
 
-// to be completed
 QString MainWindow::exportMdCol()
 {
-    QString htmlTxt = format.keyMdCol(coupletList);
-    return htmlTxt;
+    QFileInfo fileInfo(filePath);
+    QString yamlName = fileInfo.path()+"/"+fileInfo.baseName()+".yaml";
+    QFile file(yamlName);
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+    dkString mdTxt = QTextStream(&file).readAll();
+
+    dkString introHtml;
+    if(!intro.isEmpty())
+    {
+        introHtml += "<h2 id=\"i0\">Introduction</h2>\n";
+        introHtml += intro;
+    }
+    introHtml += "<br /><br />\n";
+
+    dkString restHtml;
+    restHtml += format.glossaryHtml(false);
+    restHtml += format.endpointsHtml(false);
+    restHtml += format.figuresHtml(false);
+
+    introHtml = format.addLinks(introHtml);
+    restHtml = format.addLinks(restHtml);
+
+    mdTxt += introHtml.html2md();
+    mdTxt += format.keyMdCol(coupletList);
+    mdTxt += restHtml.html2md();
+    return mdTxt;
 }
 
 // list of couplet for export to markdown
 QString MainWindow::exportHtmlHeadless()
 {
-    QString htmlTxt = "<h2 id=\"i0\">Introduction</h2>\n";
-    htmlTxt += intro;
+    QString htmlTxt;
+    if(!intro.isEmpty())
+    {
+        htmlTxt += "<h2 id=\"i0\">Introduction</h2>\n";
+        htmlTxt += intro;
+    }
     htmlTxt += "<br />\n";
     htmlTxt += format.keyHtmlLst(coupletList);
     htmlTxt += format.glossaryHtml(false);

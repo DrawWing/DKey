@@ -37,9 +37,8 @@ public:
     void setFigures(dkTermList * inList);
     QString keyHtml(dkCoupletList & inList, bool withPath = true);
     QString keyHtmlLst(dkCoupletList & inList);
-    QString keyMd(dkCoupletList & inList);
+    // QString keyMd(dkCoupletList & inList);
     QString keyMdCol(dkCoupletList & inList);
-    // QString keyMd(dkCoupletList & inList, bool withPath = true);
     QString coupletHtml(dkCouplet &theCouplet, bool withPath = true);
     QString coupletHtmlLst(dkCouplet &theCouplet);
     // QString coupletMd(dkCouplet &theCouplet, bool withPath = true);
@@ -52,6 +51,7 @@ public:
 //    QString linkGlossary(QString &inHtmlTxt);
 //    QString linkEndpoints(QString &inHtmlTxt);
     QString addLinks(QString &inHtmlTxt);
+    QString addLinksMd(QString &inMdTxt);
     void addFigLinks(QString &inHtmlTxt);
 
 private:

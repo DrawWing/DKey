@@ -18,6 +18,7 @@
 #include <QStringList>
 #include <QRegularExpression>
 #include <QDomDocument>
+#include <QFileInfo>
 
 #include "dkString.h"
 
@@ -189,15 +190,49 @@ static void processNodeMd(const QDomNode &node, QString &outTxt)
             }
             outTxt += QString("### %1  \n").arg(text);
         } else if (tag == "img") {
-            // Preserve HTML img tag since Markdown doesn't support width/height
-            QString imgTag = "<img";
-            QDomNamedNodeMap attrs = elem.attributes();
-            for (int i = 0; i < attrs.count(); ++i) {
-                QDomAttr attr = attrs.item(i).toAttr();
-                imgTag += QString(" %1=\"%2\"").arg(attr.name(), attr.value());
+            QString src = elem.attribute("src");
+            QString title = elem.attribute("title");
+            QString width = elem.attribute("width");
+            QString height = elem.attribute("height");
+            QString border = elem.attribute("border");
+
+            QString alt = title;
+            if (alt.isEmpty()) {
+                QFileInfo fileInfo(src);
+                alt = fileInfo.completeBaseName();
+                if (alt.startsWith("fig-", Qt::CaseInsensitive)) {
+                    alt = "Fig. " + alt.mid(4);
+                }
             }
-            imgTag += " />";
-            outTxt += imgTag;
+            if (alt.isEmpty()) {
+                alt = "image";
+            }
+
+            alt.replace("\"", "\\\"");
+            title.replace("\"", "\\\"");
+
+            QString mdImg = QString("![%1](%2").arg(alt, src);
+            if (!title.isEmpty()) {
+                mdImg += QString(" \"%1\"").arg(title);
+            }
+            mdImg += ")";
+
+            QStringList attrs;
+            if (!width.isEmpty()) {
+                attrs += QString("width=\"%1\"").arg(width);
+            }
+            if (!height.isEmpty()) {
+                attrs += QString("height=\"%1\"").arg(height);
+            }
+            if (!border.isEmpty()) {
+                attrs += QString("style=\"border:%1px solid black;\"").arg(border);
+            }
+
+            if (!attrs.isEmpty()) {
+                mdImg += QString("{%1}").arg(attrs.join(" "));
+            }
+
+            outTxt += mdImg;
         } else if (tag == "p") {
             QString id = elem.attribute("id");
             QString text;
