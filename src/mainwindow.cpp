@@ -789,7 +789,24 @@ QString MainWindow::exportHtmlHead()
         }
     }
     file.close();
-    QString htmlTxt = "<h1 id=\"title\">" + titleTxt + "</h2>\n";
+
+    QString cssName = fileInfo.path()+"/styles-font.css";
+    QFile cssFile(cssName);
+    QString cssTxt;
+    if (cssFile.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        cssTxt = QTextStream(&cssFile).readAll();
+        cssFile.close();
+    }
+
+    QString htmlTxt;
+    htmlTxt += "<head>\n";
+    htmlTxt += "<title>" + titleTxt + "</title>\n";
+    htmlTxt += "<style>\n";
+    htmlTxt += cssTxt;
+    htmlTxt += "</style>\n";
+    htmlTxt += "</head>\n";
+    htmlTxt += "<h1 id=\"title\">" + titleTxt + "</h2>\n";
     return htmlTxt;
 }
 
