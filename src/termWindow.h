@@ -38,6 +38,7 @@ protected:
 
 private slots:
     void import();
+    void importFiles();
     void exportTxt();
     void insertRow();
     void removeRow();
@@ -50,6 +51,7 @@ private slots:
 
 private:
     QAction *importAct;
+    QAction *importFilesAct;
     QAction *exportAct;
     QAction *insertRowAct;
     QAction *removeRowAct;

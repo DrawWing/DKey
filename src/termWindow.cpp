@@ -48,6 +48,9 @@ void termWindow::createActions()
     importAct->setShortcut(tr("Ctrl+I"));
     connect(importAct, SIGNAL(triggered()), this, SLOT(import()));
 
+    importFilesAct = new QAction(tr("Import &Files..."), this);
+    connect(importFilesAct, SIGNAL(triggered()), this, SLOT(importFiles()));
+
     exportAct = new QAction( tr("&Export..."), this);
     exportAct->setShortcut(tr("Ctrl+E"));
     connect(exportAct, SIGNAL(triggered()), this, SLOT(exportTxt()));
@@ -82,6 +85,7 @@ void termWindow::createMenus()
 {
     fileMenu = new QMenu(tr("&File"), this);
     fileMenu->addAction(importAct);
+    fileMenu->addAction(importFilesAct);
     fileMenu->addAction(exportAct);
 
     editMenu = new QMenu(tr("&Edit"), this);
@@ -437,6 +441,37 @@ void termWindow::import()
     if(outTxtList.size() == 0)
         return;
     termList->importTxt(outTxtList);
+
+    if(termList->size() == 0)
+        return;
+
+    fillTable();
+    setWindowModified(true);
+}
+
+void termWindow::importFiles()
+{
+    QFileInfo fileInfo(parent->getFilePath());
+    QString dirPath = fileInfo.path();
+
+    QStringList fileNames = QFileDialog::getOpenFileNames(
+                this,
+                tr("Import files"),
+                dirPath,
+                tr("All files (*.*)"));
+    if(fileNames.isEmpty())
+        return;
+
+    for(int i = 0; i < fileNames.size(); ++i)
+    {
+        QFileInfo inFileInfo(fileNames.at(i));
+        QString inName = inFileInfo.fileName();
+
+        dkTerm theTerm;
+        theTerm.setSynonyms(inName);
+        theTerm.setDefinition(inName);
+        termList->push_back(theTerm);
+    }
 
     if(termList->size() == 0)
         return;
