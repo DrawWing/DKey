@@ -37,6 +37,7 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 private slots:
+    void save();
     void import();
     void importFiles();
     void exportTxt();
@@ -50,6 +51,7 @@ private slots:
     void sortTable();
 
 private:
+    QAction *saveAct;
     QAction *importAct;
     QAction *importFilesAct;
     QAction *exportAct;

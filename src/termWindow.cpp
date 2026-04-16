@@ -44,6 +44,10 @@ termWindow::termWindow(dkTermList *inList, MainWindow *inParent)
 
 void termWindow::createActions()
 {
+    saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save..."), this);
+    saveAct->setShortcut(tr("Ctrl+S"));
+    connect(saveAct, SIGNAL(triggered()), this, SLOT(save()));
+
     importAct = new QAction( tr("&Import..."), this);
     importAct->setShortcut(tr("Ctrl+I"));
     connect(importAct, SIGNAL(triggered()), this, SLOT(import()));
@@ -84,6 +88,8 @@ void termWindow::createActions()
 void termWindow::createMenus()
 {
     fileMenu = new QMenu(tr("&File"), this);
+    fileMenu->addAction(saveAct);
+    fileMenu->addSeparator();
     fileMenu->addAction(importAct);
     fileMenu->addAction(importFilesAct);
     fileMenu->addAction(exportAct);
@@ -104,6 +110,8 @@ void termWindow::createMenus()
 void termWindow::createToolBars()
 {
     editToolBar = addToolBar(tr("&Edit"));
+    editToolBar->addAction(saveAct);
+    editToolBar->addSeparator();
     editToolBar->addAction(cutAct);
     editToolBar->addAction(copyAct);
     editToolBar->addAction(pasteAct);
@@ -386,6 +394,21 @@ void termWindow::closeEvent(QCloseEvent *event)
     hide();
     event->ignore();
     //    event->accept();
+}
+
+void termWindow::save()
+{
+    if(parent)
+    {
+        // Ensure parent is marked as modified so save() will actually save to disk
+        if(isWindowModified())
+            parent->setWindowModified(true);
+        
+        QMetaObject::invokeMethod(parent, "save");
+    }
+
+    // Keep term window modified state consistent with the parent document.
+    setWindowModified(parent && parent->isWindowModified());
 }
 
 void termWindow::readSettings()
