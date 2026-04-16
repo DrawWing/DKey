@@ -57,6 +57,8 @@ MainWindow::MainWindow(QWidget *parent)
     htmlWindow = new dkBrowser(this);
     htmlWindow->setFormat(&format);
     htmlWindow->hide();
+
+    initializeTermLists();
 }
 
 void MainWindow::viewBrowser()
@@ -154,6 +156,13 @@ void MainWindow::viewGlossary()
     termWindow * glossaryWindow = new termWindow(&glossary, this);
     glossaryWindow->setWindowTitle(tr("Glossary")+"[*]");
     glossaryWindow->show();
+}
+
+void MainWindow::viewReferences()
+{
+    termWindow * referencesWindow = new termWindow(&references, this);
+    referencesWindow->setWindowTitle(tr("References")+"[*]");
+    referencesWindow->show();
 }
 
 void MainWindow::viewEndpoints()
@@ -603,6 +612,12 @@ bool MainWindow::loadFile(const QString & fileName)
     glossary.setTag("glossary");
     format.setGlossary(&glossary);
 
+    // load references
+    QDomElement referencesElement = dkeyNode.namedItem("references").toElement();
+    references.fromDkXml(referencesElement, theVerMajor);
+    references.setTag("references");
+    format.setReferences(&references);
+
     // load endpoints
     QDomElement endpointsElement = dkeyNode.namedItem("endpoints").toElement();
     endpoints.fromDkXml(endpointsElement, theVerMajor);
@@ -678,6 +693,7 @@ bool MainWindow::saveFile(const QString &fileName)
     outTxt += glossary.getDkXml();
     outTxt += endpoints.getDkXml();
     outTxt += figTxt.getDkXml();
+    outTxt += references.getDkXml();
     outTxt += "</DKey>\n";
     ///
 
@@ -829,6 +845,7 @@ QString MainWindow::exportHtmlCol(bool withPath)
     htmlTxt += format.glossaryHtml(withPath);
     htmlTxt += format.endpointsHtml(withPath);
     htmlTxt += format.figuresHtml(withPath);
+    htmlTxt += format.referencesHtml(withPath);
     //    qDebug() << timer.elapsed() << "glossary";
 
     htmlTxt = format.addLinks(htmlTxt);
@@ -857,6 +874,7 @@ QString MainWindow::exportMdCol()
     restHtml += format.glossaryHtml(false);
     restHtml += format.endpointsHtml(false);
     restHtml += format.figuresHtml(false);
+    restHtml += format.referencesHtml(false);
 
     introHtml = format.addLinks(introHtml);
     restHtml = format.addLinks(restHtml);
@@ -881,6 +899,7 @@ QString MainWindow::exportHtmlHeadless()
     htmlTxt += format.glossaryHtml(false);
     htmlTxt += format.endpointsHtml(false);
     htmlTxt += format.figuresHtml(false);
+    htmlTxt += format.referencesHtml(false);
     htmlTxt = format.addLinks(htmlTxt);
     return htmlTxt;
 }
@@ -1406,6 +1425,9 @@ void MainWindow::createActions()
     viewGlossaryAct = new QAction(tr("&Glossary"), this);
     connect(viewGlossaryAct, SIGNAL(triggered()), this, SLOT(viewGlossary()));
 
+    viewReferencesAct = new QAction(tr("&References"), this);
+    connect(viewReferencesAct, SIGNAL(triggered()), this, SLOT(viewReferences()));
+
     viewEndpointsAct = new QAction(tr("&Endpoints"), this);
     connect(viewEndpointsAct, SIGNAL(triggered()), this, SLOT(viewEndpoints()));
 
@@ -1468,6 +1490,14 @@ void MainWindow::createMenus()
     editMenu->addAction(swapLeadsAct);
     editMenu->addAction(renumberAct);
 //    editMenu->addAction(arrangeAct);
+    editMenu->addSeparator();
+
+    editMenu->addAction(viewIntroAct);
+    editMenu->addAction(viewGlossaryAct);
+    editMenu->addAction(viewEndpointsAct);
+    editMenu->addAction(viewFigTxtAct);
+    editMenu->addAction(viewReferencesAct);
+
     menuBar()->addMenu(editMenu);
 
     debugMenu = new QMenu(tr("&Debug"), this);
@@ -1480,11 +1510,6 @@ void MainWindow::createMenus()
     viewMenu->addAction(viewHtmlAct);
     viewMenu->addAction(viewEndpointListAct);
     viewMenu->addAction(viewTagsAct);
-    viewMenu->addSeparator();
-    viewMenu->addAction(viewIntroAct);
-    viewMenu->addAction(viewGlossaryAct);
-    viewMenu->addAction(viewEndpointsAct);
-    viewMenu->addAction(viewFigTxtAct);
     menuBar()->addMenu(viewMenu);
 
     navMenu = new QMenu(tr("&Navigation"), this);
@@ -1631,7 +1656,10 @@ void MainWindow::clear()
     intro.clear();
     coupletList.clear();
     glossary.clear();
+    references.clear();
+    endpoints.clear();
     figTxt.clear();
+    initializeTermLists();
     htmlWindow->hide();
 }
 
@@ -1649,9 +1677,27 @@ dkTermList * MainWindow::getGlossary()
     return &glossary;
 }
 
+dkTermList * MainWindow::getReferences()
+{
+    return &references;
+}
+
 dkTermList * MainWindow::getFigTxt()
 {
     return &figTxt;
+}
+
+void MainWindow::initializeTermLists()
+{
+    glossary.setTag("glossary");
+    references.setTag("references");
+    endpoints.setTag("endpoints");
+    figTxt.setTag("figures");
+
+    format.setGlossary(&glossary);
+    format.setReferences(&references);
+    format.setEndpoints(&endpoints);
+    format.setFigures(&figTxt);
 }
 
 dkBrowser * MainWindow::getHtmlWindow()

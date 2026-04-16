@@ -25,6 +25,8 @@ dkFormat::dkFormat()
 {
     figures = new dkTermList;
     glossary = new dkTermList;
+    references = new dkTermList;
+    endpoints = new dkTermList;
 }
 
 void dkFormat::clear()
@@ -46,6 +48,11 @@ void dkFormat::setFilePath(const QString & inTxt)
 void dkFormat::setGlossary(dkTermList * inList)
 {
     glossary = inList;
+}
+
+void dkFormat::setReferences(dkTermList * inList)
+{
+    references = inList;
 }
 
 void dkFormat::setEndpoints(dkTermList * inList)
@@ -327,6 +334,26 @@ QString dkFormat::endpointsHtml(bool withPath)
         QString theTxt = theTerm.getDefinition();
 
         htmlTxt += QStringLiteral("<p id=\"e%1\" class=\"glossary\">%1.  %2\n").arg(i+1).arg(theTxt);
+
+        htmlTxt += imagesHtml(theTxt, withPath);
+        htmlTxt += "</p>";
+    }
+
+    return htmlTxt;
+}
+
+QString dkFormat::referencesHtml(bool withPath)
+{
+    if(references->size() == 0)
+        return QString();
+
+    QString htmlTxt = "<h2 id=\"r0\">References</h2>\n";
+    for(int i = 0; i < references->size(); ++i)
+    {
+        dkTerm theTerm = references->at(i);
+        QString theTxt = theTerm.getDefinition();
+
+        htmlTxt += QStringLiteral("<p id=\"r%1\" class=\"glossary\">%1. %2\n").arg(i+1).arg(theTxt);
 
         htmlTxt += imagesHtml(theTxt, withPath);
         htmlTxt += "</p>";
@@ -732,6 +759,7 @@ QString dkFormat::addLinks(QString &inHtmlTxt)
     QString outTxt;
 
     outTxt = glossary->addLinks(inHtmlTxt);
+    outTxt = references->addLinks(outTxt);
     outTxt = endpoints->addLinks(outTxt);
     return outTxt;
 }

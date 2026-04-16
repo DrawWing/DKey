@@ -33,6 +33,7 @@ public:
     void clear();
     void setFilePath(const QString & inTxt);
     void setGlossary(dkTermList * inList);
+    void setReferences(dkTermList * inList);
     void setEndpoints(dkTermList * inList);
     void setFigures(dkTermList * inList);
     QString keyHtml(dkCoupletList & inList, bool withPath = true);
@@ -43,6 +44,7 @@ public:
     QString coupletHtmlLst(dkCouplet &theCouplet);
     // QString coupletMd(dkCouplet &theCouplet, bool withPath = true);
     QString glossaryHtml(bool withPath = true);
+    QString referencesHtml(bool withPath = true);
     QString endpointsHtml(bool withPath = true);
     QString figuresHtml(bool withPath = true);
     QString glossHtml(int nr, bool withPath = true);
@@ -67,6 +69,7 @@ private:
 
     QString filePath;
     dkTermList * glossary;
+    dkTermList * references;
     dkTermList * endpoints;
     dkTermList * figures;
     QStringList figFiles;

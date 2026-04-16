@@ -16,7 +16,150 @@
  */
 
 #include "dkTermList.h"
+#include <QDomDocument>
 #include <QRegularExpression>
+#include <QTextStream>
+
+namespace {
+
+QString getAnchorPrefix(const QString &tag)
+{
+    if(tag == "glossary")
+        return "#g";
+    if(tag == "references")
+        return "#r";
+    if(tag == "endpoints")
+        return "#e";
+    return QString();
+}
+
+QRegularExpression makeLinkPattern(const QString &synonym)
+{
+    QString escaped = QRegularExpression::escape(synonym.simplified());
+    escaped.replace("\\ ", "\\s+");
+
+    return QRegularExpression(
+                QStringLiteral("(?<![\\p{L}\\p{N}])(%1)(?![\\p{L}\\p{N}])").arg(escaped),
+                QRegularExpression::CaseInsensitiveOption
+                | QRegularExpression::UseUnicodePropertiesOption);
+}
+
+void linkTextNode(QDomNode textNode, const QList< dkStringInt > &keyList, const QString &anchorPrefix)
+{
+    QString text = textNode.nodeValue();
+    if(text.simplified().isEmpty())
+        return;
+
+    struct Match {
+        int start = -1;
+        int length = 0;
+        int keyIndex = 0;
+    };
+
+    QList<Match> matches;
+    int searchPos = 0;
+    while(searchPos < text.size())
+    {
+        Match bestMatch;
+
+        for(int i = 0; i < keyList.size(); ++i)
+        {
+            dkStringInt theKey = keyList.at(i);
+            QRegularExpression thePattern = makeLinkPattern(theKey.getString());
+            QRegularExpressionMatch match = thePattern.match(text, searchPos);
+            if(!match.hasMatch())
+                continue;
+
+            const int start = match.capturedStart(1);
+            const int length = match.capturedLength(1);
+            if(bestMatch.start == -1
+                    || start < bestMatch.start
+                    || (start == bestMatch.start && length > bestMatch.length))
+            {
+                bestMatch.start = start;
+                bestMatch.length = length;
+                bestMatch.keyIndex = theKey.getInt();
+            }
+        }
+
+        if(bestMatch.start == -1)
+            break;
+
+        matches.push_back(bestMatch);
+        searchPos = bestMatch.start + bestMatch.length;
+    }
+
+    if(matches.isEmpty())
+        return;
+
+    QDomNode parentNode = textNode.parentNode();
+    if(parentNode.isNull())
+        return;
+
+    QDomDocument ownerDoc = parentNode.ownerDocument();
+    int currentPos = 0;
+    for(int i = 0; i < matches.size(); ++i)
+    {
+        Match theMatch = matches.at(i);
+        if(theMatch.start > currentPos)
+        {
+            QDomText beforeText = ownerDoc.createTextNode(text.mid(currentPos, theMatch.start - currentPos));
+            parentNode.insertBefore(beforeText, textNode);
+        }
+
+        QDomElement linkElement = ownerDoc.createElement("a");
+        linkElement.setAttribute("href", QStringLiteral("%1%2").arg(anchorPrefix).arg(theMatch.keyIndex));
+        linkElement.appendChild(ownerDoc.createTextNode(text.mid(theMatch.start, theMatch.length)));
+        parentNode.insertBefore(linkElement, textNode);
+
+        currentPos = theMatch.start + theMatch.length;
+    }
+
+    if(currentPos < text.size())
+    {
+        QDomText afterText = ownerDoc.createTextNode(text.mid(currentPos));
+        parentNode.insertBefore(afterText, textNode);
+    }
+
+    parentNode.removeChild(textNode);
+}
+
+void linkNodeTree(QDomNode parentNode, const QList< dkStringInt > &keyList, const QString &anchorPrefix, bool insideLink = false)
+{
+    QDomNode childNode = parentNode.firstChild();
+    while(!childNode.isNull())
+    {
+        QDomNode nextNode = childNode.nextSibling();
+
+        if(childNode.isElement())
+        {
+            QDomElement childElement = childNode.toElement();
+            const bool childInsideLink = insideLink || childElement.tagName().compare("a", Qt::CaseInsensitive) == 0;
+            linkNodeTree(childNode, keyList, anchorPrefix, childInsideLink);
+        }
+        else if(childNode.isText() && !insideLink)
+        {
+            linkTextNode(childNode, keyList, anchorPrefix);
+        }
+
+        childNode = nextNode;
+    }
+}
+
+QString serializeChildren(const QDomNode &parentNode)
+{
+    QString outTxt;
+    QTextStream outStream(&outTxt);
+    QDomNode childNode = parentNode.firstChild();
+    while(!childNode.isNull())
+    {
+        childNode.save(outStream, 0);
+        childNode = childNode.nextSibling();
+    }
+    return outTxt;
+}
+
+}
 
 dkTermList::dkTermList()
 {
@@ -258,6 +401,26 @@ QString dkTermList::addLinks(QString &inHtmlTxt)
 {
     QList< dkStringInt > keyList = sortBySize();
 
+    QString anchorPrefix = getAnchorPrefix(tag);
+    if(anchorPrefix.isEmpty() || keyList.isEmpty())
+        return inHtmlTxt;
+
+    QString wrappedHtml = "<root>" + inHtmlTxt + "</root>";
+    wrappedHtml.replace("<br>", "<br />");
+    QRegularExpression ampRe("&(?!(amp|lt|gt|quot|#\\d+;|#x[0-9a-fA-F]+;))");
+    wrappedHtml.replace(ampRe, "&amp;");
+
+    QDomDocument xmlDoc;
+    if(xmlDoc.setContent(wrappedHtml))
+    {
+        QDomElement rootElement = xmlDoc.firstChildElement("root");
+        if(!rootElement.isNull())
+        {
+            linkNodeTree(rootElement, keyList, anchorPrefix);
+            return serializeChildren(rootElement);
+        }
+    }
+
     QStringList inHtmlList = inHtmlTxt.split('\n');
     for(int i = 0; i < inHtmlList.size(); ++i)
     {
@@ -303,12 +466,19 @@ bool dkTermList::isKeyPresent(QStringList &keyList, QStringList &inList)
     {
         if(inList.size() < i + keyList.size())
             return false; // inList to short
+
+        bool isFullMatch = true;
         for(int j = 0; j < keyList.size(); ++j)
         {
-            if(inList[i+j] != keyList[j])
+            if(inList[i+j].compare(keyList[j], Qt::CaseInsensitive) != 0)
+            {
+                isFullMatch = false;
                 break;
+            }
         }
-        return true;
+
+        if(isFullMatch)
+            return true;
     }
     return false;
 }
@@ -389,7 +559,7 @@ void dkTermList::linkKey(QStringList &keyList, int keyIndex, QStringList &inList
             if(inList[i-1].contains('&')) // is this escape sequence?
                 continue;
 
-        if(inList[i].toLower() == keyList[keyPosition]) // comparison is case insensitive
+        if(inList[i].compare(keyList[keyPosition], Qt::CaseInsensitive) == 0)
         {
             if(keyPosition == 0)
                 startIndex = i; // keyword started
@@ -401,6 +571,8 @@ void dkTermList::linkKey(QStringList &keyList, int keyIndex, QStringList &inList
                 QString prefix;
                 if(tag == "glossary")
                     prefix = QStringLiteral("<a href=\"#g%1\">").arg(keyIndex);
+                else if(tag == "references")
+                    prefix = QStringLiteral("<a href=\"#r%1\">").arg(keyIndex);
                 else if(tag == "endpoints")
                     prefix = QStringLiteral("<a href=\"#e%1\">").arg(keyIndex);
 
@@ -413,8 +585,16 @@ void dkTermList::linkKey(QStringList &keyList, int keyIndex, QStringList &inList
             else
                 ++keyPosition;
         }
+        else if(inList[i].compare(keyList[0], Qt::CaseInsensitive) == 0)
+        {
+            keyPosition = 1;
+            startIndex = i;
+        }
         else
+        {
             keyPosition = 0;
+            startIndex = 0;
+        }
 
     }
     return;

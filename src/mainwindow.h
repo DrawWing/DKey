@@ -46,6 +46,7 @@ public:
     bool loadFile(const QString &fileName);
     dkFormat * getFormat();
     dkTermList * getGlossary();
+    dkTermList * getReferences();
     dkTermList * getFigTxt();
     dkBrowser * getHtmlWindow();
     QString getFilePath() const;
@@ -86,6 +87,7 @@ private slots:
     void viewTags();
     void viewIntro();
     void viewGlossary();
+    void viewReferences();
     void viewEndpoints();
     void viewFigTxt();
     void test();
@@ -99,6 +101,7 @@ private:
     void writeSettings();
     void updateRecentFiles( const QString &fileName);
     void updateRecentFileActions();
+    void initializeTermLists();
     bool okToContinue();
     bool saveFile(const QString &fileName);
     // bool isVersionOK(const QString inVersion);
@@ -132,6 +135,7 @@ private:
     QAction *viewTagsAct;
     QAction *viewIntroAct;
     QAction *viewGlossaryAct;
+    QAction *viewReferencesAct;
     QAction *viewEndpointsAct;
     QAction *viewFigTxtAct;
     QAction *aboutAct;
@@ -180,6 +184,7 @@ private:
     dkFormat format;
     dkString intro;
     dkTermList glossary;
+    dkTermList references;
     dkTermList endpoints;
     dkTermList figTxt;
     QString error;
