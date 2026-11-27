@@ -498,7 +498,6 @@ void MainWindow::renameFig()
         QString oldName = dialog.getOldName();
         QString newName = dialog.getNewName();
 
-        // Create undo command
         QUndoCommand *renameCommand = new RenameFigCommand(this, oldName, newName);
         undoStack->push(renameCommand);
 
