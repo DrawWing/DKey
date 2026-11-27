@@ -381,6 +381,20 @@ void MainWindow::updateTableRow(int i)
     insertTableRow(i);
 }
 
+void MainWindow::refreshTermWindows(dkTermList *inList)
+{
+    const QWidgetList topLevelList = QApplication::topLevelWidgets();
+    for (QWidget *widget : topLevelList) {
+        termWindow *theTermWindow = qobject_cast<termWindow *>(widget);
+        if (!theTermWindow || !theTermWindow->isVisible()) {
+            continue;
+        }
+        if (theTermWindow->isShowingTermList(inList)) {
+            theTermWindow->refreshFromTermList();
+        }
+    }
+}
+
 bool MainWindow::isKeyOK()
 {
     if(coupletList.size() == 0)
@@ -519,8 +533,11 @@ void MainWindow::doRenameFig(const QString &oldName, const QString &newName)
 
     // Update text in couplets
     coupletList.renameFig(normalizedOldName, normalizedNewName);
-
     updateTable();
+
+    figTxt.renameSynonym(normalizedOldName, normalizedNewName);
+    refreshTermWindows(&figTxt);
+
     setWindowModified(true);
 }
 

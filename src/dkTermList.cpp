@@ -607,28 +607,32 @@ void dkTermList::renameSynonym(const QString &oldName, const QString &newName)
         return;
     }
 
-    // Normalize names to lowercase for consistency
     QString normalizedOldName = oldName.toLower();
-    QString normalizedNewName = newName.toLower();
 
-    // Iterate through all terms in the list
     for (int i = 0; i < thisList.size(); ++i) {
         dkTerm term = thisList.at(i);
-        
-        // Check if this term contains the old synonym
-        if (term.contains(normalizedOldName)) {
-            // Get the current synonyms list
-            QStringList synonyms = term.getSynonymsList();
-            
-            // Replace the old name with the new name in the synonyms list
-            for (int j = 0; j < synonyms.size(); ++j) {
-                if (synonyms[j].toLower() == normalizedOldName) {
-                    synonyms[j] = newName;
+
+        QStringList synonyms = term.getSynonymsList();
+        bool renamed = false;
+        for (int j = 0; j < synonyms.size(); ++j) {
+            if (synonyms[j].toLower() == normalizedOldName) {
+                synonyms[j] = newName;
+                renamed = true;
+            }
+        }
+
+        if (renamed) {
+            term.setSynonyms(synonyms);
+
+            if (tag == "figures") {
+                QString newDef = term.getDefinition();
+                QString oldPrefix = "Fig. " + normalizedOldName;
+                if (newDef.startsWith(oldPrefix, Qt::CaseInsensitive)) {
+                    newDef.replace(0, oldPrefix.size(), "Fig. " + newName);
+                    term.setDefinition(newDef);
                 }
             }
-            
-            // Update the term with the new synonyms list
-            term.setSynonyms(synonyms);
+
             thisList[i] = term;
         }
     }

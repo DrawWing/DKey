@@ -42,6 +42,16 @@ termWindow::termWindow(dkTermList *inList, MainWindow *inParent)
     fillTable();
 }
 
+bool termWindow::isShowingTermList(const dkTermList *inList) const
+{
+    return termList == inList;
+}
+
+void termWindow::refreshFromTermList()
+{
+    fillTable();
+}
+
 void termWindow::createActions()
 {
     saveAct = new QAction(QIcon(":/images/save.png"), tr("&Save..."), this);

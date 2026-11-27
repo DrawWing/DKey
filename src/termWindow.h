@@ -33,6 +33,8 @@ class termWindow: public QMainWindow
 
 public:
     termWindow(dkTermList *inList, MainWindow *inParent = 0);
+    bool isShowingTermList(const dkTermList *inList) const;
+    void refreshFromTermList();
 protected:
     void closeEvent(QCloseEvent *event);
 

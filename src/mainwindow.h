@@ -173,6 +173,7 @@ private:
     void insertTableRow(int i);
     void updateTable();
     void updateTableRow(int i);
+    void refreshTermWindows(dkTermList *inList);
     QString exportHtmlHead();
     QString exportHtmlCol(bool withPath);
     QString exportMdCol();
