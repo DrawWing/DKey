@@ -32,7 +32,7 @@ Phoenix](http://www.lucidcentral.org/lucid-phoenix/).
 No installation is required just download binaries and unpack them:
 
 1.  Download the ZIP file:
-    [DKey-windows-binaries.zip](https://github.com/DrawWing/DKey/blob/master/bin/DKey3_0-windows-binaries.zip)
+    [DKey3_0_1-windows-binaries.zip](https://github.com/DrawWing/DKey/releases/download/v3.0.1/DKey3_0_1-windows-binaries.zip)
 
 2.  Unpack the ZIP file and copy DKey directory to your hard drive.
 
