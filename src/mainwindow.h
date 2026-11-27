@@ -83,6 +83,7 @@ private slots:
     void findErrors();
     void findFigErrors();
     void renameFig();
+    void renumberFig();
     void findFig();
     void viewBrowser();
     void viewHtml();
@@ -133,6 +134,7 @@ private:
     QAction *findErrorsAct;
     QAction *findFigErrorsAct;
     QAction *renameFigAct;
+    QAction *renumberFigAct;
     QAction *findFigAct;
     QAction *viewBrowserAct;
     QAction *viewHtmlAct;

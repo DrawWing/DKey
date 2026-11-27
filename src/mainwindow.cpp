@@ -384,7 +384,8 @@ void MainWindow::updateTableRow(int i)
 void MainWindow::refreshTermWindows(dkTermList *inList)
 {
     const QWidgetList topLevelList = QApplication::topLevelWidgets();
-    for (QWidget *widget : topLevelList) {
+    for (int i = 0; i < topLevelList.size(); ++i) {
+        QWidget *widget = topLevelList.at(i);
         termWindow *theTermWindow = qobject_cast<termWindow *>(widget);
         if (!theTermWindow || !theTermWindow->isVisible()) {
             continue;
@@ -506,6 +507,61 @@ void MainWindow::renameFig()
     }
 }
 
+void MainWindow::renumberFig()
+{
+    if(coupletList.size() == 0)
+        return;
+
+    QMessageBox::StandardButton reply = QMessageBox::warning(
+                this,
+                tr("Renumber figures"),
+                tr("Before renumbering figures, back up the whole directory.\n"
+                   "This procedure cannot be undone.\n\n"
+                   "Continue?"),
+                QMessageBox::Yes | QMessageBox::No);
+    if (reply == QMessageBox::No)
+        return;
+
+    QStringList figList = coupletList.findFigs();
+    if(figList.size() == 0)
+        return;
+
+    QStringList orderedNames;
+    for (int i = 0; i < figList.size(); ++i) {
+        QString fileName = figList.at(i);
+        QString baseName = fileName;
+        if (baseName.startsWith("fig-", Qt::CaseInsensitive))
+            baseName = baseName.mid(4);
+        int dotPos = baseName.lastIndexOf('.');
+        if (dotPos > 0)
+            baseName = baseName.left(dotPos);
+
+        if (baseName.startsWith('_')) {
+            QMessageBox::information(this,
+                                     tr("Renumber figures"),
+                                     tr("Figure names starting with '_' are not allowed."));
+            return;
+        }
+
+        if (!orderedNames.contains(baseName, Qt::CaseInsensitive))
+            orderedNames.push_back(baseName);
+    }
+
+    QApplication::setOverrideCursor(QCursor(Qt::WaitCursor));
+    for (int i = 0; i < orderedNames.size(); ++i) {
+        const QString oldName = orderedNames.at(i);
+        const QString tempName = "_" + oldName;
+        doRenameFig(oldName, tempName);
+    }
+
+    for (int i = 0; i < orderedNames.size(); ++i) {
+        const QString tempName = "_" + orderedNames.at(i);
+        const QString newName = QString::number(i + 1);
+        doRenameFig(tempName, newName);
+    }
+    QApplication::restoreOverrideCursor();
+}
+
 void MainWindow::doRenameFig(const QString &oldName, const QString &newName)
 {
     // Normalize names to lowercase for consistency
@@ -520,7 +576,8 @@ void MainWindow::doRenameFig(const QString &oldName, const QString &newName)
     QStringList extensionList;
     extensionList << ".png" << ".jpg";
 
-    for (const QString & ext : extensionList) {
+    for (int i = 0; i < extensionList.size(); ++i) {
+        QString ext = extensionList.at(i);
         QString oldFileName = QString("fig-%1%2").arg(normalizedOldName, ext);
         QString newFileName = QString("fig-%1%2").arg(normalizedNewName, ext);
 
@@ -1504,6 +1561,9 @@ void MainWindow::createActions()
     renameFigAct = new QAction(tr("&Rename figure"), this);
     connect(renameFigAct, SIGNAL(triggered()), this, SLOT(renameFig()));
 
+    renumberFigAct = new QAction(tr("R&enumber figures"), this);
+    connect(renumberFigAct, SIGNAL(triggered()), this, SLOT(renumberFig()));
+
     findFigAct = new QAction(tr("&Find figures"), this);
     connect(findFigAct, SIGNAL(triggered()), this, SLOT(findFig()));
 
@@ -1620,6 +1680,7 @@ void MainWindow::createMenus()
     figuresMenu = new QMenu(tr("&Figures"), this);
     figuresMenu->addAction(findFigAct);
     figuresMenu->addAction(renameFigAct);
+    figuresMenu->addAction(renumberFigAct);
     menuBar()->addMenu(figuresMenu);
 
     helpMenu = new QMenu(tr("&Help"), this);
