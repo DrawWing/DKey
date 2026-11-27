@@ -67,7 +67,6 @@ QMAKE_POST_LINK =  windeployqt $$shell_path($$DESTDIR/$${TARGET}.exe)
 DISTFILES += \
     README.md \
     assets/DKey.ico \
-    bin/DKey-windows-binaries.zip \
     docs/README-dkey-main-window.png \
     docs/README-dkey-taxonomy.png \
     docs/README-dkey48.png
