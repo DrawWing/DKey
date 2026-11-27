@@ -83,11 +83,13 @@ public:
     QString imgHtml(const QString &path, const QString &inName, bool withPath = true) const;
     QStringList findFigs(QString & path);
     QString figExist(QDir &keyDir, QString & inTxt) const;
+    void renameFig(const QString & oldName, const QString & newName);
     void swapLeads();
     bool isContentOK(void);
 
 private:
     QStringList findFigs(QString &inTxt, QString & path);
+    QString renameFigInText(QString & inTxt, const QString & oldName, const QString & newName);
     QString removeAB(QString & inTxt, bool first) const;
 
     int number;

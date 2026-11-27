@@ -21,7 +21,7 @@
 #include <QFileInfo>
 #include <QApplication>
 #include <QMenuBar>
-//#include <QStatusBar>
+#include <QStatusBar>
 #include <QFileDialog>
 #include <QHeaderView>
 #include <QInputDialog>
@@ -31,6 +31,7 @@
 
 #include "mainwindow.h"
 #include "coupletDialog.h"
+#include "renameFigDialog.h"
 #include "dkView.h"
 #include "termWindow.h"
 #include "textEditor.h"
@@ -448,7 +449,7 @@ void MainWindow::findErrors()
     htmlWindow->setWindowTitle(tr("Find errors"));
 }
 
-void MainWindow::findImgErrors()
+void MainWindow::findFigErrors()
 {
     if(coupletList.size() == 0)
         return;
@@ -471,6 +472,77 @@ void MainWindow::findImgErrors()
         error = tr("No image errors was found.");
     htmlWindow->setPlainTxt(error);
     htmlWindow->setWindowTitle(tr("Find image errors"));
+}
+
+void MainWindow::renameFig()
+{
+    renameFigDialog dialog(this);
+
+    if (dialog.exec() == QDialog::Accepted)
+    {
+        QString oldName = dialog.getOldName();
+        QString newName = dialog.getNewName();
+
+        // Create undo command
+        QUndoCommand *renameCommand = new RenameFigCommand(this, oldName, newName);
+        undoStack->push(renameCommand);
+
+        statusBar()->showMessage(tr("Figure '%1' renamed to '%2'")
+                                .arg(oldName, newName), 5000);
+    }
+}
+
+void MainWindow::doRenameFig(const QString &oldName, const QString &newName)
+{
+    // Normalize names to lowercase for consistency
+    QString normalizedOldName = oldName.toLower();
+    QString normalizedNewName = newName.toLower();
+
+    // Rename image files
+    QFileInfo fileInfo(filePath);
+    QString keyDir = fileInfo.absolutePath();
+    QDir dir(keyDir);
+
+    QStringList extensionList;
+    extensionList << ".png" << ".jpg";
+
+    for (const QString & ext : extensionList) {
+        QString oldFileName = QString("fig-%1%2").arg(normalizedOldName, ext);
+        QString newFileName = QString("fig-%1%2").arg(normalizedNewName, ext);
+
+        if (dir.exists(oldFileName)) {
+            QString oldFilePath = dir.absoluteFilePath(oldFileName);
+            QString newFilePath = dir.absoluteFilePath(newFileName);
+            QFile::rename(oldFilePath, newFilePath);
+        }
+    }
+
+    // Update text in couplets
+    coupletList.renameFig(normalizedOldName, normalizedNewName);
+
+    updateTable();
+    setWindowModified(true);
+}
+
+void MainWindow::findFig()
+{
+    if (figTxt.size() > 0) {
+        QMessageBox::StandardButton reply = QMessageBox::warning(this, tr("Warning"),
+                                           tr("Existing figure legend will be removed. Continue?"),
+                                           QMessageBox::Yes | QMessageBox::No);
+        if (reply == QMessageBox::No)
+            return;
+    }
+
+    QFileInfo fileInfo(filePath);
+    QString keyDir = fileInfo.absolutePath();
+    
+    figTxt.populateFigureList(keyDir);
+    
+    statusBar()->showMessage(tr("Found %1 figure(s)")
+                            .arg(figTxt.size()), 5000);
+
+    setWindowModified(true);
 }
 
 void MainWindow::newKey()
@@ -797,6 +869,7 @@ QString MainWindow::exportHtmlHead()
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
         return QString();
     QTextStream stream(&file);
+    stream.setCodec("UTF-8");
     QString titleTxt;
     while (!stream.atEnd()) {
         QString line = stream.readLine();
@@ -860,7 +933,9 @@ QString MainWindow::exportMdCol()
     QString yamlName = fileInfo.path()+"/"+fileInfo.baseName()+".yaml";
     QFile file(yamlName);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
-    dkString mdTxt = QTextStream(&file).readAll();
+    QTextStream stream(&file);
+    stream.setCodec("UTF-8");
+    dkString mdTxt = stream.readAll();
 
     dkString introHtml;
     if(!intro.isEmpty())
@@ -917,7 +992,9 @@ QString MainWindow::exportMd()
     QString yamlName = fileInfo.path()+"/"+fileInfo.baseName()+".yaml";
     QFile file(yamlName);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
-    dkString mdTxt = QTextStream(&file).readAll();
+    QTextStream stream(&file);
+    stream.setCodec("UTF-8");
+    dkString mdTxt = stream.readAll();
 
     dkString htmlTxt = exportHtmlHeadless();
     mdTxt += htmlTxt.html2md();
@@ -1404,8 +1481,14 @@ void MainWindow::createActions()
     findErrorsAct->setShortcut(tr("Ctrl+E"));
     connect(findErrorsAct, SIGNAL(triggered()), this, SLOT(findErrors()));
 
-    findImgErrorsAct = new QAction(tr("&Find image errors"), this);
-    connect(findImgErrorsAct, SIGNAL(triggered()), this, SLOT(findImgErrors()));
+    findFigErrorsAct = new QAction(tr("&Find image errors"), this);
+    connect(findFigErrorsAct, SIGNAL(triggered()), this, SLOT(findFigErrors()));
+
+    renameFigAct = new QAction(tr("&Rename figure"), this);
+    connect(renameFigAct, SIGNAL(triggered()), this, SLOT(renameFig()));
+
+    findFigAct = new QAction(tr("&Find figures"), this);
+    connect(findFigAct, SIGNAL(triggered()), this, SLOT(findFig()));
 
     viewBrowserAct = new QAction(QIcon(":/images/interactive.png"), tr("&Key browser"), this);
     connect(viewBrowserAct, SIGNAL(triggered()), this, SLOT(viewBrowser()));
@@ -1502,8 +1585,8 @@ void MainWindow::createMenus()
 
     debugMenu = new QMenu(tr("&Debug"), this);
     debugMenu->addAction(findErrorsAct);
-    debugMenu->addAction(findImgErrorsAct);
-    menuBar()->addMenu(debugMenu);
+    debugMenu->addAction(findFigErrorsAct);
+   menuBar()->addMenu(debugMenu);
 
     viewMenu = new QMenu(tr("&View"), this);
     viewMenu->addAction(viewBrowserAct);
@@ -1516,6 +1599,11 @@ void MainWindow::createMenus()
     navMenu->addAction(goToNumberAct);
     navMenu->addAction(goToTagAct);
     menuBar()->addMenu(navMenu);
+
+    figuresMenu = new QMenu(tr("&Figures"), this);
+    figuresMenu->addAction(findFigAct);
+    figuresMenu->addAction(renameFigAct);
+    menuBar()->addMenu(figuresMenu);
 
     helpMenu = new QMenu(tr("&Help"), this);
     helpMenu->addAction(aboutAct);

@@ -90,6 +90,7 @@ public:
     bool isNumberUnique();
     bool reNumber(int startNumber = 1);
     void updatePointers(int from, int to);
+    void renameFig(const QString & oldName, const QString & newName);
     int getLastNumber(const QString &inString);
 
 private:

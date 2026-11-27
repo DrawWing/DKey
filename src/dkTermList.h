@@ -55,6 +55,8 @@ public:
     QString addLinks(QString &inHtmlTxt);
     bool isKeyPresent(QStringList &keyList, QStringList &inList);
     void linkKey(QStringList &keyList, int keyIndex, QStringList &inList);
+    void renameSynonym(const QString &oldName, const QString &newName);
+    void populateFigureList(const QString &keyDir);
 
 
 private:

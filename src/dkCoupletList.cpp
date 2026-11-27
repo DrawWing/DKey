@@ -19,6 +19,7 @@
 #include <QTextStream>
 #include <QVector>
 #include <QRegularExpression>
+#include <QDir>
 
 
 #include "dkCoupletList.h"
@@ -1346,6 +1347,24 @@ void dkCoupletList::updatePointers(int from, int to)
             thisList[i].setPointer1(to);
         if(thisList[i].getPointer2() == from)
             thisList[i].setPointer2(to);
+    }
+}
+
+void dkCoupletList::renameFig(const QString & oldName, const QString & newName)
+{
+    if (oldName.isEmpty() || newName.isEmpty()) {
+        return;
+    }
+
+    // Normalize names to lowercase for consistency
+    QString normalizedOldName = oldName.toLower();
+    QString normalizedNewName = newName.toLower();
+
+    // Replace all occurrences in couplets
+    for (int i = 0; i < thisList.size(); ++i) {
+        dkCouplet couplet = thisList.at(i);
+        couplet.renameFig(normalizedOldName, normalizedNewName);
+        thisList[i] = couplet;
     }
 }
 

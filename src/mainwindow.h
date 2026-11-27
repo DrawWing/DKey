@@ -54,6 +54,7 @@ public:
     void removeCouplets(QList<int> &inList);
     void insertCouplets(QList<int> &inRows, QList<dkCouplet> &inCouplets);
     void insertEmptyCouplet(int inRow);
+    void doRenameFig(const QString &oldName, const QString &newName);
 
 protected:
     void closeEvent(QCloseEvent *event);
@@ -80,7 +81,9 @@ private slots:
     void arrange();
     void goToNumber();
     void findErrors();
-    void findImgErrors();
+    void findFigErrors();
+    void renameFig();
+    void findFig();
     void viewBrowser();
     void viewHtml();
     void viewEndpointList();
@@ -128,7 +131,9 @@ private:
     QAction *goToNumberAct;
     QAction *goToTagAct;
     QAction *findErrorsAct;
-    QAction *findImgErrorsAct;
+    QAction *findFigErrorsAct;
+    QAction *renameFigAct;
+    QAction *findFigAct;
     QAction *viewBrowserAct;
     QAction *viewHtmlAct;
     QAction *viewEndpointListAct;
@@ -145,6 +150,7 @@ private:
     QMenu *debugMenu;
     QMenu *viewMenu;
     QMenu *navMenu;
+    QMenu *figuresMenu;
     QMenu *helpMenu;
 
     QToolBar *fileToolBar;

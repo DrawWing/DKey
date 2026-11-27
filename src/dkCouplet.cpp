@@ -17,6 +17,7 @@
 
 #include <QImageReader>
 #include <QTextDocument>
+#include <QRegularExpression>
 
 #include "dkCouplet.h"
 #include "dkString.h"
@@ -1136,6 +1137,88 @@ QString dkCouplet::figExist(QDir & keyDir, QString & inTxt) const
             return baseName;
     }
     return QString();
+}
+
+void dkCouplet::renameFig(const QString & oldName, const QString & newName)
+{
+    if (oldName.isEmpty() || newName.isEmpty()) {
+        return;
+    }
+
+    lead1 = renameFigInText(lead1, oldName, newName);
+    lead2 = renameFigInText(lead2, oldName, newName);
+}
+
+QString dkCouplet::renameFigInText(QString & inTxt, const QString & oldName, const QString & newName)
+{
+    QString figPrefix = "fig.";
+    QString result = inTxt;
+
+    // Split text using brackets to restrict search for figures
+    QStringList bracketList = result.split("(", Qt::SkipEmptyParts, Qt::CaseInsensitive);
+    
+    for (int i = 0; i < bracketList.size(); ++i) {
+        QString theString = bracketList.at(i);
+        
+        if (!theString.contains(figPrefix, Qt::CaseInsensitive))
+            continue;
+
+        // If immediately after bracket there is "fig." there can be a list of images
+        if (theString.startsWith(figPrefix, Qt::CaseInsensitive) && i > 0) {
+            QStringList closingBracketList = theString.split(")", Qt::SkipEmptyParts, Qt::CaseInsensitive);
+            theString = closingBracketList[0]; // take only part before closing parenthesis
+            
+            // Split into alternating separators and words
+            QStringList subStrList = theString.split(QRegularExpression("\\b"));
+
+            // Process multiple figures: start with third token (0-separator, 1-fig, 2-separator)
+            for (int j = 3; j < subStrList.size(); ++j) {
+                QString subString = subStrList.at(j);
+                subString = subString.simplified();
+                QString subStringLower = subString.toLower();
+                
+                if (subStringLower == oldName.toLower()) {
+                    subStrList[j] = newName;
+                }
+                ++j; // skip separator
+            }
+            
+            // Reconstruct the string with replaced figure names
+            QString newTheString = subStrList.join("");
+            if (!closingBracketList[0].isEmpty()) {
+                newTheString.append(")");
+            }
+            if (closingBracketList.size() > 1) {
+                newTheString.append(closingBracketList.mid(1).join(")"));
+            }
+            bracketList[i] = newTheString;
+        } else {
+            // Find single image file - look for fig keyword
+            QStringList subStrList = theString.split(QRegularExpression("\\b"));
+
+            int j = 1; // start with 1; 0 is empty string
+            for (; j < subStrList.size(); ++j) {
+                QString subString = subStrList.at(j);
+                if (subString.toLower() == "fig")
+                    break;
+            }
+            
+            if (j + 2 < subStrList.size()) {
+                ++j; // skip separator
+                ++j; // move to figure name
+                QString subString = subStrList.at(j);
+                subString = subString.simplified();
+                QString subStringLower = subString.toLower();
+                
+                if (subStringLower == oldName.toLower()) {
+                    subStrList[j] = newName;
+                    bracketList[i] = subStrList.join("");
+                }
+            }
+        }
+    }
+
+    return bracketList.join("(");
 }
 
 void dkCouplet::swapLeads()

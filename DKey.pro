@@ -21,6 +21,7 @@ TEMPLATE = app
 SOURCES += src/main.cpp\
     src/mainwindow.cpp \
     src/coupletDialog.cpp \
+    src/renameFigDialog.cpp \
     src/dkCouplet.cpp \
     src/dkCoupletList.cpp \
     src/dkString.cpp \
@@ -37,6 +38,7 @@ SOURCES += src/main.cpp\
 
 HEADERS  += src/mainwindow.h \
     src/coupletDialog.h \
+    src/renameFigDialog.h \
     src/dkCouplet.h \
     src/dkCoupletList.h \
     src/dkString.h \

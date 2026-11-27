@@ -97,4 +97,20 @@ private:
     int row;
 };
 
+class RenameFigCommand : public QUndoCommand
+{
+public:
+    explicit RenameFigCommand(MainWindow *inWindow, const QString &inOldName,
+                              const QString &inNewName,
+                              QUndoCommand *parent = 0);
+
+    void undo();
+    void redo();
+
+private:
+    MainWindow *window;
+    QString oldName;
+    QString newName;
+};
+
 #endif // COMMANDS_H

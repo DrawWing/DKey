@@ -19,6 +19,7 @@
 #include <QDomDocument>
 #include <QRegularExpression>
 #include <QTextStream>
+#include <QDir>
 
 namespace {
 
@@ -360,7 +361,7 @@ void dkTermList::sort()
     std::sort(thisList.begin(), thisList.end());
 }
 
-// if thisList contains tag with synonym inKey return term index
+// if thisList contains term with synonym inKey return term index
 // if no inKey was found return -1
 int dkTermList::contains(QString inKey)
 {
@@ -599,3 +600,84 @@ void dkTermList::linkKey(QStringList &keyList, int keyIndex, QStringList &inList
     }
     return;
 }
+
+void dkTermList::renameSynonym(const QString &oldName, const QString &newName)
+{
+    if (oldName.isEmpty() || newName.isEmpty()) {
+        return;
+    }
+
+    // Normalize names to lowercase for consistency
+    QString normalizedOldName = oldName.toLower();
+    QString normalizedNewName = newName.toLower();
+
+    // Iterate through all terms in the list
+    for (int i = 0; i < thisList.size(); ++i) {
+        dkTerm term = thisList.at(i);
+        
+        // Check if this term contains the old synonym
+        if (term.contains(normalizedOldName)) {
+            // Get the current synonyms list
+            QStringList synonyms = term.getSynonymsList();
+            
+            // Replace the old name with the new name in the synonyms list
+            for (int j = 0; j < synonyms.size(); ++j) {
+                if (synonyms[j].toLower() == normalizedOldName) {
+                    synonyms[j] = newName;
+                }
+            }
+            
+            // Update the term with the new synonyms list
+            term.setSynonyms(synonyms);
+            thisList[i] = term;
+        }
+    }
+}
+
+void dkTermList::populateFigureList(const QString &keyDir)
+{
+    thisList.clear(); // do not clear tag
+    error.clear();
+    
+    QDir dir(keyDir);
+    QStringList extensionList;
+    extensionList << ".png" << ".jpg";
+    
+    QStringList figureFiles = dir.entryList(QStringList("fig-*"), QDir::Files);
+    
+    for (int i = 0; i < figureFiles.size(); ++i) {
+        QString fileName = figureFiles.at(i);
+        
+        // Check if file has a supported extension
+        bool hasValidExt = false;
+        for (int j = 0; j < extensionList.size(); ++j) {
+            QString ext = extensionList.at(j);
+            if (fileName.endsWith(ext, Qt::CaseInsensitive)) {
+                hasValidExt = true;
+                break;
+            }
+        }
+        
+        if (!hasValidExt)
+            continue;
+        
+        // Extract the figure name from the filename
+        // e.g., "fig-myname.png" -> "myname"
+        QString baseName = fileName;
+        baseName.remove("fig-");
+        int dotIndex = baseName.lastIndexOf('.');
+        if (dotIndex > 0) {
+            baseName = baseName.left(dotIndex);
+        }
+        
+        // Create a term with the figure name as synonym and definition
+        dkTerm figTerm;
+        figTerm.setSynonyms(baseName);
+        figTerm.setDefinition("Fig. " + baseName);
+        
+        push_back(figTerm);
+    }
+    
+    sort();
+}
+

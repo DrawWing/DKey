@@ -120,3 +120,24 @@ void EditCommand::redo()
 {
     window->updateCouplet(newCouplet, row);
 }
+
+RenameFigCommand::RenameFigCommand(MainWindow *inWindow, const QString &inOldName,
+                                     const QString &inNewName,
+                                     QUndoCommand *parent)
+    : QUndoCommand(parent)
+{
+    window = inWindow;
+    oldName = inOldName;
+    newName = inNewName;
+    setText(QObject::tr("Rename figure"));
+}
+
+void RenameFigCommand::undo()
+{
+    window->doRenameFig(newName, oldName);
+}
+
+void RenameFigCommand::redo()
+{
+    window->doRenameFig(oldName, newName);
+}
